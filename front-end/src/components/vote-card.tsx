@@ -1,8 +1,8 @@
 import React, { Component } from "react";
-import { VoteAndBallots, Ballot, BallotType, VoteOption, RateOptionsBallot } from "../model/vote";
+import { VoteAndBallots, Ballot, BallotType, VoteOption, RateOptionsBallot, ChooseOneBallot } from "../model/vote";
 import ReactMarkdown from "react-markdown";
 import Typography from '@material-ui/core/Typography';
-import { Paper, withStyles } from "@material-ui/core";
+import { Paper, withStyles, ButtonBase } from "@material-ui/core";
 import ToggleButton from "@material-ui/lab/ToggleButton";
 import ToggleButtonGroup from '@material-ui/lab/ToggleButtonGroup';
 import './vote-card.css';
@@ -51,6 +51,7 @@ const StyledToggleButtonGroup = withStyles((theme) => ({
 function renderVoteOption(
     option: VoteOption,
     ballotType: BallotType,
+    isActive: boolean,
     ballot: Ballot | undefined,
     changeBallot: (newBallot: Ballot) => void) {
 
@@ -60,24 +61,31 @@ function renderVoteOption(
             let ratingOrNull = optionBallot.ratingPerOption.find(val => val.optionId === option.id);
             let buttons = [];
             for (let i = ballotType.min; i <= ballotType.max; i++) {
-                buttons.push(<ToggleButton value={i}>{i}</ToggleButton>);
+                buttons.push(<ToggleButton disabled={!isActive} value={i}>{i}</ToggleButton>);
             }
             return <Paper elevation={1} className="VotePanel">
-                {renderVoteOptionDescription(option)}
-                <StyledToggleButtonGroup
-                    value={ratingOrNull ? ratingOrNull.rating : null}
-                    exclusive
-                    onChange={(_event: React.MouseEvent<HTMLElement>, newValue: number | null) => {
-                        let oldVals = optionBallot.ratingPerOption.filter(val => val.optionId !== option.id);
-                        let newRatings = newValue === null ? optionBallot.ratingPerOption : [...oldVals, { optionId: option.id, rating: newValue }];
-                        changeBallot({ ratingPerOption: newRatings });
-                    }}>
-                    {buttons}
-                </StyledToggleButtonGroup>
+                <div className="VotePanelContents">
+                    {renderVoteOptionDescription(option)}
+                    <StyledToggleButtonGroup
+                        value={ratingOrNull ? ratingOrNull.rating : null}
+                        exclusive
+                        onChange={(_event: React.MouseEvent<HTMLElement>, newValue: number | null) => {
+                            let oldVals = optionBallot.ratingPerOption.filter(val => val.optionId !== option.id);
+                            let newRatings = newValue === null ? optionBallot.ratingPerOption : [...oldVals, { optionId: option.id, rating: newValue }];
+                            changeBallot({ ratingPerOption: newRatings });
+                        }}>
+                        {buttons}
+                    </StyledToggleButtonGroup>
+                </div>
             </Paper>;
         case "choose-one":
-            return <Paper elevation={1} className="VotePanel">
-                {renderVoteOptionDescription(option)}
+            let isSelected = ballot && (ballot as ChooseOneBallot).selectedOptionId === option.id;
+            return <Paper elevation={1} className={isSelected ? "VotePanel SelectedVotePanel" : "VotePanel"}>
+                <ButtonBase className="VotePanelButton" focusRipple onClick={() => changeBallot({ selectedOptionId: option.id })}>
+                    <div className="VotePanelContents">
+                        {renderVoteOptionDescription(option)}
+                    </div>
+                </ButtonBase>
             </Paper>;
     }
 }
@@ -103,18 +111,21 @@ class VoteCard extends Component<Props, State> {
                 renderVoteOption(
                     option,
                     vote.type,
+                    vote.isActive,
                     ballot,
                     (newBallot: Ballot) => this.setState({ ...this.state, ballot: newBallot })));
         }
 
-        return <div>
+        return <div className="VoteContainer">
             <Paper elevation={1} className="VotePanel">
-                <Typography variant="h2">{vote.name}</Typography>
-                <ReactMarkdown
-                    className="VoteDescription"
-                    source={vote.description}
-                    escapeHtml={false}
-                    unwrapDisallowed={true} />
+                <div className="VotePanelContents">
+                    <Typography variant="h2">{vote.name}</Typography>
+                    <ReactMarkdown
+                        className="VoteDescription"
+                        source={vote.description}
+                        escapeHtml={false}
+                        unwrapDisallowed={true} />
+                </div>
             </Paper>
             {options}
         </div>;

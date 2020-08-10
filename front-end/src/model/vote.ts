@@ -48,7 +48,7 @@ export type Vote = {
 
 /// A ballot for a multiple choice vote.
 export type ChooseOneBallot = {
-    selectedOption: string;
+    selectedOptionId: string;
 };
 
 /// A ballot for a vote where a user gets to rate options.

@@ -10,16 +10,16 @@ let mockVoteAndBallots: VoteAndBallots = {
     name: "Mock Vote",
     description: "We will now vote on **something.**",
     isActive: true,
-    type: { kind: "rate-options", min: 1, max: 5 },
+    type: { kind: "choose-one" },
     options: [
       {
         id: "option-1",
-        name: "Option One",
-        description: "Wow such option"
+        name: "Yes",
+        description: "Approve the proposed proposal as proposed by someone at some point, probably."
       },
       {
         id: "option-2",
-        name: "Option Two",
+        name: "No",
         description: "Wow such option two"
       }
     ]
