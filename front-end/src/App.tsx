@@ -10,7 +10,7 @@ let mockVoteAndBallots: VoteAndBallots = {
     name: "Mock Vote",
     description: "We will now vote on **something.**",
     isActive: true,
-    type: { kind: "choose-one" },
+    type: { kind: "rate-options", min: 1, max: 5 },
     options: [
       {
         id: "option-1",
@@ -30,21 +30,9 @@ let mockVoteAndBallots: VoteAndBallots = {
 function App() {
   return (
     <div className="App">
-      {/* <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header> */}
-      <VoteCard voteAndBallots={mockVoteAndBallots} />
+      <header className="App-header">
+        <VoteCard voteAndBallots={mockVoteAndBallots} />
+      </header>
     </div>
   );
 }
