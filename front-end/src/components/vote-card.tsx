@@ -81,7 +81,7 @@ function renderVoteOption(
         case "choose-one":
             let isSelected = ballot && (ballot as ChooseOneBallot).selectedOptionId === option.id;
             return <Paper elevation={1} className={isSelected ? "VotePanel SelectedVotePanel" : "VotePanel"}>
-                <ButtonBase className="VotePanelButton" focusRipple onClick={() => changeBallot({ selectedOptionId: option.id })}>
+                <ButtonBase className="VotePanelButton" focusRipple disabled={!isActive} onClick={() => changeBallot({ selectedOptionId: option.id })}>
                     <div className="VotePanelContents">
                         {renderVoteOptionDescription(option)}
                     </div>
