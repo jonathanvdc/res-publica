@@ -8,6 +8,7 @@ import { createMuiTheme, MuiThemeProvider } from '@material-ui/core/styles';
 import { green } from '@material-ui/core/colors';
 import VoteList from './components/vote-list';
 import { Typography } from '@material-ui/core';
+import AuthPage, { getUserId } from './components/auth-page';
 
 let mockVoteAndBallots: VoteAndBallots = {
   vote: {
@@ -76,6 +77,18 @@ const theme = createMuiTheme({
 });
 
 function App() {
+  let userId = getUserId();
+
+  if (!userId) {
+    // If we aren't logged in yet, then we'll send the user to
+    // an authentication page.
+    return <div className={getMainClass()}>
+      <header className="App-header">
+        <AuthPage />
+      </header>
+    </div>;
+  }
+
   return <BrowserRouter>
     <div className={getMainClass()}>
       <MuiThemeProvider theme={theme}>
