@@ -1,10 +1,14 @@
 import React, { PureComponent } from "react";
+import { Link } from "react-router-dom";
 import { VoteAndBallots } from "../model/vote";
-import VoteCard from "./vote-card";
 
 type Props = {
     votes: VoteAndBallots[];
 };
+
+function createVoteLink(voteId: string): string {
+    return `/vote/${voteId}`;
+}
 
 /**
  * A list of votes.
@@ -13,7 +17,7 @@ class VoteList extends PureComponent<Props> {
     render() {
         let elements: JSX.Element[] = [];
         for (let vote of this.props.votes) {
-            elements.push(<VoteCard voteAndBallots={vote} />);
+            elements.push(<Link to={createVoteLink(vote.vote.id)}>{vote.vote.name}</Link>);
         }
 
         return <div className="VoteListPanel">
