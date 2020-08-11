@@ -1,0 +1,22 @@
+.SignInBox {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+.SignInFillerBox {
+    flex-grow: 1;
+}
+
+.SignInLink {
+    margin: 2em 0;
+    display: block;
+}
+
+.SignInBottomBox {
+    margin: 0 0 1em 0;
+}
+
+.SignInLink .SignInButton {
+    padding: 1em 2em;
+}

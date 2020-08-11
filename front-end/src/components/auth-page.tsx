@@ -1,6 +1,8 @@
 import React, { PureComponent } from "react";
 import { Typography, Button } from "@material-ui/core";
 import { isMobile } from 'react-device-detect';
+import Anchor from '@material-ui/core/Link';
+import './auth-page.css';
 
 type Props = {
     clientId?: string;
@@ -69,19 +71,31 @@ class AuthPage extends PureComponent<Props> {
             deviceId: this.props.deviceId || getDeviceId(),
             redirectUrl: this.props.redirectUrl || "http://127.0.0.1:5000/reddit-auth"
         };
-        return <div>
-            <Typography variant="h1">Howdy!</Typography>
-            <Typography>Please sign in with Reddit to get started.</Typography>
-            <a
-                href={createRedditUrl(
-                    newProps.clientId,
-                    newProps.deviceId,
-                    newProps.redirectUrl,
-                    window.location.pathname,
-                    isMobile)}>
-
-                <Button variant="contained" color="primary">Sign in with Reddit</Button>
-            </a>
+        let localUrl = createRedditUrl(
+            newProps.clientId,
+            newProps.deviceId,
+            newProps.redirectUrl,
+            window.location.pathname,
+            isMobile);
+        let otherUrl = createRedditUrl(
+            newProps.clientId,
+            newProps.deviceId,
+            newProps.redirectUrl,
+            window.location.pathname,
+            !isMobile);
+        return <div className="SignInBox">
+            <div className="SignInFillerBox" />
+            <div className="SignInContentBox">
+                <Typography variant="h1">Howdy!</Typography>
+                <Typography>Please sign in with Reddit to continue.</Typography>
+                <a className="SignInLink" href={localUrl}>
+                    <Button className="SignInButton" variant="contained" color="primary">Sign in with Reddit</Button>
+                </a>
+            </div>
+            <div className="SignInFillerBox" />
+            <div className="SignInBottomBox">
+                <Typography>Alternatively, here's the <Anchor href={otherUrl}>{isMobile ? "desktop" : "mobile"} sign-in page</Anchor>.</Typography>
+            </div>
         </div>;
     }
 }
