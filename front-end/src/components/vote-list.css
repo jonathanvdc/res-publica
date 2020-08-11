@@ -1,0 +1,10 @@
+.VoteLink, .VoteLink:hover {
+    display: block;
+    margin: 2em 0;
+}
+
+.VoteButton {
+    width: max(100%, min(20em, 90vw));
+    min-height: 5em;
+    word-wrap: break-word;
+}

@@ -37,7 +37,7 @@ function renderVoteOptionDescription(option: VoteOption) {
 
 const StyledToggleButtonGroup = withStyles((theme) => ({
     grouped: {
-      margin: theme.spacing(0.5),
+      margin: theme.spacing(1),
       border: 'none',
       '&:not(:first-child)': {
         borderRadius: 100

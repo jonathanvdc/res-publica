@@ -11,7 +11,7 @@ import VoteList from './components/vote-list';
 let mockVoteAndBallots: VoteAndBallots = {
   vote: {
     id: "mock-vote",
-    name: "Mock Vote",
+    name: "44th Presidential Election",
     description: "We will now vote on **something.**",
     isActive: true,
     type: { kind: "choose-one" },
@@ -31,7 +31,30 @@ let mockVoteAndBallots: VoteAndBallots = {
   ballots: []
 };
 
-let allVotes = [mockVoteAndBallots];
+let mockVoteAndBallots2: VoteAndBallots = {
+  vote: {
+    id: "mock-vote-2",
+    name: "42nd Ballot Initiative",
+    description: "We will now vote on **something.**",
+    isActive: true,
+    type: { kind: "rate-options", min: 1, max: 5 },
+    options: [
+      {
+        id: "option-1",
+        name: "Yes",
+        description: "Approve the proposed proposal as proposed by someone at some point, probably."
+      },
+      {
+        id: "option-2",
+        name: "No",
+        description: "Wow such option two"
+      }
+    ]
+  },
+  ballots: []
+};
+
+let allVotes = [mockVoteAndBallots, mockVoteAndBallots2];
 
 let currentSeasons: string[] = [];
 
