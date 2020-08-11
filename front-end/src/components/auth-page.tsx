@@ -1,5 +1,6 @@
 import React, { PureComponent } from "react";
 import { Typography, Button } from "@material-ui/core";
+import { isMobile } from 'react-device-detect';
 
 type Props = {
     clientId?: string;
@@ -7,8 +8,9 @@ type Props = {
     redirectUrl?: string;
 };
 
-function createRedditUrl(clientId: string, deviceId: string, redirectUrl: string, returnUrl: string): string {
-    return `https://www.reddit.com/api/v1/authorize?client_id=${encodeURIComponent(clientId)}` +
+function createRedditUrl(clientId: string, deviceId: string, redirectUrl: string, returnUrl: string, mobile: boolean): string {
+    let requestPath = mobile ? "authorize.compact" : "authorize";
+    return `https://www.reddit.com/api/v1/${requestPath}?client_id=${encodeURIComponent(clientId)}` +
         `&response_type=code&state=${encodeURIComponent(`${deviceId};${returnUrl}`)}` +
         `&redirect_uri=${encodeURIComponent(redirectUrl)}&duration=temporary&scope=identity`;
 }
@@ -68,8 +70,16 @@ class AuthPage extends PureComponent<Props> {
             redirectUrl: this.props.redirectUrl || "http://127.0.0.1:5000/reddit-auth"
         };
         return <div>
-            <Typography variant="h1">Welcome!</Typography>
-            <a href={createRedditUrl(newProps.clientId, newProps.deviceId, newProps.redirectUrl, '/')}>
+            <Typography variant="h1">Howdy!</Typography>
+            <Typography>Please sign in with Reddit to get started.</Typography>
+            <a
+                href={createRedditUrl(
+                    newProps.clientId,
+                    newProps.deviceId,
+                    newProps.redirectUrl,
+                    window.location.pathname,
+                    isMobile)}>
+
                 <Button variant="contained" color="primary">Sign in with Reddit</Button>
             </a>
         </div>;
