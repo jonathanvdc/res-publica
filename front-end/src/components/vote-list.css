@@ -3,8 +3,17 @@
     margin: 2em 0;
 }
 
-.VoteButton {
+.VoteLink .VoteButton {
     width: max(100%, min(20em, 90vw));
     min-height: 5em;
     word-wrap: break-word;
+    display: inline-flex;
+}
+
+.VoteButton .CompletedVoteIndicator {
+    flex-grow: 0;
+}
+
+.VoteButton .VoteButtonText {
+    flex-grow: 1;
 }

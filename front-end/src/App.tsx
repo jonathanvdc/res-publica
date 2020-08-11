@@ -29,6 +29,9 @@ let mockVoteAndBallots: VoteAndBallots = {
       }
     ]
   },
+  ownBallot: {
+    selectedOptionId: "option-1"
+  },
   ballots: []
 };
 
