@@ -1,0 +1,2 @@
+# Make sure we don't commit our secrets.
+config.json
