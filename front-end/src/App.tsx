@@ -3,7 +3,7 @@ import logo from './logo.svg';
 import './App.css';
 import VoteCard from './components/vote-card';
 import { VoteAndBallots } from './model/vote';
-import { HashRouter, Route } from 'react-router-dom';
+import { Route, BrowserRouter } from 'react-router-dom';
 import { createMuiTheme, MuiThemeProvider } from '@material-ui/core/styles';
 import { green } from '@material-ui/core/colors';
 import VoteList from './components/vote-list';
@@ -76,7 +76,7 @@ const theme = createMuiTheme({
 });
 
 function App() {
-  return <HashRouter>
+  return <BrowserRouter>
     <div className={getMainClass()}>
       <MuiThemeProvider theme={theme}>
         {/* <div className="App-body">
@@ -94,7 +94,7 @@ function App() {
         </header>
       </MuiThemeProvider>
     </div>
-  </HashRouter>;
+  </BrowserRouter>;
 }
 
 class VoteListRoute extends Component<{ match: any, allVotes: VoteAndBallots[] }, any> {
