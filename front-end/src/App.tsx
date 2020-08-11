@@ -7,11 +7,12 @@ import { HashRouter, Route } from 'react-router-dom';
 import { createMuiTheme, MuiThemeProvider } from '@material-ui/core/styles';
 import { green } from '@material-ui/core/colors';
 import VoteList from './components/vote-list';
+import { Typography } from '@material-ui/core';
 
 let mockVoteAndBallots: VoteAndBallots = {
   vote: {
     id: "mock-vote",
-    name: "44th Presidential Election",
+    name: "24th Ballot Initiative",
     description: "We will now vote on **something.**",
     isActive: true,
     type: { kind: "choose-one" },
@@ -34,27 +35,27 @@ let mockVoteAndBallots: VoteAndBallots = {
 let mockVoteAndBallots2: VoteAndBallots = {
   vote: {
     id: "mock-vote-2",
-    name: "42nd Ballot Initiative",
+    name: "44th Presidential Election",
     description: "We will now vote on **something.**",
     isActive: true,
     type: { kind: "rate-options", min: 1, max: 5 },
     options: [
       {
         id: "option-1",
-        name: "Yes",
-        description: "Approve the proposed proposal as proposed by someone at some point, probably."
+        name: "Ronald McDonald",
+        description: "Free burgers for everyone."
       },
       {
         id: "option-2",
-        name: "No",
-        description: "Wow such option two"
+        name: "Scrooge McDuck",
+        description: "Elect me and I'll make you rich!"
       }
     ]
   },
   ballots: []
 };
 
-let allVotes = [mockVoteAndBallots, mockVoteAndBallots2];
+let activeVotes = [mockVoteAndBallots, mockVoteAndBallots2];
 
 let currentSeasons: string[] = [];
 
@@ -84,13 +85,25 @@ function App() {
         </div> */}
         <header className="App-header">
           <Suspense fallback={<div>Loading...</div>}>
-            <Route exact={true} path="/" render={routeProps => <VoteList {...routeProps} votes={allVotes} />} />
-            <Route path="/vote/:voteId" render={routeProps => <VoteRoute {...routeProps} allVotes={allVotes} />} />
+            <Route exact={true} path="/" render={routeProps => <VoteListRoute {...routeProps} allVotes={activeVotes} />} />
+            <Route path="/vote/:voteId" render={routeProps => <VoteRoute {...routeProps} allVotes={activeVotes} />} />
           </Suspense>
         </header>
       </MuiThemeProvider>
     </div>
   </HashRouter>;
+}
+
+class VoteListRoute extends Component<{ match: any, allVotes: VoteAndBallots[] }, any> {
+  render() {
+    if (this.props.allVotes.length === 0) {
+      return <div></div>;
+    }
+    return <div>
+      <Typography variant="h2">Active Votes</Typography>
+      <VoteList votes={this.props.allVotes} />
+    </div>;
+  }
 }
 
 class VoteRoute extends Component<{ match: any, allVotes: VoteAndBallots[] }, any> {

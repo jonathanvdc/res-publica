@@ -117,16 +117,14 @@ class VoteCard extends Component<Props, State> {
         }
 
         return <div className="VoteContainer">
-            <Paper elevation={1} className="VotePanel">
-                <div className="VotePanelContents">
-                    <Typography variant="h2">{vote.name}</Typography>
-                    <ReactMarkdown
-                        className="VoteDescription"
-                        source={vote.description}
-                        escapeHtml={false}
-                        unwrapDisallowed={true} />
-                </div>
-            </Paper>
+            <div className="VotePanelContents">
+                <Typography variant="h2">{vote.name}</Typography>
+                <ReactMarkdown
+                    className="VoteDescription"
+                    source={vote.description}
+                    escapeHtml={false}
+                    unwrapDisallowed={true} />
+            </div>
             {options}
         </div>;
     }

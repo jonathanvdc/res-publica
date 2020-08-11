@@ -13,6 +13,10 @@
     color: white;
 }
 
+.VotePanel .VotePanelButton {
+    width: 100%;
+}
+
 .VotePanelContents {
     margin: 1.5em;
 }
