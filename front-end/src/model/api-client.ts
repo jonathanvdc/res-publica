@@ -1,5 +1,5 @@
 import { Authenticator } from "./auth";
-import { VoteAndBallots, Ballot } from "./vote";
+import { VoteAndBallots, Ballot, Vote } from "./vote";
 
 /**
  * A client that allows the application to interact with the server's API.
@@ -14,6 +14,11 @@ export interface APIClient {
      * Gets all currently active votes.
      */
     getActiveVotes(): Promise<VoteAndBallots[]>;
+
+    /**
+     * Gets a list of all votes so far.
+     */
+    getAllVotes(): Promise<Vote[]>;
 
     /**
      * Gets a specific vote.

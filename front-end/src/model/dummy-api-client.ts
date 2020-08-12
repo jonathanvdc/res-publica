@@ -18,6 +18,10 @@ export class DummyAPIClient implements APIClient {
         return this.activeVotes;
     }
 
+    async getAllVotes(): Promise<Vote[]> {
+        return this.activeVotes.map(data => data.vote);
+    }
+
     async getVote(id: string): Promise<VoteAndBallots | undefined> {
         let vote = this.activeVotes.find(x => x.vote.id === id);
         if (vote) {
