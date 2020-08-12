@@ -12,6 +12,7 @@ type Props = {
 
 type State = {
     ballot: Ballot | undefined;
+    ballotCast: boolean;
 };
 
 const CheckButton = withStyles((theme: Theme) => ({
@@ -34,7 +35,8 @@ class VotePage extends Component<Props, State> {
     constructor(props: Props) {
         super(props);
         this.state = {
-            ballot: this.props.voteAndBallots.ownBallot
+            ballot: this.props.voteAndBallots.ownBallot,
+            ballotCast: false
         };
     }
 
@@ -43,6 +45,10 @@ class VotePage extends Component<Props, State> {
         if (this.props.onCastBallot) {
             this.props.onCastBallot(this.props.voteAndBallots.vote, ballot);
         }
+        this.setState({
+            ...this.state,
+            ballotCast: true
+        });
     }
 
     render() {
@@ -50,10 +56,10 @@ class VotePage extends Component<Props, State> {
             ...this.props.voteAndBallots,
             ownBallot: this.state.ballot
         };
-        let ballotReady = isCompleteBallot(data.ownBallot, data.vote);
+        let canCast = !this.state.ballotCast && !isCompleteBallot(data.ownBallot, data.vote);
         return <div>
             <VoteCard voteAndBallots={data} onBallotChanged={newBallot => this.setState({ ballot: newBallot })} />
-            <CheckButton disabled={!ballotReady} variant="contained" className="SubmitVoteButton" onClick={this.castBallot.bind(this)} >
+            <CheckButton disabled={canCast} variant="contained" className="SubmitVoteButton" onClick={this.castBallot.bind(this)} >
                 <CheckIcon fontSize="large" />
             </CheckButton>
         </div>;

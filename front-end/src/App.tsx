@@ -1,4 +1,4 @@
-import React, { Component, Suspense } from 'react';
+import React, { Suspense } from 'react';
 import './App.css';
 import { VoteAndBallots, Vote, Ballot } from './model/vote';
 import { Route, BrowserRouter } from 'react-router-dom';
@@ -9,6 +9,7 @@ import { Typography } from '@material-ui/core';
 import { DummyAPIClient } from './model/dummy-api-client';
 import VotePage from './components/vote-page';
 import { FetchedStateComponent } from './components/fetched-state-component';
+import VoteConfirmationPage from './components/vote-confirmation-page';
 
 let currentSeasons: string[] = [];
 
@@ -72,24 +73,38 @@ class VoteListRoute extends FetchedStateComponent<{ match: any }, VoteAndBallots
   }
 }
 
-class VoteRoute extends FetchedStateComponent<{ match: any, history: any }, VoteAndBallots | undefined> {
-  fetchState(): Promise<VoteAndBallots | undefined> {
-    return apiClient.getVote(this.props.match.params.voteId);
+type VoteRouteState = {
+  vote?: VoteAndBallots;
+  ballotId?: string;
+};
+
+class VoteRoute extends FetchedStateComponent<{ match: any, history: any }, VoteRouteState> {
+  async fetchState(): Promise<VoteRouteState> {
+    let data = await apiClient.getVote(this.props.match.params.voteId);
+    return { vote: data };
   }
 
-  onCastBallot(vote: Vote, ballot: Ballot) {
-    apiClient.castBallot(vote.id, ballot);
-    this.props.history.push('/');
-  }
-
-  renderState(vote: VoteAndBallots | undefined): JSX.Element {
-    if (vote) {
-      return <VotePage voteAndBallots={vote} onCastBallot={this.onCastBallot.bind(this)} />;
+  async onCastBallot(vote: Vote, ballot: Ballot) {
+    let response = await apiClient.castBallot(vote.id, ballot);
+    if ('error' in response) {
+      this.setState({ hasConnected: true, error: response.error });
     } else {
+      this.setState({ hasConnected: true, data: { ballotId: response.ballotId } });
+    }
+  }
+
+  renderState(data: VoteRouteState): JSX.Element {
+    if (!data) {
       return <div>
         <h1>Error 404</h1>
         Vote with ID '{this.props.match.params.voteId}' not found.
       </div>;
+    }
+
+    if (data.vote) {
+      return <VotePage voteAndBallots={data.vote} onCastBallot={this.onCastBallot.bind(this)} />;
+    } else {
+      return <VoteConfirmationPage ballotId={data.ballotId!} />;
     }
   }
 }
