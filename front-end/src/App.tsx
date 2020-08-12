@@ -1,7 +1,5 @@
 import React, { Component, Suspense } from 'react';
-import logo from './logo.svg';
 import './App.css';
-import VoteCard from './components/vote-card';
 import { VoteAndBallots } from './model/vote';
 import { Route, BrowserRouter } from 'react-router-dom';
 import { createMuiTheme, MuiThemeProvider } from '@material-ui/core/styles';
@@ -9,7 +7,9 @@ import { green } from '@material-ui/core/colors';
 import VoteList from './components/vote-list';
 import { Typography } from '@material-ui/core';
 import { RedditAuthenticator } from './model/reddit-auth';
+import { DummyAuthenticator } from './model/dummy-auth';
 import ErrorPage from './components/error-page';
+import VotePage from './components/vote-page';
 
 let mockVoteAndBallots: VoteAndBallots = {
   vote: {
@@ -73,7 +73,7 @@ const theme = createMuiTheme({
   },
 });
 
-const authenticator = new RedditAuthenticator();
+const authenticator = new DummyAuthenticator();
 
 class App extends Component<{}, { hasConnected: boolean, isAuthenticated: boolean, error?: any }> {
   constructor(props: {}) {
@@ -160,7 +160,7 @@ class VoteRoute extends Component<{ match: any, allVotes: VoteAndBallots[] }, an
     let voteId = this.props.match.params.voteId;
     let vote = this.props.allVotes.find(val => val.vote.id === voteId);
     if (vote) {
-      return <VoteCard voteAndBallots={vote} />
+      return <VotePage voteAndBallots={vote} />
     } else {
       return <div>
         <h1>Error 404</h1>

@@ -1,4 +1,4 @@
-import React, { Component } from "react";
+import React, { PureComponent } from "react";
 import { VoteAndBallots, Ballot, BallotType, VoteOption, RateOptionsBallot, ChooseOneBallot } from "../model/vote";
 import ReactMarkdown from "react-markdown";
 import Typography from '@material-ui/core/Typography';
@@ -9,10 +9,7 @@ import './vote-card.css';
 
 type Props = {
     voteAndBallots: VoteAndBallots;
-};
-
-type State = {
-    ballot: Ballot | undefined;
+    onBallotChanged?: (newBallot: Ballot) => void;
 };
 
 function createEmptyBallot(type: BallotType): Ballot | undefined {
@@ -93,17 +90,10 @@ function renderVoteOption(
 /**
  * A card that allows users to inspect and interact with a vote.
  */
-class VoteCard extends Component<Props, State> {
-    constructor(props: Props) {
-        super(props);
-        this.state = {
-            ballot: this.props.voteAndBallots.ownBallot || createEmptyBallot(props.voteAndBallots.vote.type)
-        };
-    }
-
+class VoteCard extends PureComponent<Props> {
     render() {
         let vote = this.props.voteAndBallots.vote;
-        let ballot = this.state.ballot;
+        let ballot = this.props.voteAndBallots.ownBallot || createEmptyBallot(vote.type);
 
         let options: JSX.Element[] = [];
         for (let option of vote.options) {
@@ -113,7 +103,11 @@ class VoteCard extends Component<Props, State> {
                     vote.type,
                     vote.isActive,
                     ballot,
-                    (newBallot: Ballot) => this.setState({ ...this.state, ballot: newBallot })));
+                    (newBallot: Ballot) => {
+                        if (this.props.onBallotChanged) {
+                            this.props.onBallotChanged(newBallot);
+                        }
+                    }));
         }
 
         return <div className="VoteContainer">
