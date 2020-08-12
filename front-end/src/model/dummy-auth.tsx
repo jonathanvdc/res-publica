@@ -24,8 +24,8 @@ export class DummyAuthenticator implements Authenticator {
      * Creates an authentication page.
      */
     createAuthenticationPage(): JSX.Element {
-        return <div></div>;
+        return <div />;
     }
 
-    private deviceId: string;
+    public readonly deviceId: string;
 }
