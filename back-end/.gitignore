@@ -1,0 +1,5 @@
+# Ignore Python cruft.
+__pycache__/
+
+# Never commit server data.
+data/
