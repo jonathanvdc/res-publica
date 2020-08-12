@@ -70,3 +70,37 @@ export type VoteAndBallots = {
     /// A ballot cast by the user, if any.
     ownBallot?: Ballot;
 };
+
+/**
+ * Checks if a ballot is complete. Only complete ballots can be submitted.
+ * @param ballot A ballot to check.
+ * @param vote The vote to which the ballot belongs.
+ */
+export function isCompleteBallot(ballot: Ballot | undefined, vote: Vote): boolean {
+    if (!ballot) {
+        return false;
+    }
+
+    switch (vote.type.kind) {
+        case "choose-one":
+        {
+            let optionId = (ballot as ChooseOneBallot).selectedOptionId;
+            return vote.options.findIndex(x => x.id === optionId) !== -1;
+        }
+        case "rate-options":
+        {
+            let ratings = (ballot as RateOptionsBallot).ratingPerOption;
+            for (let { optionId } of ratings) {
+                if (vote.options.findIndex(x => x.id === optionId) === -1) {
+                    return false;
+                }
+            }
+            for (let { id } of vote.options) {
+                if (ratings.findIndex(x => x.optionId === id) === -1) {
+                    return false;
+                }
+            }
+            return true;
+        }
+    }
+}

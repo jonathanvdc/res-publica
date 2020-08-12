@@ -2,7 +2,7 @@ import React, { Component } from "react";
 import CheckIcon from '@material-ui/icons/Check';
 import { Button, Theme, withStyles } from "@material-ui/core";
 import { green } from "@material-ui/core/colors";
-import { VoteAndBallots, Ballot } from "../model/vote";
+import { VoteAndBallots, Ballot, isCompleteBallot } from "../model/vote";
 import VoteCard from "./vote-card";
 
 type Props = {
@@ -42,9 +42,10 @@ class VotePage extends Component<Props, State> {
             ...this.props.voteAndBallots,
             ownBallot: this.state.ballot
         };
+        let ballotReady = isCompleteBallot(this.state.ballot, this.props.voteAndBallots.vote);
         return <div>
             <VoteCard voteAndBallots={data} onBallotChanged={newBallot => this.setState({ ballot: newBallot })} />
-            <CheckButton variant="contained" className="SubmitVoteButton">
+            <CheckButton disabled={!ballotReady} variant="contained" className="SubmitVoteButton">
                 <CheckIcon fontSize="large" />
             </CheckButton>
         </div>;
