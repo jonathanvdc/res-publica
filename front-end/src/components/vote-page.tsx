@@ -2,11 +2,12 @@ import React, { Component } from "react";
 import CheckIcon from '@material-ui/icons/Check';
 import { Button, Theme, withStyles } from "@material-ui/core";
 import { green } from "@material-ui/core/colors";
-import { VoteAndBallots, Ballot, isCompleteBallot } from "../model/vote";
+import { VoteAndBallots, Ballot, isCompleteBallot, Vote } from "../model/vote";
 import VoteCard from "./vote-card";
 
 type Props = {
     voteAndBallots: VoteAndBallots;
+    onCastBallot?: (vote: Vote, ballot: Ballot) => void;
 };
 
 type State = {
@@ -37,6 +38,13 @@ class VotePage extends Component<Props, State> {
         };
     }
 
+    castBallot() {
+        let ballot = this.state.ballot!;
+        if (this.props.onCastBallot) {
+            this.props.onCastBallot(this.props.voteAndBallots.vote, ballot);
+        }
+    }
+
     render() {
         let data: VoteAndBallots = {
             ...this.props.voteAndBallots,
@@ -45,7 +53,7 @@ class VotePage extends Component<Props, State> {
         let ballotReady = isCompleteBallot(data.ownBallot, data.vote);
         return <div>
             <VoteCard voteAndBallots={data} onBallotChanged={newBallot => this.setState({ ballot: newBallot })} />
-            <CheckButton disabled={!ballotReady} variant="contained" className="SubmitVoteButton">
+            <CheckButton disabled={!ballotReady} variant="contained" className="SubmitVoteButton" onClick={this.castBallot.bind(this)} >
                 <CheckIcon fontSize="large" />
             </CheckButton>
         </div>;

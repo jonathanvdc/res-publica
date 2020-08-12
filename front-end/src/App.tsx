@@ -1,6 +1,6 @@
 import React, { Component, Suspense } from 'react';
 import './App.css';
-import { VoteAndBallots } from './model/vote';
+import { VoteAndBallots, Vote, Ballot } from './model/vote';
 import { Route, BrowserRouter } from 'react-router-dom';
 import { createMuiTheme, MuiThemeProvider } from '@material-ui/core/styles';
 import { green } from '@material-ui/core/colors';
@@ -49,8 +49,8 @@ class App extends FetchedStateComponent<{}, boolean> {
         <MuiThemeProvider theme={theme}>
           <header className="App-header">
             <Suspense fallback={<div>Loading...</div>}>
-              <Route exact={true} path="/" render={routeProps => <VoteListRoute {...routeProps} />} />
-              <Route path="/vote/:voteId" render={routeProps => <VoteRoute {...routeProps} />} />
+              <Route exact={true} path="/" component={VoteListRoute} />
+              <Route path="/vote/:voteId" component={VoteRoute} />
             </Suspense>
           </header>
         </MuiThemeProvider>
@@ -72,14 +72,19 @@ class VoteListRoute extends FetchedStateComponent<{ match: any }, VoteAndBallots
   }
 }
 
-class VoteRoute extends FetchedStateComponent<{ match: any }, VoteAndBallots | undefined> {
+class VoteRoute extends FetchedStateComponent<{ match: any, history: any }, VoteAndBallots | undefined> {
   fetchState(): Promise<VoteAndBallots | undefined> {
     return apiClient.getVote(this.props.match.params.voteId);
   }
 
+  onCastBallot(vote: Vote, ballot: Ballot) {
+    apiClient.castBallot(vote.id, ballot);
+    this.props.history.push('/');
+  }
+
   renderState(vote: VoteAndBallots | undefined): JSX.Element {
     if (vote) {
-      return <VotePage voteAndBallots={vote} />;
+      return <VotePage voteAndBallots={vote} onCastBallot={this.onCastBallot.bind(this)} />;
     } else {
       return <div>
         <h1>Error 404</h1>

@@ -1,7 +1,7 @@
 import { Authenticator } from "./auth";
 import { DummyAuthenticator } from "./dummy-auth";
 import { APIClient } from "./api-client";
-import { Vote, VoteAndBallots } from "./vote";
+import { Vote, VoteAndBallots, Ballot } from "./vote";
 
 /**
  * An API client that fakes all interactions with the server.
@@ -15,22 +15,39 @@ export class DummyAPIClient implements APIClient {
     }
 
     async getActiveVotes(): Promise<VoteAndBallots[]> {
-        return activeVotes.map(vote => ({ vote, ballots: [] }));
+        return this.activeVotes;
     }
 
     async getVote(id: string): Promise<VoteAndBallots | undefined> {
-        let vote = activeVotes.find(x => x.id === id);
+        let vote = this.activeVotes.find(x => x.vote.id === id);
         if (vote) {
-            return {
-                vote,
-                ballots: []
-            };
+            return vote;
         } else {
             return undefined;
         }
     }
 
+    async castBallot(voteId: string, ballot: Ballot): Promise<{ ballotId: string; } | { error: string; }> {
+        let vote = await this.getVote(voteId);
+        if (!vote) {
+            return { error: `vote with ID ${voteId} does not exist.` };
+        }
+
+        vote.ownBallot = ballot;
+        return { ballotId: voteId + "/ballot" };
+    }
+
     private auth = new DummyAuthenticator();
+    private activeVotes = [
+        {
+            vote: mockVoteAndBallots,
+            ballots: []
+        },
+        {
+            vote: mockVoteAndBallots2,
+            ballots: []
+        }
+    ];
 }
 
 let mockVoteAndBallots: Vote = {
@@ -72,5 +89,3 @@ let mockVoteAndBallots2: Vote = {
         }
     ]
 };
-
-let activeVotes = [mockVoteAndBallots, mockVoteAndBallots2];
