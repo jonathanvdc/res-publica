@@ -8,7 +8,8 @@ import { createMuiTheme, MuiThemeProvider } from '@material-ui/core/styles';
 import { green } from '@material-ui/core/colors';
 import VoteList from './components/vote-list';
 import { Typography } from '@material-ui/core';
-import AuthPage, { getUserId } from './components/auth-page';
+import { RedditAuthenticator } from './model/reddit-auth';
+import ErrorPage from './components/error-page';
 
 let mockVoteAndBallots: VoteAndBallots = {
   vote: {
@@ -63,10 +64,6 @@ let activeVotes = [mockVoteAndBallots, mockVoteAndBallots2];
 
 let currentSeasons: string[] = [];
 
-function getMainClass(): string {
-  return ["App", ...currentSeasons].join(" ");
-}
-
 const theme = createMuiTheme({
   palette: {
     primary: {
@@ -76,38 +73,71 @@ const theme = createMuiTheme({
   },
 });
 
-function App() {
-  let userId = getUserId();
+const authenticator = new RedditAuthenticator();
 
-  if (!userId) {
-    // If we aren't logged in yet, then we'll send the user to
-    // an authentication page.
-    return <div className={getMainClass()}>
-      <header className="App-header">
-        <AuthPage />
-      </header>
-    </div>;
+class App extends Component<{}, { hasConnected: boolean, isAuthenticated: boolean, error?: any }> {
+  constructor(props: {}) {
+    super(props);
+    this.state = {
+      hasConnected: false,
+      isAuthenticated: false
+    };
   }
 
-  return <BrowserRouter>
-    <div className={getMainClass()}>
-      <MuiThemeProvider theme={theme}>
-        {/* <div className="App-body">
-          <Suspense fallback={<div>Loading...</div>}>
-            <Route exact={true} path="/" render={routeProps => <FilterableSpellbook key="spellbook" spells={this.state.allSpells}/>} />
-            <Route path="/spell/:spellId" render={routeProps => <SpellRoute {...routeProps} allSpells={this.state.allSpells}/>} />
-            <Route path="/linter" render={routeProps => <LinterRoute {...routeProps} allSpells={this.state.allSpells}/>} />
-          </Suspense>
-        </div> */}
+  componentDidMount() {
+    // Check if we're authenticated. Update state accordingly.
+    // TODO: handle network errors.
+    authenticator.isAuthenticated()
+      .then(
+        val => this.setState({ hasConnected: true, isAuthenticated: val }),
+        reason => this.setState({ hasConnected: false, isAuthenticated: false, error: reason }));
+  }
+
+  getMainClass(): string {
+    return ["App", ...currentSeasons].join(" ");
+  }
+
+  render() {
+    if (!this.state.hasConnected) {
+      return <div className={this.getMainClass()}>
         <header className="App-header">
-          <Suspense fallback={<div>Loading...</div>}>
-            <Route exact={true} path="/" render={routeProps => <VoteListRoute {...routeProps} allVotes={activeVotes} />} />
-            <Route path="/vote/:voteId" render={routeProps => <VoteRoute {...routeProps} allVotes={activeVotes} />} />
-          </Suspense>
+          {this.state.error
+            ? <ErrorPage error={this.state.error} />
+            : []}
         </header>
-      </MuiThemeProvider>
-    </div>
-  </BrowserRouter>;
+      </div>;
+    }
+
+    if (!this.state.isAuthenticated) {
+      // If we aren't logged in yet, then we'll send the user to
+      // an authentication page.
+      return <div className={this.getMainClass()}>
+        <header className="App-header">
+          {authenticator.createAuthenticationPage()}
+        </header>
+      </div>;
+    }
+
+    return <BrowserRouter>
+      <div className={this.getMainClass()}>
+        <MuiThemeProvider theme={theme}>
+          {/* <div className="App-body">
+            <Suspense fallback={<div>Loading...</div>}>
+              <Route exact={true} path="/" render={routeProps => <FilterableSpellbook key="spellbook" spells={this.state.allSpells}/>} />
+              <Route path="/spell/:spellId" render={routeProps => <SpellRoute {...routeProps} allSpells={this.state.allSpells}/>} />
+              <Route path="/linter" render={routeProps => <LinterRoute {...routeProps} allSpells={this.state.allSpells}/>} />
+            </Suspense>
+          </div> */}
+          <header className="App-header">
+            <Suspense fallback={<div>Loading...</div>}>
+              <Route exact={true} path="/" render={routeProps => <VoteListRoute {...routeProps} allVotes={activeVotes} />} />
+              <Route path="/vote/:voteId" render={routeProps => <VoteRoute {...routeProps} allVotes={activeVotes} />} />
+            </Suspense>
+          </header>
+        </MuiThemeProvider>
+      </div>
+    </BrowserRouter>;
+  }
 }
 
 class VoteListRoute extends Component<{ match: any, allVotes: VoteAndBallots[] }, any> {

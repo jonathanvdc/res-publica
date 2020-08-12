@@ -38,7 +38,6 @@ def process_auth():
 
     # Check that the state is alright.
     state = request.args.get('state')
-    print(state)
     if not state:
         return redirect(f'auth-failed?error=no-state')
     elif ';' not in state:
@@ -54,7 +53,6 @@ def process_auth():
     username = reddit.user.me().name
 
     # Associate the device ID with the username.
-    device_id = state
     device_id_map[username].add(device_id)
     device_id_ages[device_id] = time.gmtime()
 
