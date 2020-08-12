@@ -42,7 +42,7 @@ class VotePage extends Component<Props, State> {
             ...this.props.voteAndBallots,
             ownBallot: this.state.ballot
         };
-        let ballotReady = isCompleteBallot(this.state.ballot, this.props.voteAndBallots.vote);
+        let ballotReady = isCompleteBallot(data.ownBallot, data.vote);
         return <div>
             <VoteCard voteAndBallots={data} onBallotChanged={newBallot => this.setState({ ballot: newBallot })} />
             <CheckButton disabled={!ballotReady} variant="contained" className="SubmitVoteButton">

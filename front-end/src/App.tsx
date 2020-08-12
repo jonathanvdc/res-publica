@@ -6,8 +6,7 @@ import { createMuiTheme, MuiThemeProvider } from '@material-ui/core/styles';
 import { green } from '@material-ui/core/colors';
 import VoteList from './components/vote-list';
 import { Typography } from '@material-ui/core';
-import { RedditAuthenticator } from './model/reddit-auth';
-import { DummyAuthenticator } from './model/dummy-auth';
+import { DummyAPIClient } from './model/dummy-api-client';
 import ErrorPage from './components/error-page';
 import VotePage from './components/vote-page';
 
@@ -73,7 +72,8 @@ const theme = createMuiTheme({
   },
 });
 
-const authenticator = new DummyAuthenticator();
+const apiClient = new DummyAPIClient();
+const authenticator = apiClient.getAuthenticator();
 
 class App extends Component<{}, { hasConnected: boolean, isAuthenticated: boolean, error?: any }> {
   constructor(props: {}) {
