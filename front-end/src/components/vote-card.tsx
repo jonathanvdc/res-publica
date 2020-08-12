@@ -9,6 +9,7 @@ import './vote-card.css';
 
 type Props = {
     voteAndBallots: VoteAndBallots;
+    allowChanges?: boolean;
     onBallotChanged?: (newBallot: Ballot) => void;
 };
 
@@ -48,7 +49,7 @@ const StyledToggleButtonGroup = withStyles((theme) => ({
 function renderVoteOption(
     option: VoteOption,
     ballotType: BallotType,
-    isActive: boolean,
+    allowChanges: boolean,
     ballot: Ballot | undefined,
     changeBallot: (newBallot: Ballot) => void) {
 
@@ -58,7 +59,7 @@ function renderVoteOption(
             let ratingOrNull = optionBallot.ratingPerOption.find(val => val.optionId === option.id);
             let buttons = [];
             for (let i = ballotType.min; i <= ballotType.max; i++) {
-                buttons.push(<ToggleButton disabled={!isActive} value={i}>{i}</ToggleButton>);
+                buttons.push(<ToggleButton disabled={!allowChanges} value={i}>{i}</ToggleButton>);
             }
             return <Paper elevation={1} className="VotePanel">
                 <div className="VotePanelContents">
@@ -78,7 +79,7 @@ function renderVoteOption(
         case "choose-one":
             let isSelected = ballot && (ballot as ChooseOneBallot).selectedOptionId === option.id;
             return <Paper elevation={1} className={isSelected ? "VotePanel SelectedVotePanel" : "VotePanel"}>
-                <ButtonBase className="VotePanelButton" focusRipple disabled={!isActive} onClick={() => changeBallot({ selectedOptionId: option.id })}>
+                <ButtonBase className="VotePanelButton" focusRipple disabled={!allowChanges} onClick={() => changeBallot({ selectedOptionId: option.id })}>
                     <div className="VotePanelContents">
                         {renderVoteOptionDescription(option)}
                     </div>
@@ -101,7 +102,7 @@ class VoteCard extends PureComponent<Props> {
                 renderVoteOption(
                     option,
                     vote.type,
-                    vote.isActive,
+                    this.props.allowChanges === undefined ? vote.isActive : this.props.allowChanges,
                     ballot,
                     (newBallot: Ballot) => {
                         if (this.props.onBallotChanged) {

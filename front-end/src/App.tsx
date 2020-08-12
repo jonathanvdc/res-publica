@@ -75,16 +75,18 @@ class VoteListRoute extends FetchedStateComponent<{ match: any }, VoteAndBallots
 
 type VoteRouteState = {
   vote?: VoteAndBallots;
+  ballotCast?: boolean;
   ballotId?: string;
 };
 
 class VoteRoute extends FetchedStateComponent<{ match: any, history: any }, VoteRouteState> {
   async fetchState(): Promise<VoteRouteState> {
     let data = await apiClient.getVote(this.props.match.params.voteId);
-    return { vote: data };
+    return { vote: data, ballotCast: false };
   }
 
   async onCastBallot(vote: Vote, ballot: Ballot) {
+    this.setState({ hasConnected: true, data: { ...this.state.data, ballotCast: true } });
     let response = await apiClient.castBallot(vote.id, ballot);
     if ('error' in response) {
       this.setState({ hasConnected: true, error: response.error });
@@ -102,7 +104,7 @@ class VoteRoute extends FetchedStateComponent<{ match: any, history: any }, Vote
     }
 
     if (data.vote) {
-      return <VotePage voteAndBallots={data.vote} onCastBallot={this.onCastBallot.bind(this)} />;
+      return <VotePage voteAndBallots={data.vote} ballotCast={data.ballotCast} onCastBallot={this.onCastBallot.bind(this)} />;
     } else {
       return <VoteConfirmationPage ballotId={data.ballotId!} />;
     }
