@@ -1,7 +1,7 @@
 import React, { PureComponent } from "react";
 import CheckIcon from '@material-ui/icons/Check';
 import { Link } from "react-router-dom";
-import { VoteAndBallots } from "../model/vote";
+import { VoteAndBallots, isActive } from "../model/vote";
 import './vote-list.css';
 import { Button } from "@material-ui/core";
 
@@ -22,7 +22,7 @@ class VoteList extends PureComponent<Props> {
         for (let vote of this.props.votes) {
             elements.push(
                 <Link className="VoteLink" to={createVoteLink(vote.vote.id)}>
-                    <Button className="VoteButton" variant={vote.vote.isActive ? "contained" : "outlined"} color="primary">
+                    <Button className="VoteButton" variant={isActive(vote.vote) ? "contained" : "outlined"} color="primary">
                         <div className="VoteButtonText">{vote.vote.name}</div>
                         <div className="CompletedVoteIndicator">{vote.ownBallot ? <CheckIcon /> : []}</div>
                     </Button>

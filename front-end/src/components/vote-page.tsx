@@ -2,7 +2,7 @@ import React, { Component } from "react";
 import CheckIcon from '@material-ui/icons/Check';
 import { Button, Theme, withStyles, CircularProgress } from "@material-ui/core";
 import { green } from "@material-ui/core/colors";
-import { VoteAndBallots, Ballot, isCompleteBallot, Vote } from "../model/vote";
+import { VoteAndBallots, Ballot, isCompleteBallot, Vote, isActive } from "../model/vote";
 import VoteCard from "./vote-card";
 import "./vote-page.css";
 
@@ -51,6 +51,7 @@ class VotePage extends Component<Props, State> {
             ...this.props.voteAndBallots,
             ownBallot: this.state.ballot
         };
+        let allowChanges = !this.props.ballotCast && isActive(this.props.voteAndBallots.vote);
         let canCast = !this.props.ballotCast && isCompleteBallot(data.ownBallot, data.vote);
         let buttonOrProgress: JSX.Element;
         if (this.props.ballotCast) {
@@ -61,7 +62,7 @@ class VotePage extends Component<Props, State> {
             </CheckButton>;
         }
         return <div>
-            <VoteCard voteAndBallots={data} allowBallotChanges={!this.props.ballotCast} onBallotChanged={newBallot => this.setState({ ballot: newBallot })} />
+            <VoteCard voteAndBallots={data} allowBallotChanges={allowChanges} onBallotChanged={newBallot => this.setState({ ballot: newBallot })} />
             <div className="ButtonOrProgressPanel">{buttonOrProgress}</div>
         </div>;
     }

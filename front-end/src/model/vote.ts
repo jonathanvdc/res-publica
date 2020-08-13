@@ -76,7 +76,7 @@ export type VoteAndBallots = {
  * Tells if a vote is still active.
  */
 export function isActive(vote: Vote): boolean {
-    return vote.deadline < Date.now();
+    return vote.deadline > Date.now();
 }
 
 /**
