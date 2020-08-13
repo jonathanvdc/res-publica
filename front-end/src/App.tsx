@@ -10,6 +10,7 @@ import { DummyAPIClient } from './model/dummy-api-client';
 import VotePage from './components/vote-page';
 import { FetchedStateComponent } from './components/fetched-state-component';
 import VoteConfirmationPage from './components/vote-confirmation-page';
+import { ServerAPIClient } from './model/server-api-client';
 
 let currentSeasons: string[] = [];
 
@@ -22,7 +23,7 @@ const theme = createMuiTheme({
   },
 });
 
-const apiClient = new DummyAPIClient();
+const apiClient = new ServerAPIClient();
 const authenticator = apiClient.authenticator;
 
 class App extends FetchedStateComponent<{}, boolean> {

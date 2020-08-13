@@ -97,7 +97,7 @@ def read_or_create_vote_index(path: str) -> VoteIndex:
         vote_secrets = read_json(path)
     except FileNotFoundError:
         Path(path).parent.mkdir(parents=True, exist_ok=True)
-        return VoteIndex(path, [], {})
+        return VoteIndex(path, {}, {})
 
     votes = {
         vote_id: read_json(vote_id_to_path(path, vote_id))

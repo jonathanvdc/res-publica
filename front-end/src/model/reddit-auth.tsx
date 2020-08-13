@@ -38,7 +38,7 @@ export class RedditAuthenticator implements Authenticator {
         return <RedditAuthPage clientId={this.clientId} redirectUrl={this.redirectUrl} deviceId={this.deviceId} />;
     }
 
-    private deviceId: string;
+    public readonly deviceId: string;
     private clientId: string;
     private redirectUrl: string;
 }
