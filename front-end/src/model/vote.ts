@@ -49,11 +49,13 @@ export type Vote = {
 
 /// A ballot for a multiple choice vote.
 export type ChooseOneBallot = {
+    id?: string;
     selectedOptionId: string;
 };
 
 /// A ballot for a vote where a user gets to rate options.
 export type RateOptionsBallot = {
+    id?: string;
     ratingPerOption: { optionId: string, rating: number }[];
 };
 
@@ -76,7 +78,7 @@ export type VoteAndBallots = {
  * Tells if a vote is still active.
  */
 export function isActive(vote: Vote): boolean {
-    return vote.deadline > Date.now();
+    return vote.deadline * 1000 > Date.now();
 }
 
 /**

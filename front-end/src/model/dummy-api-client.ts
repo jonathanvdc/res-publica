@@ -58,7 +58,7 @@ let mockVoteAndBallots: Vote = {
     id: "mock-vote",
     name: "24th Ballot Initiative",
     description: "We will now vote on **something.**",
-    deadline: Date.now() + 1000 * 60 * 60 * 24,
+    deadline: (Date.now() + 1000 * 60 * 60 * 24) / 1000,
     type: { kind: "choose-one" },
     options: [
         {
@@ -78,7 +78,7 @@ let mockVoteAndBallots2: Vote = {
     id: "mock-vote-2",
     name: "44th Presidential Election",
     description: "We will now vote on **something.**",
-    deadline: Date.now() + 1000 * 60 * 60 * 24,
+    deadline: (Date.now() + 1000 * 60 * 60 * 24) / 1000,
     type: { kind: "rate-options", min: 1, max: 5 },
     options: [
         {

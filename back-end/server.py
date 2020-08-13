@@ -3,10 +3,10 @@
 import sys
 import praw
 from collections import defaultdict
-from Crypto.Hash import SHA3_256
-from flask import Flask, request, redirect, send_from_directory, jsonify
+from flask import Flask, request, redirect, send_from_directory, jsonify, abort
 from werkzeug.exceptions import NotFound
-from authentication import read_or_create_device_index
+from authentication import read_or_create_device_index, RegisteredDevice
+from votes import read_or_create_vote_index
 from helpers import read_json
 
 if __name__ == "__main__":
@@ -14,11 +14,50 @@ if __name__ == "__main__":
     app = Flask(__name__, static_folder='../front-end/build')
 
     device_index = read_or_create_device_index('data/device-index.json')
+    vote_index = read_or_create_vote_index('data/vote-index.json')
+
+    def authenticate(req) -> RegisteredDevice:
+        device_id = req.args.get('deviceId')
+        return device_index.devices.get(device_id)
+
+    @app.route('/api/active-votes')
+    def get_active_votes():
+        """Gets all currently active votes."""
+        device = authenticate(request)
+        if not device:
+            abort(403)
+
+        return jsonify(vote_index.get_active_votes(device))
+
+    @app.route('/api/all-votes')
+    def get_all_votes():
+        """Gets all votes."""
+        return jsonify([vote['vote'] for vote in vote_index.votes])
+
+    @app.route('/api/vote')
+    def get_vote():
+        """Gets a specific vote."""
+        device = authenticate(request)
+        if not device:
+            abort(403)
+
+        return jsonify(vote_index.get_vote(request.args.get('voteId'), device))
+
+    @app.route('/api/cast-ballot', methods=['POST'])
+    def cast_ballot():
+        """Receives a cast ballot."""
+        device = authenticate(request)
+        if not device:
+            abort(403)
+
+        ballot = request.json()
+        return jsonify({
+            'ballotId': vote_index.cast_ballot(request.args.get('voteId'), ballot, device)
+        })
 
     @app.route('/api/is-authenticated')
     def check_is_authenticated():
-        deviceId = request.args.get('deviceId')
-        return jsonify(deviceId in device_index.devices)
+        return jsonify(authenticate(request) is not None)
 
     @app.route('/reddit-auth')
     def process_auth():
