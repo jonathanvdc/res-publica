@@ -35,9 +35,10 @@ export type Vote = {
     /// A markdown description of what this vote is about.
     description: string;
 
-    /// Tells if the vote is active. Active votes may be voted on,
-    /// inactive votes are historical.
-    isActive: boolean;
+    /**
+     * The point at which the vote started.
+     */
+    deadline: number;
 
     /// The vote's type.
     type: BallotType;
@@ -70,6 +71,13 @@ export type VoteAndBallots = {
     /// A ballot cast by the user, if any.
     ownBallot?: Ballot;
 };
+
+/**
+ * Tells if a vote is still active.
+ */
+export function isActive(vote: Vote): boolean {
+    return vote.deadline < Date.now();
+}
 
 /**
  * Checks if a ballot is complete. Only complete ballots can be submitted.

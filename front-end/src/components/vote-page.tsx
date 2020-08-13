@@ -61,7 +61,7 @@ class VotePage extends Component<Props, State> {
             </CheckButton>;
         }
         return <div>
-            <VoteCard voteAndBallots={data} allowChanges={!this.props.ballotCast} onBallotChanged={newBallot => this.setState({ ballot: newBallot })} />
+            <VoteCard voteAndBallots={data} allowBallotChanges={!this.props.ballotCast} onBallotChanged={newBallot => this.setState({ ballot: newBallot })} />
             <div className="ButtonOrProgressPanel">{buttonOrProgress}</div>
         </div>;
     }

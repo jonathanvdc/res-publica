@@ -1,5 +1,5 @@
 import React, { PureComponent } from "react";
-import { VoteAndBallots, Ballot, BallotType, VoteOption, RateOptionsBallot, ChooseOneBallot } from "../model/vote";
+import { VoteAndBallots, Ballot, BallotType, VoteOption, RateOptionsBallot, ChooseOneBallot, isActive } from "../model/vote";
 import ReactMarkdown from "react-markdown";
 import Typography from '@material-ui/core/Typography';
 import { Paper, withStyles, ButtonBase } from "@material-ui/core";
@@ -9,7 +9,7 @@ import './vote-card.css';
 
 type Props = {
     voteAndBallots: VoteAndBallots;
-    allowChanges?: boolean;
+    allowBallotChanges?: boolean;
     onBallotChanged?: (newBallot: Ballot) => void;
 };
 
@@ -102,7 +102,7 @@ class VoteCard extends PureComponent<Props> {
                 renderVoteOption(
                     option,
                     vote.type,
-                    this.props.allowChanges === undefined ? vote.isActive : this.props.allowChanges,
+                    this.props.allowBallotChanges === undefined ? isActive(vote) : this.props.allowBallotChanges,
                     ballot,
                     (newBallot: Ballot) => {
                         if (this.props.onBallotChanged) {
