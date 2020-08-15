@@ -1,8 +1,8 @@
 import React, { PureComponent } from "react";
-import { VoteAndBallots, Ballot, BallotType, VoteOption, RateOptionsBallot, ChooseOneBallot, isActive } from "../model/vote";
+import { VoteAndBallots, Ballot, BallotType, VoteOption, RateOptionsBallot, ChooseOneBallot, isActive, Vote } from "../model/vote";
 import ReactMarkdown from "react-markdown";
 import Typography from '@material-ui/core/Typography';
-import { Paper, withStyles, ButtonBase } from "@material-ui/core";
+import { Paper, withStyles, ButtonBase, TextField } from "@material-ui/core";
 import ToggleButton from "@material-ui/lab/ToggleButton";
 import ToggleButtonGroup from '@material-ui/lab/ToggleButtonGroup';
 import MDEditor from '@uiw/react-md-editor';
@@ -13,6 +13,7 @@ type Props = {
     allowVoteChanges?: boolean;
     allowBallotChanges?: boolean;
     onBallotChanged?: (newBallot: Ballot) => void;
+    onVoteChanged?: (newVote: Vote) => void;
 };
 
 function createEmptyBallot(type: BallotType): Ballot | undefined {
@@ -21,6 +22,31 @@ function createEmptyBallot(type: BallotType): Ballot | undefined {
             return undefined;
         case "rate-options":
             return { ratingPerOption: [] };
+    }
+}
+
+const TitleTextField = withStyles({
+    root: {
+        "& .MuiInputBase-root": {
+            color: "white",
+            fontSize: "xx-large"
+        },
+        "& .MuiFormLabel-root": {
+            color: "gray"
+        }
+    }
+})(TextField);
+
+function createTitleEditorOrPreview(
+    source: string,
+    variant: "h2" | "h3",
+    allowEdits: boolean,
+    onChange: (newValue: string) => void): JSX.Element {
+
+    if (allowEdits) {
+        return <TitleTextField onChange={val => onChange(val.target.value)} value={source} />;
+    } else {
+        return <Typography variant={variant} className="VoteOption">{source}</Typography>;
     }
 }
 
@@ -45,10 +71,22 @@ function createMDEditorOrPreview(
     }
 }
 
-function renderVoteOptionDescription(option: VoteOption, allowVoteChanges: boolean, onChange: (newValue: string) => void) {
+function renderVoteOptionDescription(
+    option: VoteOption,
+    allowVoteChanges: boolean,
+    onChange: (newOption: VoteOption) => void) {
     return [
-        <Typography variant="h3" className="VoteOption">{option.name}</Typography>,
-        createMDEditorOrPreview(option.description, "VoteOptionDescription", allowVoteChanges, onChange)
+        createTitleEditorOrPreview(
+            option.name,
+            "h3",
+            allowVoteChanges,
+            title => onChange({ ...option, name: title })),
+
+        createMDEditorOrPreview(
+            option.description,
+            "VoteOptionDescription",
+            allowVoteChanges,
+            description => onChange({ ...option, description }))
     ];
 }
 
@@ -71,7 +109,8 @@ function renderVoteOption(
     allowVoteChanges: boolean,
     allowBallotChanges: boolean,
     ballot: Ballot | undefined,
-    changeBallot: (newBallot: Ballot) => void) {
+    changeBallot: (newBallot: Ballot) => void,
+    changeOption: (newOption: VoteOption) => void) {
 
     switch (ballotType.kind) {
         case "rate-options":
@@ -83,7 +122,10 @@ function renderVoteOption(
             }
             return <Paper elevation={1} className="VotePanel">
                 <div className="VotePanelContents">
-                    {renderVoteOptionDescription(option, allowVoteChanges, newValue => option.description = newValue)}
+                    {renderVoteOptionDescription(
+                        option,
+                        allowVoteChanges,
+                        changeOption)}
                     <StyledToggleButtonGroup
                         value={ratingOrNull ? ratingOrNull.rating : null}
                         exclusive
@@ -101,7 +143,10 @@ function renderVoteOption(
             return <Paper elevation={1} className={isSelected ? "VotePanel SelectedVotePanel" : "VotePanel"}>
                 <ButtonBase className="VotePanelButton" focusRipple disabled={!allowBallotChanges} onClick={() => changeBallot({ selectedOptionId: option.id })}>
                     <div className="VotePanelContents">
-                        {renderVoteOptionDescription(option, allowVoteChanges, newValue => option.description = newValue)}
+                        {renderVoteOptionDescription(
+                            option,
+                            allowVoteChanges,
+                            changeOption)}
                     </div>
                 </ButtonBase>
             </Paper>;
@@ -129,13 +174,35 @@ class VoteCard extends PureComponent<Props> {
                         if (this.props.onBallotChanged) {
                             this.props.onBallotChanged(newBallot);
                         }
+                    },
+                    (newOption: VoteOption) => {
+                        if (this.props.onVoteChanged) {
+                            this.props.onVoteChanged({
+                                ...vote,
+                                options: [...vote.options.filter(opt => opt.id !== option.id), newOption]
+                            });
+                        }
                     }));
         }
 
         return <div className="VoteContainer">
             <div className="VotePanelContents">
-                <Typography variant="h2">{vote.name}</Typography>
-                {createMDEditorOrPreview(vote.description, "VoteDescription", !!this.props.allowVoteChanges, newDesc => vote.description = newDesc)}
+                {createTitleEditorOrPreview(vote.name, "h2", !!this.props.allowVoteChanges, name => {
+                    if (this.props.onVoteChanged) {
+                        this.props.onVoteChanged({
+                            ...vote,
+                            name
+                        });
+                    }
+                })}
+                {createMDEditorOrPreview(vote.description, "VoteDescription", !!this.props.allowVoteChanges, description => {
+                    if (this.props.onVoteChanged) {
+                        this.props.onVoteChanged({
+                            ...vote,
+                            description
+                        });
+                    }
+                })}
             </div>
             {options}
         </div>;

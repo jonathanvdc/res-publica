@@ -29,7 +29,11 @@ class MakeVotePage extends Component<Props, State> {
     }
 
     render() {
-        return <VoteCard allowVoteChanges={true} allowBallotChanges={false} voteAndBallots={{ vote: this.state.vote, ballots: [] }} />;
+        return <VoteCard
+            allowVoteChanges={true}
+            allowBallotChanges={false}
+            voteAndBallots={{ vote: this.state.vote, ballots: [] }}
+            onVoteChanged={vote => this.setState({ ...this.state, vote })} />;
     }
 }
 
