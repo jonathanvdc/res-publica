@@ -5,10 +5,12 @@ import Typography from '@material-ui/core/Typography';
 import { Paper, withStyles, ButtonBase } from "@material-ui/core";
 import ToggleButton from "@material-ui/lab/ToggleButton";
 import ToggleButtonGroup from '@material-ui/lab/ToggleButtonGroup';
+import MDEditor from '@uiw/react-md-editor';
 import './vote-card.css';
 
 type Props = {
     voteAndBallots: VoteAndBallots;
+    allowVoteChanges?: boolean;
     allowBallotChanges?: boolean;
     onBallotChanged?: (newBallot: Ballot) => void;
 };
@@ -22,14 +24,31 @@ function createEmptyBallot(type: BallotType): Ballot | undefined {
     }
 }
 
-function renderVoteOptionDescription(option: VoteOption) {
+function createMDEditorOrPreview(
+    source: string,
+    className: string,
+    allowEdits: boolean,
+    onChange: (newValue: string) => void): JSX.Element {
+
+    if (allowEdits) {
+        return <MDEditor
+            className={className}
+            onChange={val => onChange(val || "")}
+            value={source}
+            previewOptions={{escapeHtml: false, unwrapDisallowed: true}} />;
+    } else {
+        return <ReactMarkdown
+            className={className}
+            source={source}
+            escapeHtml={false}
+            unwrapDisallowed={true} />;
+    }
+}
+
+function renderVoteOptionDescription(option: VoteOption, allowVoteChanges: boolean, onChange: (newValue: string) => void) {
     return [
         <Typography variant="h3" className="VoteOption">{option.name}</Typography>,
-        <ReactMarkdown
-            className="VoteOptionDescription"
-            source={option.description}
-            escapeHtml={false}
-            unwrapDisallowed={true} />
+        createMDEditorOrPreview(option.description, "VoteOptionDescription", allowVoteChanges, onChange)
     ];
 }
 
@@ -49,7 +68,8 @@ const StyledToggleButtonGroup = withStyles((theme) => ({
 function renderVoteOption(
     option: VoteOption,
     ballotType: BallotType,
-    allowChanges: boolean,
+    allowVoteChanges: boolean,
+    allowBallotChanges: boolean,
     ballot: Ballot | undefined,
     changeBallot: (newBallot: Ballot) => void) {
 
@@ -59,11 +79,11 @@ function renderVoteOption(
             let ratingOrNull = optionBallot.ratingPerOption.find(val => val.optionId === option.id);
             let buttons = [];
             for (let i = ballotType.min; i <= ballotType.max; i++) {
-                buttons.push(<ToggleButton disabled={!allowChanges} value={i}>{i}</ToggleButton>);
+                buttons.push(<ToggleButton disabled={!allowBallotChanges} value={i}>{i}</ToggleButton>);
             }
             return <Paper elevation={1} className="VotePanel">
                 <div className="VotePanelContents">
-                    {renderVoteOptionDescription(option)}
+                    {renderVoteOptionDescription(option, allowVoteChanges, newValue => option.description = newValue)}
                     <StyledToggleButtonGroup
                         value={ratingOrNull ? ratingOrNull.rating : null}
                         exclusive
@@ -79,9 +99,9 @@ function renderVoteOption(
         case "choose-one":
             let isSelected = ballot && (ballot as ChooseOneBallot).selectedOptionId === option.id;
             return <Paper elevation={1} className={isSelected ? "VotePanel SelectedVotePanel" : "VotePanel"}>
-                <ButtonBase className="VotePanelButton" focusRipple disabled={!allowChanges} onClick={() => changeBallot({ selectedOptionId: option.id })}>
+                <ButtonBase className="VotePanelButton" focusRipple disabled={!allowBallotChanges} onClick={() => changeBallot({ selectedOptionId: option.id })}>
                     <div className="VotePanelContents">
-                        {renderVoteOptionDescription(option)}
+                        {renderVoteOptionDescription(option, allowVoteChanges, newValue => option.description = newValue)}
                     </div>
                 </ButtonBase>
             </Paper>;
@@ -102,6 +122,7 @@ class VoteCard extends PureComponent<Props> {
                 renderVoteOption(
                     option,
                     vote.type,
+                    !!this.props.allowVoteChanges,
                     this.props.allowBallotChanges === undefined ? isActive(vote) : this.props.allowBallotChanges,
                     ballot,
                     (newBallot: Ballot) => {
@@ -114,11 +135,7 @@ class VoteCard extends PureComponent<Props> {
         return <div className="VoteContainer">
             <div className="VotePanelContents">
                 <Typography variant="h2">{vote.name}</Typography>
-                <ReactMarkdown
-                    className="VoteDescription"
-                    source={vote.description}
-                    escapeHtml={false}
-                    unwrapDisallowed={true} />
+                {createMDEditorOrPreview(vote.description, "VoteDescription", !!this.props.allowVoteChanges, newDesc => vote.description = newDesc)}
             </div>
             {options}
         </div>;

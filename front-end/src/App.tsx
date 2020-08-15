@@ -11,6 +11,7 @@ import VotePage from './components/vote-page';
 import { FetchedStateComponent } from './components/fetched-state-component';
 import VoteConfirmationPage from './components/vote-confirmation-page';
 import { ServerAPIClient } from './model/server-api-client';
+import MakeVotePage from './components/make-vote-page';
 
 let currentSeasons: string[] = [];
 
@@ -23,7 +24,7 @@ const theme = createMuiTheme({
   },
 });
 
-const apiClient = new ServerAPIClient();
+const apiClient = new DummyAPIClient();
 const authenticator = apiClient.authenticator;
 
 class App extends FetchedStateComponent<{}, boolean> {
@@ -53,6 +54,7 @@ class App extends FetchedStateComponent<{}, boolean> {
             <Suspense fallback={<div>Loading...</div>}>
               <Route exact={true} path="/" component={VoteListRoute} />
               <Route path="/vote/:voteId" component={VoteRoute} />
+              <Route path="/admin/make-vote" component={MakeVotePage} />
             </Suspense>
           </header>
         </MuiThemeProvider>
