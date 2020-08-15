@@ -8,6 +8,7 @@ from werkzeug.exceptions import NotFound
 from authentication import read_or_create_device_index, RegisteredDevice
 from votes import read_or_create_vote_index
 from helpers import read_json
+from scrape import scrape_cfc
 
 if __name__ == "__main__":
     config = read_json(sys.argv[1])
@@ -55,6 +56,18 @@ if __name__ == "__main__":
             'ballotId': vote_index.cast_ballot(request.args.get('voteId'), ballot, device)
         })
 
+    @app.route('/api/admin/scrape-cfc')
+    def process_scrape_cfc():
+        """Scrapes a Reddit CFC."""
+        device = authenticate(request)
+        if not device:
+            abort(403)
+
+        return jsonify(
+            scrape_cfc(
+                praw.Reddit(**config['bot-config']),
+                request.args.get('url')))
+
     @app.route('/api/is-authenticated')
     def check_is_authenticated():
         return jsonify(authenticate(request) is not None)
@@ -81,7 +94,7 @@ if __name__ == "__main__":
         device_id, return_url = state.split(';', maxsplit=2)
 
         # Log in with Reddit.
-        reddit = praw.Reddit(**config)
+        reddit = praw.Reddit(**config['webapp-credentials'])
         reddit.auth.authorize(code)
 
         # Associate the device ID with the Redditor's username.

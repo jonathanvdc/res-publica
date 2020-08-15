@@ -1,7 +1,7 @@
 import { Authenticator } from "./auth";
 import { DummyAuthenticator } from "./dummy-auth";
-import { APIClient } from "./api-client";
-import { Vote, VoteAndBallots, Ballot } from "./vote";
+import { APIClient, AdminAPIClient } from "./api-client";
+import { Vote, VoteAndBallots, Ballot, VoteOption } from "./vote";
 
 /**
  * An API client that fakes all interactions with the server.
@@ -13,6 +13,8 @@ export class DummyAPIClient implements APIClient {
     get authenticator(): Authenticator {
         return this.auth;
     }
+
+    readonly admin = new DummyAdminAPIClient();
 
     async getActiveVotes(): Promise<VoteAndBallots[]> {
         return this.activeVotes;
@@ -53,6 +55,13 @@ export class DummyAPIClient implements APIClient {
         }
     ];
 }
+
+class DummyAdminAPIClient implements AdminAPIClient {
+    async scrapeCfc(url: string): Promise<VoteOption[]> {
+        return mockVoteAndBallots2.options;
+    }
+}
+
 
 let mockVoteAndBallots: Vote = {
     id: "mock-vote",

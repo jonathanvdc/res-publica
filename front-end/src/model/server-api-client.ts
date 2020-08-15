@@ -1,6 +1,6 @@
 import { Authenticator } from "./auth";
-import { VoteAndBallots, Ballot, Vote } from "./vote";
-import { APIClient } from "./api-client";
+import { VoteAndBallots, Ballot, Vote, VoteOption } from "./vote";
+import { APIClient, AdminAPIClient } from "./api-client";
 import { RedditAuthenticator } from "./reddit-auth";
 
 /**
@@ -9,6 +9,7 @@ import { RedditAuthenticator } from "./reddit-auth";
 export class ServerAPIClient implements APIClient {
     constructor() {
         this.auth = new RedditAuthenticator();
+        this.admin = new ServerAdminAPIClient(this.auth);
     }
 
     /**
@@ -17,6 +18,8 @@ export class ServerAPIClient implements APIClient {
     get authenticator(): Authenticator {
         return this.auth;
     }
+
+    readonly admin: ServerAdminAPIClient;
 
     /**
      * Gets all currently active votes.
@@ -60,4 +63,15 @@ export class ServerAPIClient implements APIClient {
     }
 
     private auth: RedditAuthenticator;
+}
+
+class ServerAdminAPIClient implements AdminAPIClient {
+    constructor(private readonly auth: RedditAuthenticator) {
+
+    }
+
+    async scrapeCfc(url: string): Promise<VoteOption[]> {
+        let response = await fetch(`/api/admin/scrape-cfc?url=${encodeURIComponent(url)}&deviceId=${encodeURIComponent(this.auth.deviceId)}`);
+        return await response.json();
+    }
 }
