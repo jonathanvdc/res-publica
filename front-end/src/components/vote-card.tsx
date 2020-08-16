@@ -1,5 +1,5 @@
 import React, { PureComponent } from "react";
-import { VoteAndBallots, Ballot, BallotType, VoteOption, RateOptionsBallot, ChooseOneBallot, isActive, Vote } from "../model/vote";
+import { VoteAndBallots, Ballot, BallotType, VoteOption, RateOptionsBallot, ChooseOneBallot, isActive, Vote, getBallotKind } from "../model/vote";
 import ReactMarkdown from "react-markdown";
 import Typography from '@material-ui/core/Typography';
 import { Paper, withStyles, ButtonBase, TextField } from "@material-ui/core";
@@ -17,7 +17,7 @@ type Props = {
 };
 
 function createEmptyBallot(type: BallotType): Ballot | undefined {
-    switch (type.kind) {
+    switch (getBallotKind(type)) {
         case "choose-one":
             return undefined;
         case "rate-options":
@@ -29,10 +29,18 @@ const TitleTextField = withStyles({
     root: {
         "& .MuiInputBase-root": {
             color: "white",
-            fontSize: "xx-large"
+            fontSize: "xxx-large"
         },
         "& .MuiFormLabel-root": {
             color: "gray"
+        }
+    }
+})(TextField);
+
+const OptionTitleTextField = withStyles({
+    root: {
+        "& .MuiInputBase-root": {
+            fontSize: "xx-large"
         }
     }
 })(TextField);
@@ -44,7 +52,11 @@ function createTitleEditorOrPreview(
     onChange: (newValue: string) => void): JSX.Element {
 
     if (allowEdits) {
-        return <TitleTextField onChange={val => onChange(val.target.value)} value={source} />;
+        if (variant === "h2") {
+            return <TitleTextField onChange={val => onChange(val.target.value)} value={source} />;
+        } else {
+            return <OptionTitleTextField onChange={val => onChange(val.target.value)} value={source} />;
+        }
     } else {
         return <Typography variant={variant} className="VoteOption">{source}</Typography>;
     }
@@ -112,8 +124,8 @@ function renderVoteOption(
     changeBallot: (newBallot: Ballot) => void,
     changeOption: (newOption: VoteOption) => void) {
 
-    switch (ballotType.kind) {
-        case "rate-options":
+    switch (ballotType.tally) {
+        case "spsv":
             let optionBallot = ballot as RateOptionsBallot;
             let ratingOrNull = optionBallot.ratingPerOption.find(val => val.optionId === option.id);
             let buttons = [];
@@ -138,18 +150,25 @@ function renderVoteOption(
                     </StyledToggleButtonGroup>
                 </div>
             </Paper>;
-        case "choose-one":
+        case "first-past-the-post":
             let isSelected = ballot && (ballot as ChooseOneBallot).selectedOptionId === option.id;
-            return <Paper elevation={1} className={isSelected ? "VotePanel SelectedVotePanel" : "VotePanel"}>
-                <ButtonBase className="VotePanelButton" focusRipple disabled={!allowBallotChanges} onClick={() => changeBallot({ selectedOptionId: option.id })}>
-                    <div className="VotePanelContents">
-                        {renderVoteOptionDescription(
-                            option,
-                            allowVoteChanges,
-                            changeOption)}
-                    </div>
-                </ButtonBase>
-            </Paper>;
+            let contents = <div className="VotePanelContents">
+                {renderVoteOptionDescription(
+                    option,
+                    allowVoteChanges,
+                    changeOption)}
+            </div>;
+            if (allowVoteChanges) {
+                return <Paper elevation={1} className={isSelected ? "VotePanel SelectedVotePanel" : "VotePanel"}>
+                    {contents}
+                </Paper>;
+            } else {
+                return <Paper elevation={1} className={isSelected ? "VotePanel SelectedVotePanel" : "VotePanel"}>
+                    <ButtonBase className="VotePanelButton" focusRipple disabled={!allowBallotChanges} onClick={() => changeBallot({ selectedOptionId: option.id })}>
+                        {contents}
+                    </ButtonBase>
+                </Paper>;
+            }
     }
 }
 

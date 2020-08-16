@@ -12,17 +12,27 @@ export type VoteOption = {
 
 /// A type of vote where every voter gets to choose exactly one option.
 export type ChooseOneBallotType = {
-    kind: "choose-one";
+    tally: "first-past-the-post";
 };
 
 /// A type of vote where every voter gets to rate every option.
 export type RateOptionsBallotType = {
-    kind: "rate-options";
+    tally: "spsv";
+    positions: number;
     min: number;
     max: number;
 };
 
 export type BallotType = ChooseOneBallotType | RateOptionsBallotType;
+
+export function getBallotKind(ballotType: BallotType): "choose-one" | "rate-options" {
+    switch (ballotType.tally) {
+        case "first-past-the-post":
+            return "choose-one";
+        case "spsv":
+            return "rate-options";
+    }
+}
 
 /// An active or historical vote.
 export type Vote = {
@@ -91,7 +101,7 @@ export function isCompleteBallot(ballot: Ballot | undefined, vote: Vote): boolea
         return false;
     }
 
-    switch (vote.type.kind) {
+    switch (getBallotKind(vote.type)) {
         case "choose-one":
         {
             let optionId = (ballot as ChooseOneBallot).selectedOptionId;
