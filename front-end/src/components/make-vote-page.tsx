@@ -166,7 +166,7 @@ class MakeVotePage extends Component<Props, State> {
                 allowBallotChanges={false}
                 voteAndBallots={{ vote: this.state.vote, ballots: [] }}
                 onVoteChanged={vote => this.setState({ ...this.state, vote })} />
-            <PlusButton variant="contained" color="primary" className="AddVoteOptionButton" onClick={this.addVoteOption.bind(this)} >
+            <PlusButton variant="contained" className="AddVoteOptionButton" onClick={this.addVoteOption.bind(this)} >
                 <PlusIcon fontSize="large" />
             </PlusButton>
             <CheckButton variant="contained" className="MakeVoteButton" >

@@ -20,3 +20,11 @@
 .VotePanelContents {
     margin: 1.5em;
 }
+
+.EditableVoteOptionHeader {
+    display: flex;
+}
+
+.EditableVoteOptionHeader .MuiFormControl-root {
+    flex-grow: 1;
+}

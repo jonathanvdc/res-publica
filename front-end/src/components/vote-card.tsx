@@ -2,7 +2,8 @@ import React, { PureComponent } from "react";
 import { VoteAndBallots, Ballot, BallotType, VoteOption, RateOptionsBallot, ChooseOneBallot, isActive, Vote, getBallotKind } from "../model/vote";
 import ReactMarkdown from "react-markdown";
 import Typography from '@material-ui/core/Typography';
-import { Paper, withStyles, ButtonBase, TextField } from "@material-ui/core";
+import DeleteIcon from '@material-ui/icons/Delete';
+import { Paper, withStyles, ButtonBase, TextField, Button } from "@material-ui/core";
 import ToggleButton from "@material-ui/lab/ToggleButton";
 import ToggleButtonGroup from '@material-ui/lab/ToggleButtonGroup';
 import MDEditor from '@uiw/react-md-editor';
@@ -86,20 +87,33 @@ function createMDEditorOrPreview(
 function renderVoteOptionDescription(
     option: VoteOption,
     allowVoteChanges: boolean,
-    onChange: (newOption: VoteOption) => void) {
-    return [
+    onChange: (newOption: VoteOption) => void,
+    onDelete: () => void) {
+
+    let results: JSX.Element[] = [];
+
+    results.push(
         createTitleEditorOrPreview(
             option.name,
             "h3",
             allowVoteChanges,
-            title => onChange({ ...option, name: title })),
+            title => onChange({ ...option, name: title })));
 
+    if (allowVoteChanges) {
+        results.push(<Button onClick={onDelete} className="DeleteVoteOptionButton"><DeleteIcon/></Button>);
+        results = [
+            <div className="EditableVoteOptionHeader">{results}</div>
+        ];
+    }
+
+    results.push(
         createMDEditorOrPreview(
             option.description,
             "VoteOptionDescription",
             allowVoteChanges,
-            description => onChange({ ...option, description }))
-    ];
+            description => onChange({ ...option, description })))
+
+    return results;
 }
 
 const StyledToggleButtonGroup = withStyles((theme) => ({
@@ -122,7 +136,8 @@ function renderVoteOption(
     allowBallotChanges: boolean,
     ballot: Ballot | undefined,
     changeBallot: (newBallot: Ballot) => void,
-    changeOption: (newOption: VoteOption) => void) {
+    changeOption: (newOption: VoteOption) => void,
+    deleteOption: () => void) {
 
     switch (ballotType.tally) {
         case "spsv":
@@ -137,7 +152,8 @@ function renderVoteOption(
                     {renderVoteOptionDescription(
                         option,
                         allowVoteChanges,
-                        changeOption)}
+                        changeOption,
+                        deleteOption)}
                     <StyledToggleButtonGroup
                         value={ratingOrNull ? ratingOrNull.rating : null}
                         exclusive
@@ -156,7 +172,8 @@ function renderVoteOption(
                 {renderVoteOptionDescription(
                     option,
                     allowVoteChanges,
-                    changeOption)}
+                    changeOption,
+                    deleteOption)}
             </div>;
             if (allowVoteChanges) {
                 return <Paper elevation={1} className={isSelected ? "VotePanel SelectedVotePanel" : "VotePanel"}>
@@ -199,6 +216,14 @@ class VoteCard extends PureComponent<Props> {
                             this.props.onVoteChanged({
                                 ...vote,
                                 options: [...vote.options.filter(opt => opt.id !== option.id), newOption]
+                            });
+                        }
+                    },
+                    () => {
+                        if (this.props.onVoteChanged) {
+                            this.props.onVoteChanged({
+                                ...vote,
+                                options: [...vote.options.filter(opt => opt.id !== option.id)]
                             });
                         }
                     }));
