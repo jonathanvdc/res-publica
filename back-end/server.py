@@ -51,10 +51,20 @@ if __name__ == "__main__":
         if not device:
             abort(403)
 
-        ballot = request.json()
+        ballot = request.json
         return jsonify({
             'ballotId': vote_index.cast_ballot(request.args.get('voteId'), ballot, device)
         })
+
+    @app.route('/api/admin/create-vote', methods=['POST'])
+    def create_vote():
+        """Creates a new vote."""
+        device = authenticate(request)
+        if not device:
+            abort(403)
+
+        proposal = request.json
+        return jsonify(vote_index.create_vote(proposal))
 
     @app.route('/api/admin/scrape-cfc')
     def process_scrape_cfc():

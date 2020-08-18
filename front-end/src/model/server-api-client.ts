@@ -51,15 +51,10 @@ export class ServerAPIClient implements APIClient {
      * is returned that can be used to verify that the ballot was
      * indeed well received.
      */
-    async castBallot(voteId: string, ballot: Ballot): Promise<{ ballotId: string } | { error: string }> {
-        let response = await fetch(
+    castBallot(voteId: string, ballot: Ballot): Promise<{ ballotId: string } | { error: string }> {
+        return postJSON(
             `/api/cast-ballot?voteId=${encodeURIComponent(voteId)}&deviceId=${encodeURIComponent(this.auth.deviceId)}`,
-            {
-                method: "POST",
-                body: JSON.stringify(ballot),
-                headers: {'Content-Type': 'application/json; charset=UTF-8'}
-            });
-        return await response.json();
+            ballot);
     }
 
     private auth: RedditAuthenticator;
@@ -76,6 +71,19 @@ class ServerAdminAPIClient implements AdminAPIClient {
     }
 
     createVote(proposal: Vote): Promise<Vote> {
-        throw new Error("Method not implemented.");
+        return postJSON(
+            `/api/admin/create-vote?deviceId=${encodeURIComponent(this.auth.deviceId)}`,
+            proposal);
     }
+}
+
+async function postJSON(url: string, data: any) {
+    let response = await fetch(
+        url,
+        {
+            method: "POST",
+            body: JSON.stringify(data),
+            headers: {'Content-Type': 'application/json; charset=UTF-8'}
+        });
+    return await response.json();
 }

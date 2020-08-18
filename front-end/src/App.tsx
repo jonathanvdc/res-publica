@@ -25,7 +25,7 @@ const theme = createMuiTheme({
   },
 });
 
-const apiClient = new DummyAPIClient();
+const apiClient = new ServerAPIClient();
 const authenticator = apiClient.authenticator;
 
 class App extends FetchedStateComponent<{}, boolean> {
@@ -133,8 +133,12 @@ class MakeVoteRoute extends FetchedStateComponent<{ history: any }, MakeVoteRout
 
   async onMakeVote(proposal: Vote) {
     this.setState({ ...this.state, data: { voteSubmitted: true } });
-    let vote = await apiClient.admin.createVote(proposal);
-    this.setState({ ...this.state, data: { voteSubmitted: true, createdVote: vote } });
+    try {
+      let vote = await apiClient.admin.createVote(proposal);
+      this.setState({ ...this.state, data: { voteSubmitted: true, createdVote: vote } });
+    } catch (ex) {
+      this.setState({ ...this.state, error: ex });
+    }
   }
 
   renderState(data: MakeVoteRouteState): JSX.Element {

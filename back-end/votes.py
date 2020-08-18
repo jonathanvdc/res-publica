@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import random
 import time
 import os
 from Crypto.Hash import SHA3_256
@@ -46,6 +47,7 @@ class VoteIndex(object):
         vote['ballots'] = [ballot for ballot in vote['ballots'] if ballot['id'] != ballot_id]
         ballot['id'] = ballot_id
         vote['ballots'].append(ballot)
+        self.write_vote(vote)
         return ballot_id
 
     def prepare_for_transmission(self, vote: VoteAndBallots, device: RegisteredDevice) -> VoteAndBallots:
@@ -55,7 +57,7 @@ class VoteIndex(object):
                 'vote': vote['vote'],
                 'ballots': []
             }
-            ballot_id = self.get_ballot_id(device, vote['vote']['id'])
+            ballot_id = self.get_ballot_id(vote['vote']['id'], device)
             for ballot in vote['ballots']:
                 if ballot['id'] == ballot_id:
                     result['ownBallot'] = ballot
@@ -71,8 +73,48 @@ class VoteIndex(object):
             raise ValueError(f'Vote with ID {vote_id} either does not exist or is no longer active.')
 
         hash_obj = SHA3_256.new(device.user_id.encode('utf-8'))
-        hash_obj.update(self.vote_secrets[vote_id.encode('utf-8')])
+        hash_obj.update(self.vote_secrets[vote_id].encode('utf-8'))
         return hash_obj.hexdigest()
+
+    def create_vote(self, proposal: Vote) -> Vote:
+        """Creates a new vote based on a proposal."""
+        new_vote = proposal.copy()
+
+        # Create an ID for the vote.
+        new_id_parts = []
+        for c in proposal['name'].lower():
+            if c.isalnum():
+                new_id_parts.append(c)
+            elif len(new_id_parts) > 0 and new_id_parts[-1] != '-':
+                new_id_parts.append('-')
+
+        new_base_id = ''.join(new_id_parts)
+
+        if new_base_id in self.votes:
+            # If a vote with that name already exists, then we'll add a suffix.
+            dup_count = 1
+            while True:
+                dup_count += 1
+                new_id = f'{new_base_id}-{dup_count}'
+                if new_id not in self.votes:
+                    break
+        else:
+            new_id = new_base_id
+
+        new_vote['id'] = new_id
+
+        self.votes[new_id] = { 'vote': new_vote, 'ballots': [] }
+
+        # Generate a secret.
+        secret_hash = SHA3_256.new(new_id.encode('utf-8'))
+        for _ in range(1, 20):
+            secret_hash.update(str(random.randint(0, 100000000)).encode('utf-8'))
+
+        self.vote_secrets[new_id] = secret_hash.hexdigest()
+        self.write_vote(self.votes[new_id])
+        self.write_index()
+
+        return new_vote
 
     def write_index(self):
         """Writes the index itself to disk."""
@@ -81,13 +123,15 @@ class VoteIndex(object):
     def write_vote(self, vote: VoteAndBallots):
         """Writes a vote to disk."""
         vote_id = vote['vote']['id']
-        write_json(vote, vote_id_to_path(self.index_path, vote_id))
+        vote_path = vote_id_to_path(self.index_path, vote_id)
+        Path(vote_path).parent.mkdir(parents=True, exist_ok=True)
+        write_json(vote, vote_path)
 
 
 def vote_id_to_path(index_path: str, vote_id: VoteId) -> str:
     """Takes a vote ID and an index path and turns it into a path to the location
        where the vote's data is stored."""
-    return os.path.join(os.path.dirname(index_path), 'votes', vote_id)
+    return os.path.join(os.path.dirname(index_path), 'votes', vote_id) + '.json'
 
 
 def read_or_create_vote_index(path: str) -> VoteIndex:
