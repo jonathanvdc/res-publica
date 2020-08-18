@@ -215,7 +215,7 @@ class VoteCard extends PureComponent<Props> {
                         if (this.props.onVoteChanged) {
                             this.props.onVoteChanged({
                                 ...vote,
-                                options: [...vote.options.map(opt => opt.id === option.id ? newOption : opt)]
+                                options: vote.options.map(opt => opt.id === option.id ? newOption : opt)
                             });
                         }
                     },
@@ -223,7 +223,7 @@ class VoteCard extends PureComponent<Props> {
                         if (this.props.onVoteChanged) {
                             this.props.onVoteChanged({
                                 ...vote,
-                                options: [...vote.options.filter(opt => opt.id !== option.id)]
+                                options: vote.options.filter(opt => opt.id !== option.id)
                             });
                         }
                     }));
