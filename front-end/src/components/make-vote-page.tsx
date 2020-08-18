@@ -1,14 +1,17 @@
 import React, { Component } from "react";
 import CheckIcon from '@material-ui/icons/Check';
 import PlusIcon from '@material-ui/icons/Add';
-import { Button, Theme, withStyles, TextField } from "@material-ui/core";
+import { Button, Theme, withStyles, TextField, CircularProgress } from "@material-ui/core";
 import { green, blue } from "@material-ui/core/colors";
 import { Vote, BallotType } from "../model/vote";
 import VoteCard from "./vote-card";
 import ToggleButtonGroup from "@material-ui/lab/ToggleButtonGroup";
 import ToggleButton from "@material-ui/lab/ToggleButton";
 
-type Props = {};
+type Props = {
+    hasSubmittedVote: boolean,
+    onMakeVote?: (vote: Vote) => void;
+};
 
 type State = {
     vote: Vote;
@@ -46,7 +49,7 @@ const TallyButton = withStyles((theme: Theme) => ({
             color: "white",
             backgroundColor: blue[700],
             '&:hover': {
-                backgroundColor: blue[800],
+                backgroundColor: blue[700],
             }
         },
     },
@@ -146,6 +149,12 @@ class MakeVotePage extends Component<Props, State> {
         });
     }
 
+    onMakeVote() {
+        if (this.props.onMakeVote) {
+            this.props.onMakeVote(this.state.vote);
+        }
+    }
+
     render() {
         let ballotType = this.state.vote.type;
         return <div>
@@ -154,24 +163,28 @@ class MakeVotePage extends Component<Props, State> {
                     value={ballotType.tally}
                     exclusive
                     onChange={this.onChangeTallyType.bind(this)}>
-                    <TallyButton value="first-past-the-post">FPTP</TallyButton>
-                    <TallyButton value="spsv">SPSV</TallyButton>
+                    <TallyButton disabled={this.props.hasSubmittedVote} value="first-past-the-post">FPTP</TallyButton>
+                    <TallyButton disabled={this.props.hasSubmittedVote} value="spsv">SPSV</TallyButton>
                 </ToggleButtonGroup>
                 {ballotType.tally === "spsv"
-                    ? <PositionsTextField label="Number of Positions" value={ballotType.positions} type="number" onChange={this.onChangePositions.bind(this)} />
+                    ? <PositionsTextField disabled={this.props.hasSubmittedVote} label="Number of Positions" value={ballotType.positions} type="number" onChange={this.onChangePositions.bind(this)} />
                     : []}
             </div>
             <VoteCard
-                allowVoteChanges={true}
+                allowVoteChanges={!this.props.hasSubmittedVote}
                 allowBallotChanges={false}
                 voteAndBallots={{ vote: this.state.vote, ballots: [] }}
                 onVoteChanged={vote => this.setState({ ...this.state, vote })} />
-            <PlusButton variant="contained" className="AddVoteOptionButton" onClick={this.addVoteOption.bind(this)} >
-                <PlusIcon fontSize="large" />
-            </PlusButton>
-            <CheckButton variant="contained" className="MakeVoteButton" >
-                <CheckIcon fontSize="large" />
-            </CheckButton>
+            {this.props.hasSubmittedVote ? [
+                <CircularProgress />
+            ] : [
+                <PlusButton variant="contained" className="AddVoteOptionButton" onClick={this.addVoteOption.bind(this)} >
+                    <PlusIcon fontSize="large" />
+                </PlusButton>,
+                <CheckButton variant="contained" className="MakeVoteButton" onClick={this.onMakeVote.bind(this)} >
+                    <CheckIcon fontSize="large" />
+                </CheckButton>
+            ]}
         </div>;
     }
 }

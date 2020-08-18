@@ -12,6 +12,7 @@ import { FetchedStateComponent } from './components/fetched-state-component';
 import VoteConfirmationPage from './components/vote-confirmation-page';
 import { ServerAPIClient } from './model/server-api-client';
 import MakeVotePage from './components/make-vote-page';
+import MakeVoteConfirmationPage from './components/make-vote-confirmation-page';
 
 let currentSeasons: string[] = [];
 
@@ -54,7 +55,7 @@ class App extends FetchedStateComponent<{}, boolean> {
             <Suspense fallback={<div>Loading...</div>}>
               <Route exact={true} path="/" component={VoteListRoute} />
               <Route path="/vote/:voteId" component={VoteRoute} />
-              <Route path="/admin/make-vote" component={MakeVotePage} />
+              <Route path="/admin/make-vote" component={MakeVoteRoute} />
             </Suspense>
           </header>
         </MuiThemeProvider>
@@ -94,12 +95,12 @@ class VoteRoute extends FetchedStateComponent<{ match: any, history: any }, Vote
     if ('error' in response) {
       this.setState({ hasConnected: true, error: response.error });
     } else {
-      this.setState({ hasConnected: true, data: { ballotId: response.ballotId } });
+      this.setState({ hasConnected: true, data: { ballotId: response.ballotId, ballotCast: true } });
     }
   }
 
   renderState(data: VoteRouteState): JSX.Element {
-    if (!data) {
+    if (!data.vote && !data.ballotCast) {
       return <div>
         <h1>Error 404</h1>
         Vote with ID '{this.props.match.params.voteId}' not found.
@@ -110,6 +111,37 @@ class VoteRoute extends FetchedStateComponent<{ match: any, history: any }, Vote
       return <VotePage voteAndBallots={data.vote} ballotCast={data.ballotCast} onCastBallot={this.onCastBallot.bind(this)} />;
     } else {
       return <VoteConfirmationPage ballotId={data.ballotId!} />;
+    }
+  }
+}
+
+type MakeVoteRouteState = {
+  voteSubmitted: boolean,
+  createdVote?: Vote
+};
+
+class MakeVoteRoute extends FetchedStateComponent<{ history: any }, MakeVoteRouteState> {
+  async fetchState(): Promise<MakeVoteRouteState> {
+    return this.skipInitialStateFetch();
+  }
+
+  skipInitialStateFetch(): MakeVoteRouteState {
+    return {
+      voteSubmitted: false
+    };
+  }
+
+  async onMakeVote(proposal: Vote) {
+    this.setState({ ...this.state, data: { voteSubmitted: true } });
+    let vote = await apiClient.admin.createVote(proposal);
+    this.setState({ ...this.state, data: { voteSubmitted: true, createdVote: vote } });
+  }
+
+  renderState(data: MakeVoteRouteState): JSX.Element {
+    if (data.createdVote) {
+      return <MakeVoteConfirmationPage voteId={data.createdVote.id} />;
+    } else {
+      return <MakeVotePage hasSubmittedVote={data.voteSubmitted} onMakeVote={this.onMakeVote.bind(this)} />;
     }
   }
 }

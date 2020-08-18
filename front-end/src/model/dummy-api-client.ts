@@ -1,4 +1,4 @@
-import { Authenticator } from "./auth";
+import { Authenticator, makeid } from "./auth";
 import { DummyAuthenticator } from "./dummy-auth";
 import { APIClient, AdminAPIClient } from "./api-client";
 import { Vote, VoteAndBallots, Ballot, VoteOption } from "./vote";
@@ -7,6 +7,20 @@ import { Vote, VoteAndBallots, Ballot, VoteOption } from "./vote";
  * An API client that fakes all interactions with the server.
  */
 export class DummyAPIClient implements APIClient {
+    constructor() {
+        this.activeVotes = [
+            {
+                vote: mockVoteAndBallots,
+                ballots: []
+            },
+            {
+                vote: mockVoteAndBallots2,
+                ballots: []
+            }
+        ];
+        this.admin = new DummyAdminAPIClient(this.activeVotes);
+    }
+
     /**
      * Gets an authenticator appropriate for this API client.
      */
@@ -14,7 +28,7 @@ export class DummyAPIClient implements APIClient {
         return this.auth;
     }
 
-    readonly admin = new DummyAdminAPIClient();
+    readonly admin: DummyAdminAPIClient;
 
     async getActiveVotes(): Promise<VoteAndBallots[]> {
         return this.activeVotes;
@@ -44,19 +58,23 @@ export class DummyAPIClient implements APIClient {
     }
 
     private auth = new DummyAuthenticator();
-    private activeVotes = [
-        {
-            vote: mockVoteAndBallots,
-            ballots: []
-        },
-        {
-            vote: mockVoteAndBallots2,
-            ballots: []
-        }
-    ];
+    private activeVotes: VoteAndBallots[];
 }
 
 class DummyAdminAPIClient implements AdminAPIClient {
+    constructor(private activeVotes: VoteAndBallots[]) {
+    }
+
+    async createVote(proposal: Vote): Promise<Vote> {
+        let voteId = `vote-${makeid(20)}`;
+        let newVote = {
+            ...proposal,
+            id: voteId
+        };
+        this.activeVotes.push({ vote: newVote, ballots: [] });
+        return newVote;
+    }
+
     async scrapeCfc(url: string): Promise<VoteOption[]> {
         return mockVoteAndBallots2.options;
     }

@@ -48,4 +48,14 @@ export interface AdminAPIClient {
      * @param url A URL to a Reddit CFC post.
      */
     scrapeCfc(url: string): Promise<VoteOption[]>;
+
+    /**
+     * Creates a vote by sending in a vote proposal. The server
+     * may modify this proposal how it sees fit (by changing, e.g.,
+     * IDs), creates the vote, and then returns the vote to the client.
+     *
+     * @param proposal A vote proposal. This is what the vote should
+     * look like visually.
+     */
+    createVote(proposal: Vote): Promise<Vote>;
 }

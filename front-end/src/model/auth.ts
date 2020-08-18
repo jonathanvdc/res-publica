@@ -13,7 +13,7 @@ export interface Authenticator {
     createAuthenticationPage(): JSX.Element;
 }
 
-function makeid(length: number): string {
+export function makeid(length: number): string {
     // Based on csharptest.net's answer to this StackOverflow question:
     // https://stackoverflow.com/questions/1349404/generate-random-string-characters-in-javascript
     var result = '';

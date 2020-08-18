@@ -74,4 +74,8 @@ class ServerAdminAPIClient implements AdminAPIClient {
         let response = await fetch(`/api/admin/scrape-cfc?url=${encodeURIComponent(url)}&deviceId=${encodeURIComponent(this.auth.deviceId)}`);
         return await response.json();
     }
+
+    createVote(proposal: Vote): Promise<Vote> {
+        throw new Error("Method not implemented.");
+    }
 }
