@@ -1,7 +1,7 @@
 import { Authenticator, makeid } from "./auth";
 import { DummyAuthenticator } from "./dummy-auth";
 import { APIClient, AdminAPIClient } from "./api-client";
-import { Vote, VoteAndBallots, Ballot, VoteOption } from "./vote";
+import { Vote, VoteAndBallots, Ballot } from "./vote";
 
 /**
  * An API client that fakes all interactions with the server.
@@ -75,8 +75,8 @@ class DummyAdminAPIClient implements AdminAPIClient {
         return newVote;
     }
 
-    async scrapeCfc(url: string): Promise<VoteOption[]> {
-        return mockVoteAndBallots2.options;
+    async scrapeCfc(url: string): Promise<Vote> {
+        return mockVoteAndBallots2;
     }
 }
 

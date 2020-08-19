@@ -75,7 +75,7 @@ if __name__ == "__main__":
 
         return jsonify(
             scrape_cfc(
-                praw.Reddit(**config['bot-config']),
+                praw.Reddit(**config['bot-credentials']),
                 request.args.get('url')))
 
     @app.route('/api/is-authenticated')

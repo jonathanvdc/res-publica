@@ -28,3 +28,7 @@
 .EditableVoteOptionHeader .MuiFormControl-root {
     flex-grow: 1;
 }
+
+.VoteOptionDescription {
+    text-align: justify;
+}

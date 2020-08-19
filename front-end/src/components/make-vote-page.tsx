@@ -1,4 +1,4 @@
-import React, { Component } from "react";
+import React, { PureComponent } from "react";
 import CheckIcon from '@material-ui/icons/Check';
 import PlusIcon from '@material-ui/icons/Add';
 import { Button, Theme, withStyles, TextField, CircularProgress } from "@material-ui/core";
@@ -9,12 +9,10 @@ import ToggleButtonGroup from "@material-ui/lab/ToggleButtonGroup";
 import ToggleButton from "@material-ui/lab/ToggleButton";
 
 type Props = {
-    hasSubmittedVote: boolean,
+    hasSubmittedVote: boolean;
+    draft: Vote;
+    onUpdateDraft?: (draft: Vote) => void;
     onMakeVote?: (vote: Vote) => void;
-};
-
-type State = {
-    vote: Vote;
 };
 
 const CheckButton = withStyles((theme: Theme) => ({
@@ -70,25 +68,15 @@ const PositionsTextField = withStyles({
 /**
  * A page that allows an admin to create a vote.
  */
-class MakeVotePage extends Component<Props, State> {
-    constructor(props: Props) {
-        super(props);
-        this.state = {
-            vote: {
-                id: 'new-vote',
-                name: 'Vote Title',
-                description: 'A vote on something.',
-                deadline: Date.now() / 1000 + 60 * 60 * 24,
-                options: [],
-                type: {
-                    tally: 'first-past-the-post'
-                }
-            }
-        };
+class MakeVotePage extends PureComponent<Props> {
+    updateDraft(draft: Vote) {
+        if (this.props.onUpdateDraft) {
+            this.props.onUpdateDraft(draft);
+        }
     }
 
     addVoteOption() {
-        let vote = this.state.vote;
+        let vote = this.props.draft;
         let voteIdIndex = 0;
         let voteId: string;
         while (true) {
@@ -99,17 +87,12 @@ class MakeVotePage extends Component<Props, State> {
                 break;
             }
         }
-        this.setState({
-            vote: {
-                ...vote,
-                options: [
-                    ...vote.options,
-                    {
-                        id: voteId,
-                        name: "New Option",
-                        description: "Description goes here"
-                    }]
-            }
+        this.updateDraft({
+            ...this.props.draft,
+            options: [
+                ...this.props.draft.options,
+                { id: voteId, name: "New Option", description: "Put your description here." }
+            ]
         });
     }
 
@@ -128,12 +111,10 @@ class MakeVotePage extends Component<Props, State> {
                 type = { tally: "spsv", positions: 1, min: 1, max: 5 };
                 break;
         }
-        this.setState({
-            vote: {
-                ...this.state.vote,
-                type
-            }
-        });
+        this.updateDraft({
+            ...this.props.draft,
+            type
+        });;
     }
 
     onChangePositions(arg: any) {
@@ -141,22 +122,20 @@ class MakeVotePage extends Component<Props, State> {
         if (newValue < 1 || !Number.isInteger(newValue)) {
             return;
         }
-        this.setState({
-            vote: {
-                ...this.state.vote,
-                type: { tally: "spsv", positions: newValue, min: 1, max: 5 }
-            }
+        this.updateDraft({
+            ...this.props.draft,
+            type: { tally: "spsv", positions: newValue, min: 1, max: 5 }
         });
     }
 
     onMakeVote() {
         if (this.props.onMakeVote) {
-            this.props.onMakeVote(this.state.vote);
+            this.props.onMakeVote(this.props.draft);
         }
     }
 
     render() {
-        let ballotType = this.state.vote.type;
+        let ballotType = this.props.draft.type;
         return <div>
             <div style={{marginTop: "1em"}}>
                 <ToggleButtonGroup
@@ -173,8 +152,8 @@ class MakeVotePage extends Component<Props, State> {
             <VoteCard
                 allowVoteChanges={!this.props.hasSubmittedVote}
                 allowBallotChanges={false}
-                voteAndBallots={{ vote: this.state.vote, ballots: [] }}
-                onVoteChanged={vote => this.setState({ ...this.state, vote })} />
+                voteAndBallots={{ vote: this.props.draft, ballots: [] }}
+                onVoteChanged={this.updateDraft.bind(this)} />
             {this.props.hasSubmittedVote ? [
                 <CircularProgress />
             ] : [

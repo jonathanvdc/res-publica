@@ -44,10 +44,10 @@ export interface APIClient {
  */
 export interface AdminAPIClient {
     /**
-     * Scrapes a list of vote options from a Reddit CFC post.
+     * Scrapes a draft vote from a Reddit CFC post.
      * @param url A URL to a Reddit CFC post.
      */
-    scrapeCfc(url: string): Promise<VoteOption[]>;
+    scrapeCfc(url: string): Promise<Vote>;
 
     /**
      * Creates a vote by sending in a vote proposal. The server

@@ -13,6 +13,7 @@ import VoteConfirmationPage from './components/vote-confirmation-page';
 import { ServerAPIClient } from './model/server-api-client';
 import MakeVotePage from './components/make-vote-page';
 import MakeVoteConfirmationPage from './components/make-vote-confirmation-page';
+import ScrapeCFCPage from './components/scrape-cfc-page';
 
 let currentSeasons: string[] = [];
 
@@ -116,7 +117,8 @@ class VoteRoute extends FetchedStateComponent<{ match: any, history: any }, Vote
 }
 
 type MakeVoteRouteState = {
-  voteSubmitted: boolean,
+  phase: "scraping-cfc" | "editing" | "submitted",
+  draftVote?: Vote,
   createdVote?: Vote
 };
 
@@ -127,25 +129,57 @@ class MakeVoteRoute extends FetchedStateComponent<{ history: any }, MakeVoteRout
 
   skipInitialStateFetch(): MakeVoteRouteState {
     return {
-      voteSubmitted: false
+      phase: "scraping-cfc"
     };
   }
 
   async onMakeVote(proposal: Vote) {
-    this.setState({ ...this.state, data: { voteSubmitted: true } });
+    this.setState({ ...this.state, data: { ...this.state.data, phase: "submitted" } });
     try {
       let vote = await apiClient.admin.createVote(proposal);
-      this.setState({ ...this.state, data: { voteSubmitted: true, createdVote: vote } });
+      this.setState({ ...this.state, data: { ...this.state.data, phase: "submitted", createdVote: vote } });
     } catch (ex) {
       this.setState({ ...this.state, error: ex });
     }
   }
 
+  onSubmitDraft(draft?: Vote) {
+    if (!draft) {
+      draft = {
+          id: 'new-vote',
+          name: 'Vote Title',
+          description: 'A vote on something.',
+          deadline: Date.now() / 1000 + 60 * 60 * 24,
+          options: [],
+          type: {
+              tally: 'first-past-the-post'
+          }
+      };
+    }
+    this.setState({ ...this.state, data: { phase: "editing", draftVote: draft } });
+  }
+
+  onUpdateDraft(draft: Vote) {
+    this.setState({ ...this.state, data: { phase: "editing", draftVote: draft } });
+  }
+
+  onChangeCfcUrl(url: string): Promise<Vote> {
+    return apiClient.admin.scrapeCfc(url);
+  }
+
   renderState(data: MakeVoteRouteState): JSX.Element {
+    if (data.phase === "scraping-cfc") {
+      return <ScrapeCFCPage onSubmitDraft={this.onSubmitDraft.bind(this)} onChangePostUrl={this.onChangeCfcUrl.bind(this)} />;
+    }
+
     if (data.createdVote) {
       return <MakeVoteConfirmationPage voteId={data.createdVote.id} />;
     } else {
-      return <MakeVotePage hasSubmittedVote={data.voteSubmitted} onMakeVote={this.onMakeVote.bind(this)} />;
+      return <MakeVotePage
+        draft={data.draftVote!}
+        onUpdateDraft={this.onUpdateDraft.bind(this)}
+        hasSubmittedVote={data.phase === "submitted"}
+        onMakeVote={this.onMakeVote.bind(this)} />;
     }
   }
 }

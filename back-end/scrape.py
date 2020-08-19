@@ -2,12 +2,14 @@
 
 """Defines routines for creating votes by scraping a Reddit CFC."""
 
+import time
 import sys
 from praw import Reddit
 from typing import Any, List, Union
 from helpers import read_json
 
 
+Vote = Any
 VoteOption = Any
 
 
@@ -23,6 +25,8 @@ def parse_cfc(body: str) -> Union[VoteOption, None]:
     if candidate_id.startswith('u/'):
         candidate_id = candidate_id[2:]
 
+    candidate_id = candidate_id.strip('|/\\')
+
     return {
         'id': candidate_id,
         'name': header.strip(),
@@ -30,10 +34,11 @@ def parse_cfc(body: str) -> Union[VoteOption, None]:
     }
 
 
-def scrape_cfc(reddit: Reddit, url: str) -> List[VoteOption]:
+def scrape_cfc(reddit: Reddit, url: str) -> Vote:
     """Scrapes a CFC from Reddit."""
+    # Grab the options.
     post = reddit.submission(url=url)
-    results = []
+    options = []
     for top_level_comment in post.comments:
         if top_level_comment.author.name.lower() == 'automoderator':
             # Skip AutoModerator posts.
@@ -43,9 +48,28 @@ def scrape_cfc(reddit: Reddit, url: str) -> List[VoteOption]:
         if option is None:
             continue
 
-        results.append(option)
+        options.append(option)
 
-    return results
+    # Parse the title.
+    title = post.title
+    for cfc_indicator in ('cfc', 'call for candidates'):
+        if title.lower().endswith(cfc_indicator):
+            title = title[:-len(cfc_indicator)]
+        elif title.lower().startswith(cfc_indicator):
+            title = title[len(cfc_indicator):]
+
+        title = title.strip().strip(':').strip()
+
+    return {
+        'id': 'new-vote',
+        'name': title,
+        'description': 'A vote on something.',
+        'deadline': time.time() + 60 * 60 * 24,
+        'options': options,
+        'type': {
+            'tally': 'first-past-the-post'
+        }
+    }
 
 
 if __name__ == "__main__":

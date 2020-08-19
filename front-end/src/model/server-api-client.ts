@@ -65,7 +65,7 @@ class ServerAdminAPIClient implements AdminAPIClient {
 
     }
 
-    async scrapeCfc(url: string): Promise<VoteOption[]> {
+    async scrapeCfc(url: string): Promise<Vote> {
         let response = await fetch(`/api/admin/scrape-cfc?url=${encodeURIComponent(url)}&deviceId=${encodeURIComponent(this.auth.deviceId)}`);
         return await response.json();
     }
