@@ -6,6 +6,8 @@ import { createMuiTheme, MuiThemeProvider } from '@material-ui/core/styles';
 import { green } from '@material-ui/core/colors';
 import VoteList from './components/vote-list';
 import { Typography } from '@material-ui/core';
+import { MuiPickersUtilsProvider } from '@material-ui/pickers';
+import MomentUtils from '@date-io/moment';
 import { DummyAPIClient } from './model/dummy-api-client';
 import VotePage from './components/vote-page';
 import { FetchedStateComponent } from './components/fetched-state-component';
@@ -29,6 +31,7 @@ const theme = createMuiTheme({
 const apiClient = new DummyAPIClient();
 const authenticator = apiClient.authenticator;
 
+
 class App extends FetchedStateComponent<{}, boolean> {
   getMainClass(): string {
     return ["App", ...currentSeasons].join(" ");
@@ -51,15 +54,17 @@ class App extends FetchedStateComponent<{}, boolean> {
 
     return <BrowserRouter>
       <div className={this.getMainClass()}>
-        <MuiThemeProvider theme={theme}>
-          <header className="App-header">
-            <Suspense fallback={<div>Loading...</div>}>
-              <Route exact={true} path="/" component={VoteListRoute} />
-              <Route path="/vote/:voteId" component={VoteRoute} />
-              <Route path="/admin/make-vote" component={MakeVoteRoute} />
-            </Suspense>
-          </header>
-        </MuiThemeProvider>
+        <MuiPickersUtilsProvider utils={MomentUtils}>
+          <MuiThemeProvider theme={theme}>
+            <header className="App-header">
+              <Suspense fallback={<div>Loading...</div>}>
+                <Route exact={true} path="/" component={VoteListRoute} />
+                <Route path="/vote/:voteId" component={VoteRoute} />
+                <Route path="/admin/make-vote" component={MakeVoteRoute} />
+              </Suspense>
+            </header>
+          </MuiThemeProvider>
+        </MuiPickersUtilsProvider>
       </div>
     </BrowserRouter>;
   }

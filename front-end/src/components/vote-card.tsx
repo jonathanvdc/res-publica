@@ -7,6 +7,7 @@ import { Paper, withStyles, ButtonBase, TextField, Button, Collapse } from "@mat
 import ToggleButton from "@material-ui/lab/ToggleButton";
 import ToggleButtonGroup from '@material-ui/lab/ToggleButtonGroup';
 import MDEditor from '@uiw/react-md-editor';
+import { DateTimePicker } from '@material-ui/pickers'
 import CountdownTimer from 'react-countdown';
 import './vote-card.css';
 
@@ -34,12 +35,12 @@ function createEmptyBallot(type: BallotType): Ballot | undefined {
 const TitleTextField = withStyles({
     root: {
         "& .MuiInputBase-root": {
-            color: "white",
+            // color: "white",
             fontSize: "xxx-large"
         },
-        "& .MuiFormLabel-root": {
-            color: "gray"
-        }
+        // "& .MuiFormLabel-root": {
+        //     color: "gray"
+        // }
     }
 })(TextField);
 
@@ -59,9 +60,9 @@ function createTitleEditorOrPreview(
 
     if (allowEdits) {
         if (variant === "h2") {
-            return <TitleTextField onChange={val => onChange(val.target.value)} value={source} />;
+            return <TitleTextField label="Vote title" onChange={val => onChange(val.target.value)} value={source} />;
         } else {
-            return <OptionTitleTextField onChange={val => onChange(val.target.value)} value={source} />;
+            return <OptionTitleTextField label="Option title" onChange={val => onChange(val.target.value)} value={source} />;
         }
     } else {
         return <Typography variant={variant} className="VoteOption">{source}</Typography>;
@@ -300,6 +301,26 @@ function renderTimeLeft(timeLeft: TimeLeft): JSX.Element {
     return <Typography variant="button">{renderTimeLeftMessage(timeLeft)}</Typography>;
 }
 
+function createTimerOrTimePicker(
+    deadline: number,
+    allowVoteChanges: boolean,
+    onChangeDeadline: (newDeadline: number) => void,
+    onTimerCompleted: () => void) {
+
+    if (allowVoteChanges) {
+        return <DateTimePicker
+            value={new Date(deadline * 1000).toISOString()}
+            label="Vote ends on" onChange={date => {
+                if (date) {
+                    onChangeDeadline(date.unix());
+                }
+            }}
+            style={{margin: "1em"}} />;
+    } else {
+        return <CountdownTimer date={deadline * 1000} renderer={renderTimeLeft} onComplete={onTimerCompleted} />;
+    }
+}
+
 /**
  * A card that allows users to inspect and interact with a vote.
  */
@@ -349,25 +370,44 @@ class VoteCard extends Component<Props, State> {
                     }));
         }
 
+        let header = [
+            createTitleEditorOrPreview(vote.name, "h2", !!this.props.allowVoteChanges, name => {
+                if (this.props.onVoteChanged) {
+                    this.props.onVoteChanged({
+                        ...vote,
+                        name
+                    });
+                }
+            }),
+            createTimerOrTimePicker(
+                vote.deadline,
+                !!this.props.allowVoteChanges,
+                deadline => {
+                    if (this.props.onVoteChanged) {
+                        this.props.onVoteChanged({
+                            ...vote,
+                            deadline
+                        });
+                    }
+                },
+                this.onTimerCompleted.bind(this)),
+            createMDEditorOrPreview(vote.description, "VoteDescription", !!this.props.allowVoteChanges, description => {
+                if (this.props.onVoteChanged) {
+                    this.props.onVoteChanged({
+                        ...vote,
+                        description
+                    });
+                }
+            }, false)
+        ];
+
+        if (this.props.allowVoteChanges) {
+            header = [<Paper style={{padding: "1em"}}>{header}</Paper>];
+        }
+
         return <div className="VoteContainer">
             <div className="VotePanelContents">
-                {createTitleEditorOrPreview(vote.name, "h2", !!this.props.allowVoteChanges, name => {
-                    if (this.props.onVoteChanged) {
-                        this.props.onVoteChanged({
-                            ...vote,
-                            name
-                        });
-                    }
-                })}
-                <CountdownTimer date={vote.deadline * 1000} renderer={renderTimeLeft} onComplete={this.onTimerCompleted.bind(this)} />
-                {createMDEditorOrPreview(vote.description, "VoteDescription", !!this.props.allowVoteChanges, description => {
-                    if (this.props.onVoteChanged) {
-                        this.props.onVoteChanged({
-                            ...vote,
-                            description
-                        });
-                    }
-                }, false)}
+                {header}
             </div>
             {options}
         </div>;
