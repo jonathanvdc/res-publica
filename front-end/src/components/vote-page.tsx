@@ -52,7 +52,7 @@ class VotePage extends Component<Props, State> {
             ownBallot: this.state.ballot
         };
         let allowChanges = !this.props.ballotCast && isActive(this.props.voteAndBallots.vote);
-        let canCast = !this.props.ballotCast && isCompleteBallot(data.ownBallot, data.vote);
+        let canCast = allowChanges && isCompleteBallot(data.ownBallot, data.vote);
         let buttonOrProgress: JSX.Element;
         if (this.props.ballotCast) {
             buttonOrProgress = <CircularProgress />;
@@ -63,7 +63,7 @@ class VotePage extends Component<Props, State> {
         }
         return <div>
             <VoteCard voteAndBallots={data} allowBallotChanges={allowChanges} onBallotChanged={newBallot => this.setState({ ballot: newBallot })} />
-            <div className="ButtonOrProgressPanel">{buttonOrProgress}</div>
+            {isActive(this.props.voteAndBallots.vote) ? <div className="ButtonOrProgressPanel">{buttonOrProgress}</div> : []}
         </div>;
     }
 }

@@ -105,7 +105,7 @@ let mockVoteAndBallots2: Vote = {
     id: "mock-vote-2",
     name: "44th Presidential Election",
     description: "We will now vote on **something.**",
-    deadline: (Date.now() + 1000 * 60 * 60 * 24) / 1000,
+    deadline: (Date.now() + 1000 * 2) / 1000,
     type: { tally: "spsv", positions: 1, min: 1, max: 5 },
     options: [
         {

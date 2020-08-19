@@ -1,4 +1,4 @@
-import React, { PureComponent, Component } from "react";
+import React, { Component } from "react";
 import { VoteAndBallots, Ballot, BallotType, VoteOption, RateOptionsBallot, ChooseOneBallot, isActive, Vote, getBallotKind } from "../model/vote";
 import ReactMarkdown from "react-markdown";
 import Typography from '@material-ui/core/Typography';
@@ -7,6 +7,7 @@ import { Paper, withStyles, ButtonBase, TextField, Button, Collapse } from "@mat
 import ToggleButton from "@material-ui/lab/ToggleButton";
 import ToggleButtonGroup from '@material-ui/lab/ToggleButtonGroup';
 import MDEditor from '@uiw/react-md-editor';
+import CountdownTimer from 'react-countdown';
 import './vote-card.css';
 
 type Props = {
@@ -15,6 +16,10 @@ type Props = {
     allowBallotChanges?: boolean;
     onBallotChanged?: (newBallot: Ballot) => void;
     onVoteChanged?: (newVote: Vote) => void;
+};
+
+type State = {
+    currentTime: number;
 };
 
 function createEmptyBallot(type: BallotType): Ballot | undefined {
@@ -247,10 +252,67 @@ function renderVoteOption(
     }
 }
 
+type TimeLeft = {
+    hours: number;
+    minutes: number;
+    seconds: number;
+    completed: boolean;
+}
+
+function renderNumberAndUnit(value: number, unit: string): string {
+    if (value === 1) {
+        return `${value} ${unit}`;
+    } else {
+        return `${value} ${unit}s`;
+    }
+}
+
+function renderSequenceOfUnits(seq: { value: number, unit: string}[]): string {
+    if (seq.length === 0) {
+        return "";
+    } else if (seq.length === 1) {
+        // Fall through.
+    } else if (seq[0].value === 0) {
+        return renderSequenceOfUnits(seq.slice(1));
+    } else if (seq[0].value === 1) {
+        let first = renderNumberAndUnit(seq[0].value, seq[0].unit);
+        if (seq[1].value > 0) {
+            return `${first} and ${renderNumberAndUnit(seq[1].value, seq[1].unit)}`;
+        }
+    }
+
+    return renderNumberAndUnit(seq[0].value, seq[0].unit);
+}
+
+function renderTimeLeftMessage({ hours, minutes, seconds, completed }: TimeLeft): string {
+    if (completed) {
+        return "Vote ended";
+    } else {
+        return "Vote closes in " + renderSequenceOfUnits([
+            { value: hours, unit: "hour" },
+            { value: minutes, unit: "minute" },
+            { value: seconds, unit: "second" },
+        ]);
+    }
+}
+
+function renderTimeLeft(timeLeft: TimeLeft): JSX.Element {
+    return <Typography variant="button">{renderTimeLeftMessage(timeLeft)}</Typography>;
+}
+
 /**
  * A card that allows users to inspect and interact with a vote.
  */
-class VoteCard extends PureComponent<Props> {
+class VoteCard extends Component<Props, State> {
+    constructor(props: Props) {
+        super(props);
+        this.state = { currentTime: Date.now() };
+    }
+
+    onTimerCompleted() {
+        this.setState({ currentTime: Date.now() });
+    }
+
     render() {
         let vote = this.props.voteAndBallots.vote;
         let ballot = this.props.voteAndBallots.ownBallot || createEmptyBallot(vote.type);
@@ -297,6 +359,7 @@ class VoteCard extends PureComponent<Props> {
                         });
                     }
                 })}
+                <CountdownTimer date={vote.deadline * 1000} renderer={renderTimeLeft} onComplete={this.onTimerCompleted.bind(this)} />
                 {createMDEditorOrPreview(vote.description, "VoteDescription", !!this.props.allowVoteChanges, description => {
                     if (this.props.onVoteChanged) {
                         this.props.onVoteChanged({
