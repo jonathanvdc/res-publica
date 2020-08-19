@@ -73,15 +73,29 @@ class App extends FetchedStateComponent<{}, boolean> {
   }
 }
 
-class VoteListRoute extends FetchedStateComponent<{ match: any }, VoteAndBallots[]> {
-  fetchState(): Promise<VoteAndBallots[]> {
-    return apiClient.getActiveVotes();
+type VoteListRouteState = {
+  active: VoteAndBallots[];
+  past: Vote[];
+};
+
+class VoteListRoute extends FetchedStateComponent<{ match: any }, VoteListRouteState> {
+  async fetchState(): Promise<VoteListRouteState> {
+    let activePromise = apiClient.getActiveVotes();
+    let allPromise = apiClient.getAllVotes();
+    let active = await activePromise;
+    let all = await allPromise;
+    return {
+      active,
+      past: all.filter(x => !active.find(y => y.vote.id === x.id))
+    };
   }
 
-  renderState(activeVotes: VoteAndBallots[]): JSX.Element {
+  renderState(data: VoteListRouteState): JSX.Element {
     return <div>
       <Typography variant="h2">Active Votes</Typography>
-      <VoteList votes={activeVotes} />
+      <VoteList votes={data.active} />
+      <Typography variant="h2">Closed Votes</Typography>
+      <VoteList votes={data.past.map(vote => ({ vote, ballots: [] }))} />
     </div>;
   }
 }

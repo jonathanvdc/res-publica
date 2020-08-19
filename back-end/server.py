@@ -33,7 +33,7 @@ if __name__ == "__main__":
     @app.route('/api/all-votes')
     def get_all_votes():
         """Gets all votes."""
-        return jsonify([vote['vote'] for vote in vote_index.votes])
+        return jsonify([vote['vote'] for vote in vote_index.votes.values()])
 
     @app.route('/api/vote')
     def get_vote():
