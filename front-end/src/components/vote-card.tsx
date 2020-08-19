@@ -1,9 +1,9 @@
-import React, { PureComponent } from "react";
+import React, { PureComponent, Component } from "react";
 import { VoteAndBallots, Ballot, BallotType, VoteOption, RateOptionsBallot, ChooseOneBallot, isActive, Vote, getBallotKind } from "../model/vote";
 import ReactMarkdown from "react-markdown";
 import Typography from '@material-ui/core/Typography';
 import DeleteIcon from '@material-ui/icons/Delete';
-import { Paper, withStyles, ButtonBase, TextField, Button } from "@material-ui/core";
+import { Paper, withStyles, ButtonBase, TextField, Button, Collapse } from "@material-ui/core";
 import ToggleButton from "@material-ui/lab/ToggleButton";
 import ToggleButtonGroup from '@material-ui/lab/ToggleButtonGroup';
 import MDEditor from '@uiw/react-md-editor';
@@ -63,11 +63,60 @@ function createTitleEditorOrPreview(
     }
 }
 
+class CollapsibleMarkdown extends Component<any, { isCollapsed: boolean }> {
+    constructor(props: any) {
+        super(props);
+        this.state = { isCollapsed: true };
+    }
+
+    onToggleCollapsed() {
+        this.setState({ isCollapsed: !this.state.isCollapsed });
+    }
+
+    render() {
+        let content: JSX.Element;
+        let buttonText: string;
+        if (this.state.isCollapsed) {
+            content = <Collapse collapsedHeight="5em">
+                <ReactMarkdown {...this.props} />
+            </Collapse>;
+            buttonText = "Read more";
+        } else {
+            content = <ReactMarkdown {...this.props} />;
+            buttonText = "Read less";
+        }
+        return <div>
+            {content}
+            <div style={{display: "flex"}}><Button color="primary" onClick={this.onToggleCollapsed.bind(this)}>{buttonText}</Button></div>
+        </div>;
+    }
+}
+
+function countLines(source: string, lineLength: number = 80): number {
+    let lineCount = 0;
+    let emptyLineCount = 0;
+    let whitespaceRegex = /^\s+$/;
+    for (let line of source.split("\n")) {
+        if (!line || whitespaceRegex.test(line)) {
+            emptyLineCount++;
+        } else {
+            if (emptyLineCount > 0) {
+                lineCount++;
+            }
+
+            lineCount += Math.ceil(line.length / lineLength);
+            emptyLineCount = 0;
+        }
+    }
+    return lineCount;
+}
+
 function createMDEditorOrPreview(
     source: string,
     className: string,
     allowEdits: boolean,
-    onChange: (newValue: string) => void): JSX.Element {
+    onChange: (newValue: string) => void,
+    allowCollapse: boolean = true): JSX.Element {
 
     if (allowEdits) {
         return <MDEditor
@@ -76,11 +125,20 @@ function createMDEditorOrPreview(
             value={source}
             previewOptions={{escapeHtml: false, unwrapDisallowed: true}} />;
     } else {
-        return <ReactMarkdown
-            className={className}
-            source={source}
-            escapeHtml={false}
-            unwrapDisallowed={true} />;
+        const maxLines = 4;
+        if (allowCollapse && countLines(source) > maxLines) {
+            return <CollapsibleMarkdown
+                className={className}
+                source={source}
+                escapeHtml={false}
+                unwrapDisallowed={true} />;
+        } else {
+            return <ReactMarkdown
+                className={className}
+                source={source}
+                escapeHtml={false}
+                unwrapDisallowed={true} />;
+        }
     }
 }
 
@@ -246,7 +304,7 @@ class VoteCard extends PureComponent<Props> {
                             description
                         });
                     }
-                })}
+                }, false)}
             </div>
             {options}
         </div>;
