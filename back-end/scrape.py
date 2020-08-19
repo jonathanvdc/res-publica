@@ -67,7 +67,10 @@ def scrape_cfc(reddit: Reddit, url: str) -> Vote:
         'deadline': time.time() + 60 * 60 * 24,
         'options': options,
         'type': {
-            'tally': 'first-past-the-post'
+            'tally': 'spsv',
+            'positions': 7,
+            'min': 1,
+            'max': 5
         }
     }
 

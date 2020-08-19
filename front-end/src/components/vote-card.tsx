@@ -287,7 +287,7 @@ function renderSequenceOfUnits(seq: { value: number, unit: string}[]): string {
 
 function renderTimeLeftMessage({ hours, minutes, seconds, completed }: TimeLeft): string {
     if (completed) {
-        return "Vote ended";
+        return "Vote closed";
     } else {
         return "Vote closes in " + renderSequenceOfUnits([
             { value: hours, unit: "hour" },
@@ -310,7 +310,7 @@ function createTimerOrTimePicker(
     if (allowVoteChanges) {
         return <DateTimePicker
             value={new Date(deadline * 1000).toISOString()}
-            label="Vote ends on" onChange={date => {
+            label="Vote closes on" onChange={date => {
                 if (date) {
                     onChangeDeadline(date.unix());
                 }

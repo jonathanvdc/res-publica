@@ -18,7 +18,7 @@ Ballot = Any
 
 
 def is_vote_active(vote: VoteAndBallots) -> bool:
-    return vote['vote']['deadline'] > time.monotonic()
+    return vote['vote']['deadline'] > time.time()
 
 
 class VoteIndex(object):

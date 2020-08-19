@@ -62,7 +62,16 @@ class VotePage extends Component<Props, State> {
             </CheckButton>;
         }
         return <div>
-            <VoteCard voteAndBallots={data} allowBallotChanges={allowChanges} onBallotChanged={newBallot => this.setState({ ballot: newBallot })} />
+            <VoteCard
+                voteAndBallots={data}
+                allowBallotChanges={allowChanges}
+                onBallotChanged={newBallot => {
+                    if (isActive(data.vote)) {
+                        this.setState({ ballot: newBallot });
+                    } else {
+                        this.setState({ ...this.state });
+                    }
+                }} />
             {isActive(this.props.voteAndBallots.vote) ? <div className="ButtonOrProgressPanel">{buttonOrProgress}</div> : []}
         </div>;
     }
