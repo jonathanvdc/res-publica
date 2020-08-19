@@ -5,9 +5,10 @@ import { Route, BrowserRouter } from 'react-router-dom';
 import { createMuiTheme, MuiThemeProvider } from '@material-ui/core/styles';
 import { green } from '@material-ui/core/colors';
 import VoteList from './components/vote-list';
-import { Typography } from '@material-ui/core';
+import { Typography, Button } from '@material-ui/core';
 import { MuiPickersUtilsProvider } from '@material-ui/pickers';
 import MomentUtils from '@date-io/moment';
+import { saveAs } from 'file-saver';
 import { DummyAPIClient } from './model/dummy-api-client';
 import VotePage from './components/vote-page';
 import { FetchedStateComponent } from './components/fetched-state-component';
@@ -16,6 +17,7 @@ import { ServerAPIClient } from './model/server-api-client';
 import MakeVotePage from './components/make-vote-page';
 import MakeVoteConfirmationPage from './components/make-vote-confirmation-page';
 import ScrapeCFCPage from './components/scrape-cfc-page';
+import BallotTable, { ballotsToCsv } from './components/ballot-table';
 
 let currentSeasons: string[] = [];
 
@@ -58,9 +60,10 @@ class App extends FetchedStateComponent<{}, boolean> {
           <MuiThemeProvider theme={theme}>
             <header className="App-header">
               <Suspense fallback={<div>Loading...</div>}>
-                <Route exact={true} path="/" component={VoteListRoute} />
-                <Route path="/vote/:voteId" component={VoteRoute} />
-                <Route path="/admin/make-vote" component={MakeVoteRoute} />
+                <Route exact path="/" component={VoteListRoute} />
+                <Route exact path="/vote/:voteId" component={VoteRoute} />
+                <Route exact path="/vote/:voteId/ballots" component={VoteBallotsRoute} />
+                <Route exact path="/admin/make-vote" component={MakeVoteRoute} />
               </Suspense>
             </header>
           </MuiThemeProvider>
@@ -118,6 +121,33 @@ class VoteRoute extends FetchedStateComponent<{ match: any, history: any }, Vote
     } else {
       return <VoteConfirmationPage ballotId={data.ballotId!} />;
     }
+  }
+}
+
+class VoteBallotsRoute extends FetchedStateComponent<{ match: any, history: any }, VoteAndBallots | undefined> {
+  fetchState(): Promise<VoteAndBallots | undefined> {
+    return apiClient.getVote(this.props.match.params.voteId);
+  }
+
+  onDownloadBallots() {
+    let blob = new Blob([ballotsToCsv(this.state.data!)], {type: "text/csv;charset=utf-8"});
+    saveAs(blob, this.state.data?.vote.id + '.csv');
+  }
+
+  renderState(data: VoteAndBallots | undefined): JSX.Element {
+    if (!data) {
+      return <div>
+        <h1>Error 404</h1>
+        Vote with ID '{this.props.match.params.voteId}' not found.
+      </div>;
+    }
+
+    return <div>
+      <BallotTable voteAndBallots={data} />
+      <Button variant="contained" onClick={this.onDownloadBallots.bind(this)} style={{margin: "1em"}}>
+        Download as CSV
+      </Button>
+    </div>;
   }
 }
 

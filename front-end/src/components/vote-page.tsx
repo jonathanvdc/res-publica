@@ -5,6 +5,7 @@ import { green } from "@material-ui/core/colors";
 import { VoteAndBallots, Ballot, isCompleteBallot, Vote, isActive } from "../model/vote";
 import VoteCard from "./vote-card";
 import "./vote-page.css";
+import { Link } from "react-router-dom";
 
 type Props = {
     voteAndBallots: VoteAndBallots;
@@ -67,12 +68,14 @@ class VotePage extends Component<Props, State> {
                 allowBallotChanges={allowChanges}
                 onBallotChanged={newBallot => {
                     if (isActive(data.vote)) {
-                        this.setState({ ballot: newBallot });
+                        this.setState({ ...this.state, ballot: newBallot });
                     } else {
                         this.setState({ ...this.state });
                     }
                 }} />
-            {isActive(this.props.voteAndBallots.vote) ? <div className="ButtonOrProgressPanel">{buttonOrProgress}</div> : []}
+            {isActive(data.vote)
+                ? <div className="ButtonOrProgressPanel">{buttonOrProgress}</div>
+                : <Link to={`/vote/${data.vote.id}/ballots`}><Button style={{marginBottom: "1em"}} variant="contained">View Ballots</Button></Link>}
         </div>;
     }
 }
