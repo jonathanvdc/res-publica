@@ -1,6 +1,6 @@
 import React from 'react';
 import RedditAuthPage from "../components/reddit-auth-page";
-import { Authenticator, getDeviceId, AuthenticationLevel } from "./auth";
+import { Authenticator, getDeviceId, AuthenticationLevel, refreshDeviceId } from "./auth";
 import { NetworkError } from './exceptions';
 
 /**
@@ -36,6 +36,16 @@ export class RedditAuthenticator implements Authenticator {
      */
     createAuthenticationPage(): JSX.Element {
         return <RedditAuthPage clientId={this.clientId} redirectUrl={this.redirectUrl} deviceId={this.deviceId} />;
+    }
+
+    logOut(): void {
+        // We log out by refreshing our device ID.
+        refreshDeviceId();
+    }
+
+    async getUserId(): Promise<string> {
+        let response = await fetch(`/api/user-id?deviceId=${encodeURIComponent(this.deviceId)}`);
+        return await response.json();
     }
 
     public readonly deviceId: string;

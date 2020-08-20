@@ -92,6 +92,11 @@ if __name__ == "__main__":
         else:
             return jsonify('authenticated')
 
+    @app.route('/api/user-id')
+    def check_is_authenticated():
+        device = authenticate(request)
+        return jsonify(device.user_id)
+
     @app.route('/reddit-auth')
     def process_auth():
         # Make sure that there's been no error.

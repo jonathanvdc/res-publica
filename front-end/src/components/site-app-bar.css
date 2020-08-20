@@ -1,0 +1,12 @@
+.AppTitle, .AppTitle:hover {
+    text-decoration: none;
+    color: white;
+    outline: none;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: clip;
+}
+
+.AppBarFiller {
+    flex-grow: 1;
+}

@@ -17,6 +17,16 @@ export interface Authenticator {
      * Creates an authentication page.
      */
     createAuthenticationPage(): JSX.Element;
+
+    /**
+     * Gets the user's identifier (if they are authenticated).
+     */
+    getUserId(): Promise<string>;
+
+    /**
+     * Logs the user out, deleting their credentials.
+     */
+    logOut(): void;
 }
 
 export function makeid(length: number): string {
@@ -31,17 +41,25 @@ export function makeid(length: number): string {
     return result;
 }
 
+const deviceIdKey = "deviceId";
+
 /**
  * Gets a unique identifier for this device.
  */
 export function getDeviceId(): string {
-    const key = "deviceId";
-    let val = localStorage.getItem(key);
+    let val = localStorage.getItem(deviceIdKey);
     if (val) {
         return val;
     } else {
-        val = makeid(20);
-        localStorage.setItem(key, val);
-        return val;
+        return refreshDeviceId();
     }
+}
+
+/**
+ * Refreshes this device's unique identifier.
+ */
+export function refreshDeviceId(): string {
+    let val = makeid(30);
+    localStorage.setItem(deviceIdKey, val);
+    return val;
 }

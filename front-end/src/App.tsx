@@ -19,6 +19,7 @@ import MakeVoteConfirmationPage from './components/make-vote-confirmation-page';
 import ScrapeCFCPage from './components/scrape-cfc-page';
 import BallotTable, { ballotsToCsv } from './components/ballot-table';
 import { AuthenticationLevel } from './model/auth';
+import SiteAppBar from './components/site-app-bar';
 
 let currentSeasons: string[] = [];
 
@@ -31,27 +32,45 @@ const theme = createMuiTheme({
   },
 });
 
-const apiClient = new ServerAPIClient();
+const apiClient = new DummyAPIClient();
 const authenticator = apiClient.authenticator;
 
+type AppState = {
+  authLevel: AuthenticationLevel;
+  userId?: string;
+};
 
-class App extends FetchedStateComponent<{}, AuthenticationLevel> {
+class App extends FetchedStateComponent<{}, AppState> {
   getMainClass(): string {
     return ["App", ...currentSeasons].join(" ");
   }
 
-  fetchState(): Promise<AuthenticationLevel> {
-    return authenticator.isAuthenticated();
+  async fetchState(): Promise<AppState> {
+    let authLevel = await authenticator.isAuthenticated();
+    if (authLevel === AuthenticationLevel.Unauthenticated) {
+      return { authLevel };
+    }
+    let userId = await authenticator.getUserId();
+    return {
+      authLevel,
+      userId
+    };
   }
 
-  renderState(isAuthenticated: AuthenticationLevel): JSX.Element {
-    if (isAuthenticated === AuthenticationLevel.Unauthenticated) {
+  onLogOut() {
+    authenticator.logOut();
+    this.setState({ hasConnected: false });
+    this.refetchInitialState();
+  }
+
+  renderState(state: AppState): JSX.Element {
+    if (state.authLevel === AuthenticationLevel.Unauthenticated) {
       // If we aren't logged in yet, then we'll send the user to
       // an authentication page.
       return <div className={this.getMainClass()}>
-        <header className="App-header">
+        <div className="App-body">
           {authenticator.createAuthenticationPage()}
-        </header>
+        </div>
       </div>;
     }
 
@@ -59,16 +78,17 @@ class App extends FetchedStateComponent<{}, AuthenticationLevel> {
       <div className={this.getMainClass()}>
         <MuiPickersUtilsProvider utils={MomentUtils}>
           <MuiThemeProvider theme={theme}>
-            <header className="App-header">
+            <SiteAppBar onLogOut={this.onLogOut.bind(this)} userId={state.userId} />
+            <div className="App-body">
               <Suspense fallback={<div>Loading...</div>}>
                 <Route exact path="/" component={VoteListRoute} />
                 <Route exact path="/vote/:voteId" component={VoteRoute} />
                 <Route exact path="/vote/:voteId/ballots" component={VoteBallotsRoute} />
-                {isAuthenticated === AuthenticationLevel.AuthenticatedAdmin
+                {state.authLevel === AuthenticationLevel.AuthenticatedAdmin
                   ? <Route exact path="/admin/make-vote" component={MakeVoteRoute} />
                   : []}
               </Suspense>
-            </header>
+            </div>
           </MuiThemeProvider>
         </MuiPickersUtilsProvider>
       </div>

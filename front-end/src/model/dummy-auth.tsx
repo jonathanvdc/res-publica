@@ -27,5 +27,13 @@ export class DummyAuthenticator implements Authenticator {
         return <div />;
     }
 
+    logOut(): void {
+        // Logging out isn't really a thing here. Do nothing?
+    }
+
+    async getUserId(): Promise<string> {
+        return 'donald-duck';
+    }
+
     public readonly deviceId: string;
 }

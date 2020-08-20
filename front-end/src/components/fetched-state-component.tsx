@@ -33,16 +33,20 @@ export abstract class FetchedStateComponent<TProps, TData> extends Component<TPr
         return undefined;
     }
 
+    refetchInitialState() {
+        // Check if we're authenticated. Update state accordingly.
+        this.fetchState()
+        .then(
+            val => this.setState({ hasConnected: true, data: val }),
+            reason => this.setState({ hasConnected: false, error: reason }));
+    }
+
     componentDidMount() {
         if (this.state.hasConnected) {
             return;
         }
 
-        // Check if we're authenticated. Update state accordingly.
-        this.fetchState()
-            .then(
-                val => this.setState({ hasConnected: true, data: val }),
-                reason => this.setState({ hasConnected: false, error: reason }));
+        this.refetchInitialState();
     }
 
     renderError(error: any) {
