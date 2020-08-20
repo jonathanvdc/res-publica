@@ -19,6 +19,7 @@
 
 .VotePanelContents {
     margin: 1.5em;
+    width: 100%;
 }
 
 .EditableVoteOptionHeader {
@@ -31,4 +32,20 @@
 
 .VoteOptionDescription {
     text-align: justify;
+}
+
+.VoteResultPanel {
+    display: flex;
+    width: 100%;
+}
+
+.VoteResultPanel .VoteDescriptionPanel {
+    flex-grow: 1;
+}
+
+.VoteResultPanel .VoteOutcomePanel {
+    margin-top: 0.5em;
+    margin-right: 0.5em;
+    display: flex;
+    flex-direction: column;
 }

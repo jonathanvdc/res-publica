@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { VoteAndBallots, Ballot, BallotType, VoteOption, RateOptionsBallot, ChooseOneBallot, isActive, Vote, getBallotKind } from "../model/vote";
+import { VoteAndBallots, Ballot, BallotType, VoteOption, RateOptionsBallot, ChooseOneBallot, isActive, Vote, getBallotKind, tally } from "../model/vote";
 import ReactMarkdown from "react-markdown";
 import Typography from '@material-ui/core/Typography';
 import DeleteIcon from '@material-ui/icons/Delete';
@@ -8,6 +8,7 @@ import ToggleButton from "@material-ui/lab/ToggleButton";
 import ToggleButtonGroup from '@material-ui/lab/ToggleButtonGroup';
 import MDEditor from '@uiw/react-md-editor';
 import { DateTimePicker } from '@material-ui/pickers'
+import DoneOutlineIcon from '@material-ui/icons/DoneOutline';
 import CountdownTimer from 'react-countdown';
 import './vote-card.css';
 
@@ -193,9 +194,27 @@ const StyledToggleButtonGroup = withStyles((theme) => ({
     }
   }))(ToggleButtonGroup);
 
+function renderVoteResult(description: JSX.Element[], isWinner: boolean, score: string): JSX.Element[] {
+    return [
+        <div className="VoteResultPanel">
+            <div className="VoteOutcomePanel">
+                <Typography variant="h4">{score}</Typography>
+                {isWinner ? <DoneOutlineIcon style={{fontSize: 40}} /> : []}
+            </div>
+            <div className="VoteDescriptionPanel">{description}</div>
+        </div>
+    ];
+}
+
+type TalliedVote = {
+    voteAndBallots: VoteAndBallots;
+    winners: string[];
+    ranking: string[];
+}
+
 function renderVoteOption(
     option: VoteOption,
-    ballotType: BallotType,
+    vote: TalliedVote,
     allowVoteChanges: boolean,
     allowBallotChanges: boolean,
     ballot: Ballot | undefined,
@@ -203,8 +222,21 @@ function renderVoteOption(
     changeOption: (newOption: VoteOption) => void,
     deleteOption: () => void) {
 
+    let ballotType = vote.voteAndBallots.vote.type;
+    let description = renderVoteOptionDescription(
+        option,
+        allowVoteChanges,
+        changeOption,
+        deleteOption);
+
     switch (ballotType.tally) {
         case "spsv":
+            if (vote.winners.length > 0) {
+                let winnerIndex = vote.winners.indexOf(option.id);
+                let rankingIndex = vote.ranking.indexOf(option.id);
+                description = renderVoteResult(description, winnerIndex >= 0, `#${rankingIndex + 1}`)
+            }
+
             let optionBallot = ballot as RateOptionsBallot;
             let ratingOrNull = optionBallot.ratingPerOption.find(val => val.optionId === option.id);
             let buttons = [];
@@ -213,11 +245,7 @@ function renderVoteOption(
             }
             return <Paper elevation={1} className="VotePanel">
                 <div className="VotePanelContents">
-                    {renderVoteOptionDescription(
-                        option,
-                        allowVoteChanges,
-                        changeOption,
-                        deleteOption)}
+                    {description}
                     <StyledToggleButtonGroup
                         value={ratingOrNull ? ratingOrNull.rating : null}
                         exclusive
@@ -232,13 +260,17 @@ function renderVoteOption(
             </Paper>;
         case "first-past-the-post":
             let isSelected = ballot && (ballot as ChooseOneBallot).selectedOptionId === option.id;
+            if (vote.winners.length > 0) {
+                let ballots = vote.voteAndBallots.ballots;
+                let votePercentage = ballots.filter(x => (x as ChooseOneBallot).selectedOptionId === option.id).length / ballots.length;
+                console.log(vote.ranking);
+                description = renderVoteResult(description, vote.winners.indexOf(option.id) !== -1, `${Math.round(100 * votePercentage)}%`)
+            }
+
             let contents = <div className="VotePanelContents">
-                {renderVoteOptionDescription(
-                    option,
-                    allowVoteChanges,
-                    changeOption,
-                    deleteOption)}
+                {description}
             </div>;
+
             if (allowVoteChanges) {
                 return <Paper elevation={1} className={isSelected ? "VotePanel SelectedVotePanel" : "VotePanel"}>
                     {contents}
@@ -337,13 +369,22 @@ class VoteCard extends Component<Props, State> {
     render() {
         let vote = this.props.voteAndBallots.vote;
         let ballot = this.props.voteAndBallots.ownBallot || createEmptyBallot(vote.type);
+        let shouldTally = this.props.voteAndBallots.ballots.length > 0;
+        let ranking = shouldTally
+            ? tally(this.props.voteAndBallots, this.props.voteAndBallots.vote.options.length)
+            : vote.options.map(x => x.id);
+        let talliedVote = {
+            voteAndBallots: this.props.voteAndBallots,
+            winners: shouldTally ? tally(this.props.voteAndBallots) : [],
+            ranking
+        };
 
         let options: JSX.Element[] = [];
-        for (let option of vote.options) {
+        for (let option of vote.options.sort((a, b) => ranking.indexOf(a.id) - ranking.indexOf(b.id))) {
             options.push(
                 renderVoteOption(
                     option,
-                    vote.type,
+                    talliedVote,
                     !!this.props.allowVoteChanges,
                     this.props.allowBallotChanges === undefined ? isActive(vote) : this.props.allowBallotChanges,
                     ballot,

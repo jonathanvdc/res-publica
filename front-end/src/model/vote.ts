@@ -148,15 +148,22 @@ function max<TItem, TProp>(seq: TItem[], getProp: (x: TItem) => TProp): TItem {
     return result;
 }
 
-function tallyFPTP(voteAndBallots: VoteAndBallots): string[] {
+function tallyFPTP(voteAndBallots: VoteAndBallots, seats?: number): string[] {
+    seats = seats || 1;
     let counts = new Map<string, number>();
     for (let ballot of voteAndBallots.ballots) {
         let fptpBallot = ballot as ChooseOneBallot;
         let prevScore = counts.get(fptpBallot.selectedOptionId) || 0;
         counts.set(fptpBallot.selectedOptionId, prevScore + 1);
     }
-    let sortedOptions = Array.of(...counts.keys()).sort();
-    return [max(sortedOptions, x => counts.get(x) || 0)];
+    let sortedOptions = voteAndBallots.vote.options.map(x => x.id).sort();
+    let results: string[] = [];
+    while (results.length < seats) {
+        let winner = max(sortedOptions, x => counts.get(x) || 0);
+        results.push(winner);
+        sortedOptions = sortedOptions.filter(x => x !== winner);
+    }
+    return results;
 }
 
 type KotzePereiraBallot = string[];
@@ -177,7 +184,7 @@ function kotzePereira(ballot: RateOptionsBallot, type: RateOptionsBallotType): K
     return virtualBallots;
 }
 
-function tallySPSV(voteAndBallots: VoteAndBallots): string[] {
+function tallySPSV(voteAndBallots: VoteAndBallots, seats?: number): string[] {
     let ballotType = voteAndBallots.vote.type as RateOptionsBallotType;
 
     // Apply the Kotze-Pareira transform.
@@ -190,7 +197,7 @@ function tallySPSV(voteAndBallots: VoteAndBallots): string[] {
     let sortedCandidates = voteAndBallots.vote.options.map(x => x.id).sort();
 
     // Then allocate seats.
-    let seatCount = Math.min(ballotType.positions, sortedCandidates.length);
+    let seatCount = seats || Math.min(ballotType.positions, sortedCandidates.length);
     let elected: string[] = [];
     for (let i = 0; i < seatCount; i++) {
         let candidateScores = new Map<string, number>();
@@ -211,11 +218,11 @@ function tallySPSV(voteAndBallots: VoteAndBallots): string[] {
     return elected;
 }
 
-export function tally(voteAndBallots: VoteAndBallots): string[] {
+export function tally(voteAndBallots: VoteAndBallots, seats?: number): string[] {
     switch (voteAndBallots.vote.type.tally) {
         case "first-past-the-post":
-            return tallyFPTP(voteAndBallots);
+            return tallyFPTP(voteAndBallots, seats);
         case "spsv":
-            return tallySPSV(voteAndBallots);
+            return tallySPSV(voteAndBallots, seats);
     }
 }

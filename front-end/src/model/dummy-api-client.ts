@@ -15,7 +15,16 @@ export class DummyAPIClient implements APIClient {
             },
             {
                 vote: mockVoteAndBallots2,
-                ballots: []
+                ballots: [
+                    {
+                        id: "dummy",
+                        ratingPerOption: [
+                            { optionId: "sppidderman", rating: 5 },
+                            { optionId: "option-2", rating: 3 },
+                            { optionId: "option-1", rating: 2 },
+                        ]
+                    }
+                ]
             }
         ];
         this.admin = new DummyAdminAPIClient(this.activeVotes);
@@ -105,7 +114,7 @@ let mockVoteAndBallots2: Vote = {
     id: "mock-vote-2",
     name: "44th Presidential Election",
     description: "We will now vote on **something.**",
-    deadline: (Date.now() + 1000 * 2) / 1000,
+    deadline: (Date.now() + 1000 * 10) / 1000,
     type: { tally: "spsv", positions: 1, min: 0, max: 5 },
     options: [
         {
