@@ -78,7 +78,10 @@ class App extends FetchedStateComponent<{}, AppState> {
       <div className={this.getMainClass()}>
         <MuiPickersUtilsProvider utils={MomentUtils}>
           <MuiThemeProvider theme={theme}>
-            <SiteAppBar onLogOut={this.onLogOut.bind(this)} userId={state.userId} />
+            <SiteAppBar
+              onLogOut={this.onLogOut.bind(this)}
+              userId={state.userId}
+              isAdmin={state.authLevel === AuthenticationLevel.AuthenticatedAdmin} />
             <div className="App-body">
               <Suspense fallback={<div>Loading...</div>}>
                 <Route exact path="/" component={VoteListRoute} />
