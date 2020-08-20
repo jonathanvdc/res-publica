@@ -69,7 +69,7 @@ def scrape_cfc(reddit: Reddit, url: str) -> Vote:
         'type': {
             'tally': 'spsv',
             'positions': 7,
-            'min': 1,
+            'min': 0,
             'max': 5
         }
     }

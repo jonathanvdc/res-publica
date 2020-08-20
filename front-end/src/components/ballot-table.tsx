@@ -1,17 +1,7 @@
 import React, { PureComponent } from "react";
-import { VoteAndBallots, Ballot, Vote, RateOptionsBallot } from "../model/vote";
+import { VoteAndBallots, Ballot, Vote, RateOptionsBallot, sortByString } from "../model/vote";
 import "./vote-page.css";
 import { Table, TableHead, TableCell, Paper, TableRow } from "@material-ui/core";
-
-function sortByString<T>(elements: T[], getString: (x: T) => string): T[] {
-    return elements.sort((a, b) => {
-        let aId = getString(a);
-        let bId = getString(b);
-        if (aId > bId) { return -1; }
-        else if (aId < bId) { return 1; }
-        else { return 0; }
-    });
-}
 
 function getOptionScores(ballot: Ballot, vote: Vote): { optionId: string, rating: number }[] {
     if ('ratingPerOption' in ballot) {

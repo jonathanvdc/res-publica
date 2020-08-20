@@ -108,7 +108,7 @@ class MakeVotePage extends PureComponent<Props> {
                 break;
             case "spsv":
             default:
-                type = { tally: "spsv", positions: 1, min: 1, max: 5 };
+                type = { tally: "spsv", positions: 1, min: 0, max: 5 };
                 break;
         }
         this.updateDraft({
@@ -124,7 +124,7 @@ class MakeVotePage extends PureComponent<Props> {
         }
         this.updateDraft({
             ...this.props.draft,
-            type: { tally: "spsv", positions: newValue, min: 1, max: 5 }
+            type: { tally: "spsv", positions: newValue, min: 0, max: 5 }
         });
     }
 

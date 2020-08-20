@@ -124,3 +124,98 @@ export function isCompleteBallot(ballot: Ballot | undefined, vote: Vote): boolea
         }
     }
 }
+
+export function sortByString<T>(elements: T[], getString: (x: T) => string): T[] {
+    return elements.sort((a, b) => {
+        let aId = getString(a);
+        let bId = getString(b);
+        if (aId > bId) { return -1; }
+        else if (aId < bId) { return 1; }
+        else { return 0; }
+    });
+}
+
+function max<TItem, TProp>(seq: TItem[], getProp: (x: TItem) => TProp): TItem {
+    let result: TItem = seq[0];
+    let maxVal: TProp = getProp(seq[0]);
+    for (let item of seq.slice(1)) {
+        let val = getProp(item);
+        if (val > maxVal) {
+            result = item;
+            maxVal = val;
+        }
+    }
+    return result;
+}
+
+function tallyFPTP(voteAndBallots: VoteAndBallots): string[] {
+    let counts = new Map<string, number>();
+    for (let ballot of voteAndBallots.ballots) {
+        let fptpBallot = ballot as ChooseOneBallot;
+        let prevScore = counts.get(fptpBallot.selectedOptionId) || 0;
+        counts.set(fptpBallot.selectedOptionId, prevScore + 1);
+    }
+    let sortedOptions = Array.of(...counts.keys()).sort();
+    return [max(sortedOptions, x => counts.get(x) || 0)];
+}
+
+type KotzePereiraBallot = string[];
+
+/**
+ * Applies the Kotze-Pereira transform to a single ballot.
+ * @param ballot The ballot to transform.
+ * @param type The ballot's type.
+ */
+function kotzePereira(ballot: RateOptionsBallot, type: RateOptionsBallotType): KotzePereiraBallot[] {
+    let virtualBallots: KotzePereiraBallot[] = [];
+    for (let i = type.min; i <= type.max; i++) {
+        virtualBallots.push(
+            ballot.ratingPerOption
+                .filter(x => x.rating >= i)
+                .map(x => x.optionId));
+    }
+    return virtualBallots;
+}
+
+function tallySPSV(voteAndBallots: VoteAndBallots): string[] {
+    let ballotType = voteAndBallots.vote.type as RateOptionsBallotType;
+
+    // Apply the Kotze-Pareira transform.
+    let virtualBallots = voteAndBallots.ballots.flatMap(ballot =>
+        kotzePereira(
+            ballot as RateOptionsBallot,
+            ballotType));
+
+    // Sort the candidates by ID.
+    let sortedCandidates = voteAndBallots.vote.options.map(x => x.id).sort();
+
+    // Then allocate seats.
+    let seatCount = Math.min(ballotType.positions, sortedCandidates.length);
+    let elected: string[] = [];
+    for (let i = 0; i < seatCount; i++) {
+        let candidateScores = new Map<string, number>();
+        for (let ballot of virtualBallots) {
+            let notYetElected = ballot.filter(x => elected.indexOf(x) === -1);
+            let alreadyElectedCount = ballot.length - notYetElected.length;
+            let weight = 1 / (1 + alreadyElectedCount);
+            for (let candidateId of notYetElected) {
+                let previousScore = candidateScores.get(candidateId) || 0;
+                candidateScores.set(candidateId, previousScore + weight);
+            }
+        }
+        let candidates = sortedCandidates.filter(x => elected.indexOf(x) === -1);
+        let bestCandidate = max(candidates, x => candidateScores.get(x) || 0);
+        elected.push(bestCandidate);
+    }
+
+    return elected;
+}
+
+export function tally(voteAndBallots: VoteAndBallots): string[] {
+    switch (voteAndBallots.vote.type.tally) {
+        case "first-past-the-post":
+            return tallyFPTP(voteAndBallots);
+        case "spsv":
+            return tallySPSV(voteAndBallots);
+    }
+}
