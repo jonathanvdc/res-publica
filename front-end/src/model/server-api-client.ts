@@ -1,5 +1,5 @@
 import { Authenticator } from "./auth";
-import { VoteAndBallots, Ballot, Vote } from "./vote";
+import { VoteAndBallots, Ballot, Vote, FinishedBallot } from "./vote";
 import { APIClient, AdminAPIClient } from "./api-client";
 import { RedditAuthenticator } from "./reddit-auth";
 
@@ -51,7 +51,7 @@ export class ServerAPIClient implements APIClient {
      * is returned that can be used to verify that the ballot was
      * indeed well received.
      */
-    castBallot(voteId: string, ballot: Ballot): Promise<{ ballotId: string } | { error: string }> {
+    castBallot(voteId: string, ballot: Ballot): Promise<FinishedBallot | { error: string }> {
         return postJSON(
             `/api/cast-ballot?voteId=${encodeURIComponent(voteId)}&deviceId=${encodeURIComponent(this.auth.deviceId)}`,
             ballot);

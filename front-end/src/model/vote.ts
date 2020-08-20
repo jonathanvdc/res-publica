@@ -60,17 +60,24 @@ export type Vote = {
 /// A ballot for a multiple choice vote.
 export type ChooseOneBallot = {
     id?: string;
+    timestamp?: number;
     selectedOptionId: string;
 };
 
 /// A ballot for a vote where a user gets to rate options.
 export type RateOptionsBallot = {
     id?: string;
+    timestamp?: number;
     ratingPerOption: { optionId: string, rating: number }[];
 };
 
 /// A ballot.
 export type Ballot = ChooseOneBallot | RateOptionsBallot;
+
+export type FinishedBallot = Ballot & {
+    id: string;
+    timestamp: number;
+};
 
 /// A vote and all ballots cast for that vote.
 export type VoteAndBallots = {

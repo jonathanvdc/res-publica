@@ -1,7 +1,7 @@
 import { Authenticator, makeid } from "./auth";
 import { DummyAuthenticator } from "./dummy-auth";
 import { APIClient, AdminAPIClient } from "./api-client";
-import { Vote, VoteAndBallots, Ballot, isActive } from "./vote";
+import { Vote, VoteAndBallots, Ballot, isActive, FinishedBallot } from "./vote";
 
 /**
  * An API client that fakes all interactions with the server.
@@ -56,14 +56,19 @@ export class DummyAPIClient implements APIClient {
         }
     }
 
-    async castBallot(voteId: string, ballot: Ballot): Promise<{ ballotId: string; } | { error: string; }> {
+    async castBallot(voteId: string, ballot: Ballot): Promise<FinishedBallot | { error: string; }> {
         let vote = await this.getVote(voteId);
         if (!vote) {
             return { error: `vote with ID ${voteId} does not exist.` };
         }
 
-        vote.ownBallot = ballot;
-        return { ballotId: voteId + "/ballot" };
+        let newBallot = {
+            ...ballot,
+            id: voteId + "/ballot",
+            timestamp: Date.now() / 1000
+        };
+        vote.ownBallot = newBallot;
+        return newBallot;
     }
 
     private auth = new DummyAuthenticator();

@@ -154,7 +154,7 @@ class VoteRoute extends FetchedStateComponent<{ match: any, history: any, isAdmi
     if ('error' in response) {
       this.setState({ hasConnected: true, error: response.error });
     } else {
-      this.setState({ hasConnected: true, data: { ballotId: response.ballotId, ballotCast: true } });
+      this.setState({ hasConnected: true, data: { ballotId: response.id, ballotCast: true } });
     }
   }
 

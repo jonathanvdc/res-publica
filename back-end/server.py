@@ -56,9 +56,7 @@ if __name__ == "__main__":
             abort(403)
 
         ballot = request.json
-        return jsonify({
-            'ballotId': vote_index.cast_ballot(request.args.get('voteId'), ballot, device)
-        })
+        return jsonify(vote_index.cast_ballot(request.args.get('voteId'), ballot, device))
 
     @app.route('/api/admin/create-vote', methods=['POST'])
     def create_vote():

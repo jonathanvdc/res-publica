@@ -18,7 +18,8 @@ function canonicalizeBallot(ballot: Ballot, vote: Vote): RateOptionsBallot {
 function renderTableHeader(vote: Vote): string[] {
     return [
         "Ballot ID",
-        ...sortByString(vote.options, x => x.id).map(x => x.name)
+        "Timestamp",
+        ...sortByString(vote.options, x => x.id).map(x => x.id)
     ];
 }
 
@@ -27,6 +28,7 @@ function renderTableBody(voteAndBallots: VoteAndBallots): string[][] {
         ballot => canonicalizeBallot(ballot, voteAndBallots.vote));
     return canonicalizedBallots.map(ballot => [
         ballot.id || "",
+        ballot.timestamp ? new Date(ballot.timestamp).toUTCString() : "",
         ...ballot.ratingPerOption.map(({ rating }) => rating.toString())
     ]);
 }
@@ -54,7 +56,7 @@ class BallotTable extends PureComponent<Props> {
     render() {
         let vote = this.props.voteAndBallots.vote;
 
-        return <Paper>
+        return <Paper style={{maxWidth: "80vw", overflowX: "scroll"}}>
             <Table>
                 <TableHead>
                     {renderTableHeader(vote).map(x => <TableCell>{x}</TableCell>)}

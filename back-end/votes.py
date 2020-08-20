@@ -46,6 +46,7 @@ class VoteIndex(object):
         vote = self.votes[vote_id]
         vote['ballots'] = [ballot for ballot in vote['ballots'] if ballot['id'] != ballot_id]
         ballot['id'] = ballot_id
+        ballot['timestamp'] = time.time()
         vote['ballots'].append(ballot)
         self.write_vote(vote)
         return ballot_id

@@ -1,5 +1,5 @@
 import { Authenticator } from "./auth";
-import { VoteAndBallots, Ballot, Vote, VoteOption } from "./vote";
+import { VoteAndBallots, Ballot, Vote, VoteOption, FinishedBallot } from "./vote";
 
 /**
  * A client that allows the application to interact with the server's API.
@@ -36,7 +36,7 @@ export interface APIClient {
      * is returned that can be used to verify that the ballot was
      * indeed well received.
      */
-    castBallot(voteId: string, ballot: Ballot): Promise<{ ballotId: string } | { error: string }>;
+    castBallot(voteId: string, ballot: Ballot): Promise<FinishedBallot | { error: string }>;
 }
 
 /**
