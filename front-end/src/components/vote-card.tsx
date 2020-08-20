@@ -271,13 +271,13 @@ function renderVoteOption(
                 {description}
             </div>;
 
-            if (allowVoteChanges) {
+            if (allowVoteChanges || !allowBallotChanges) {
                 return <Paper elevation={1} className={isSelected ? "VotePanel SelectedVotePanel" : "VotePanel"}>
                     {contents}
                 </Paper>;
             } else {
                 return <Paper elevation={1} className={isSelected ? "VotePanel SelectedVotePanel" : "VotePanel"}>
-                    <ButtonBase className="VotePanelButton" focusRipple disabled={!allowBallotChanges} onClick={() => changeBallot({ selectedOptionId: option.id })}>
+                    <ButtonBase className="VotePanelButton" focusRipple onClick={() => changeBallot({ selectedOptionId: option.id })}>
                         {contents}
                     </ButtonBase>
                 </Paper>;
