@@ -55,7 +55,7 @@ const OptionTitleTextField = withStyles({
 
 function createTitleEditorOrPreview(
     source: string,
-    variant: "h2" | "h3",
+    variant: "h2" | "h4",
     allowEdits: boolean,
     onChange: (newValue: string) => void): JSX.Element {
 
@@ -160,7 +160,7 @@ function renderVoteOptionDescription(
     results.push(
         createTitleEditorOrPreview(
             option.name,
-            "h3",
+            "h4",
             allowVoteChanges,
             title => onChange({ ...option, name: title })));
 
