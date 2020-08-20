@@ -58,14 +58,14 @@ def parse_cfc(body: str, is_presidential: bool = False, discern_candidates: bool
         if is_presidential:
             # The CFC format for presidential CFCs is
             # /u/YourRedditUsername - Your political party | /u/YourVicePresidentUsername - Their political party
-            split = split_on_one_of(header, ['|', '\\', '/'], 1)
+            split = split_on_one_of(header, ['|', '/'], 1)
             if len(split) == 1:
-                option['ticket'] = [parse_candidate(header, ['- '])]
+                option['ticket'] = [parse_candidate(header, ['\\-', '- '])]
             else:
                 first_candidate, second_candidate = split
                 option['ticket'] = [
-                    parse_candidate(first_candidate, ['- ']),
-                    parse_candidate(second_candidate, ['- '])
+                    parse_candidate(first_candidate, ['\\-', '- ']),
+                    parse_candidate(second_candidate, ['\\-', '- '])
                 ]
         else:
             # The CFC format for senatorial CFCs is
