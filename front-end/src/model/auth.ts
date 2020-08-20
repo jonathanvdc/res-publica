@@ -1,3 +1,9 @@
+export enum AuthenticationLevel {
+    Unauthenticated = "unauthenticated",
+    Authenticated = "authenticated",
+    AuthenticatedAdmin = "authenticated-admin"
+}
+
 /**
  * An interface for objects that handle user authentication.
  */
@@ -5,7 +11,7 @@ export interface Authenticator {
     /**
      * Tests if this device is authenticated.
      */
-    isAuthenticated(): Promise<boolean>;
+    isAuthenticated(): Promise<AuthenticationLevel>;
 
     /**
      * Creates an authentication page.

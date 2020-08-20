@@ -1,5 +1,5 @@
 import React from 'react';
-import { Authenticator, getDeviceId } from "./auth";
+import { Authenticator, getDeviceId, AuthenticationLevel } from "./auth";
 
 /**
  * A type that handles pretends that the user is always signed in.
@@ -16,8 +16,8 @@ export class DummyAuthenticator implements Authenticator {
     /**
      * Tests if this device is authenticated.
      */
-    async isAuthenticated(): Promise<boolean> {
-        return true;
+    async isAuthenticated(): Promise<AuthenticationLevel> {
+        return AuthenticationLevel.AuthenticatedAdmin;
     }
 
     /**

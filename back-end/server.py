@@ -17,9 +17,13 @@ if __name__ == "__main__":
     device_index = read_or_create_device_index('data/device-index.json')
     vote_index = read_or_create_vote_index('data/vote-index.json')
 
-    def authenticate(req) -> RegisteredDevice:
+    def authenticate(req, require_admin=False) -> RegisteredDevice:
         device_id = req.args.get('deviceId')
-        return device_index.devices.get(device_id)
+        device = device_index.devices.get(device_id)
+        if require_admin and device is not None and device.user_id not in device_index.admins:
+            return None
+        else:
+            return device
 
     @app.route('/api/active-votes')
     def get_active_votes():
@@ -59,7 +63,7 @@ if __name__ == "__main__":
     @app.route('/api/admin/create-vote', methods=['POST'])
     def create_vote():
         """Creates a new vote."""
-        device = authenticate(request)
+        device = authenticate(request, True)
         if not device:
             abort(403)
 
@@ -69,7 +73,7 @@ if __name__ == "__main__":
     @app.route('/api/admin/scrape-cfc')
     def process_scrape_cfc():
         """Scrapes a Reddit CFC."""
-        device = authenticate(request)
+        device = authenticate(request, True)
         if not device:
             abort(403)
 
@@ -80,7 +84,13 @@ if __name__ == "__main__":
 
     @app.route('/api/is-authenticated')
     def check_is_authenticated():
-        return jsonify(authenticate(request) is not None)
+        device = authenticate(request)
+        if not device:
+            return jsonify('unauthenticated')
+        elif device.user_id in device_index.admins:
+            return jsonify('authenticated-admin')
+        else:
+            return jsonify('authenticated')
 
     @app.route('/reddit-auth')
     def process_auth():

@@ -18,6 +18,7 @@ import MakeVotePage from './components/make-vote-page';
 import MakeVoteConfirmationPage from './components/make-vote-confirmation-page';
 import ScrapeCFCPage from './components/scrape-cfc-page';
 import BallotTable, { ballotsToCsv } from './components/ballot-table';
+import { AuthenticationLevel } from './model/auth';
 
 let currentSeasons: string[] = [];
 
@@ -34,17 +35,17 @@ const apiClient = new ServerAPIClient();
 const authenticator = apiClient.authenticator;
 
 
-class App extends FetchedStateComponent<{}, boolean> {
+class App extends FetchedStateComponent<{}, AuthenticationLevel> {
   getMainClass(): string {
     return ["App", ...currentSeasons].join(" ");
   }
 
-  fetchState(): Promise<boolean> {
+  fetchState(): Promise<AuthenticationLevel> {
     return authenticator.isAuthenticated();
   }
 
-  renderState(isAuthenticated: boolean): JSX.Element {
-    if (!isAuthenticated) {
+  renderState(isAuthenticated: AuthenticationLevel): JSX.Element {
+    if (isAuthenticated === AuthenticationLevel.Unauthenticated) {
       // If we aren't logged in yet, then we'll send the user to
       // an authentication page.
       return <div className={this.getMainClass()}>
@@ -63,7 +64,9 @@ class App extends FetchedStateComponent<{}, boolean> {
                 <Route exact path="/" component={VoteListRoute} />
                 <Route exact path="/vote/:voteId" component={VoteRoute} />
                 <Route exact path="/vote/:voteId/ballots" component={VoteBallotsRoute} />
-                <Route exact path="/admin/make-vote" component={MakeVoteRoute} />
+                {isAuthenticated === AuthenticationLevel.AuthenticatedAdmin
+                  ? <Route exact path="/admin/make-vote" component={MakeVoteRoute} />
+                  : []}
               </Suspense>
             </header>
           </MuiThemeProvider>

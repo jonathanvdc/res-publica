@@ -1,6 +1,6 @@
 import React from 'react';
 import RedditAuthPage from "../components/reddit-auth-page";
-import { Authenticator, getDeviceId } from "./auth";
+import { Authenticator, getDeviceId, AuthenticationLevel } from "./auth";
 import { NetworkError } from './exceptions';
 
 /**
@@ -22,7 +22,7 @@ export class RedditAuthenticator implements Authenticator {
     /**
      * Tests if this device is authenticated.
      */
-    async isAuthenticated(): Promise<boolean> {
+    async isAuthenticated(): Promise<AuthenticationLevel> {
         const response = await fetch(`/api/is-authenticated?deviceId=${encodeURIComponent(this.deviceId)}`);
         if (response.ok) {
             return await response.json();

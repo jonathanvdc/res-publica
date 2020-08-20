@@ -3,7 +3,7 @@
 import time
 from collections import defaultdict
 from pathlib import Path
-from typing import Dict
+from typing import Dict, Set
 from helpers import read_json, write_json
 
 
@@ -29,9 +29,10 @@ class RegisteredDevice(object):
 
 class DeviceIndex(object):
     """An index that keeps track of all registered devices."""
-    def __init__(self, devices: Dict[DeviceId, RegisteredDevice], persistence_path: str):
+    def __init__(self, devices: Dict[DeviceId, RegisteredDevice], admins: Set[UserId], persistence_path: str):
         self.persistence_path = persistence_path
         self.devices = devices
+        self.admins = admins
         self.users_to_devices = defaultdict(set)
         self.users_to_devices.update({
             user_id: set(device for device in devices.values() if device.user_id == user_id)
@@ -70,9 +71,9 @@ def read_device_index(path: str) -> DeviceIndex:
     data = read_json(path)
     devices = {
         device_id: RegisteredDevice(device_id, info['user'], info['expiry'])
-        for device_id, info in data.items()
+        for device_id, info in data['devices'].items()
     }
-    return DeviceIndex(devices, path)
+    return DeviceIndex(devices, set(data['admins']), path)
 
 
 def read_or_create_device_index(path: str) -> DeviceIndex:
@@ -81,7 +82,7 @@ def read_or_create_device_index(path: str) -> DeviceIndex:
         return read_device_index(path)
     except FileNotFoundError:
         Path(path).parent.mkdir(parents=True, exist_ok=True)
-        return DeviceIndex({}, path)
+        return DeviceIndex({}, set(), path)
 
 
 def write_device_index(index: DeviceIndex, path: str):
@@ -93,4 +94,8 @@ def write_device_index(index: DeviceIndex, path: str):
         }
         for device_id, device in index.devices.items()
     }
-    write_json(data, path)
+    to_write = {
+        'devices': data,
+        'admins': list(index.admins)
+    }
+    write_json(to_write, path)
