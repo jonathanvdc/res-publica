@@ -58,4 +58,10 @@ export interface AdminAPIClient {
      * look like visually.
      */
     createVote(proposal: Vote): Promise<Vote>;
+
+    /**
+     * Cancels a vote.
+     * @param voteId The unique ID of the vote to cancel.
+     */
+    cancelVote(voteId: string): Promise<boolean>;
 }

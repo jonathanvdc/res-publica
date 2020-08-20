@@ -32,7 +32,7 @@ const theme = createMuiTheme({
   },
 });
 
-const apiClient = new DummyAPIClient();
+const apiClient = new ServerAPIClient();
 const authenticator = apiClient.authenticator;
 
 type AppState = {
@@ -68,12 +68,13 @@ class App extends FetchedStateComponent<{}, AppState> {
       // If we aren't logged in yet, then we'll send the user to
       // an authentication page.
       return <div className={this.getMainClass()}>
-        <div className="App-body">
+        <div className="App-body App-login">
           {authenticator.createAuthenticationPage()}
         </div>
       </div>;
     }
 
+    let isAdmin = state.authLevel === AuthenticationLevel.AuthenticatedAdmin;
     return <BrowserRouter>
       <div className={this.getMainClass()}>
         <MuiPickersUtilsProvider utils={MomentUtils}>
@@ -81,15 +82,13 @@ class App extends FetchedStateComponent<{}, AppState> {
             <SiteAppBar
               onLogOut={this.onLogOut.bind(this)}
               userId={state.userId}
-              isAdmin={state.authLevel === AuthenticationLevel.AuthenticatedAdmin} />
+              isAdmin={isAdmin} />
             <div className="App-body">
               <Suspense fallback={<div>Loading...</div>}>
                 <Route exact path="/" component={VoteListRoute} />
-                <Route exact path="/vote/:voteId" component={VoteRoute} />
+                <Route exact path="/vote/:voteId" component={(props: any) => <VoteRoute isAdmin={isAdmin} {...props} />} />
                 <Route exact path="/vote/:voteId/ballots" component={VoteBallotsRoute} />
-                {state.authLevel === AuthenticationLevel.AuthenticatedAdmin
-                  ? <Route exact path="/admin/make-vote" component={MakeVoteRoute} />
-                  : []}
+                {isAdmin && <Route exact path="/admin/make-vote" component={MakeVoteRoute} />}
               </Suspense>
             </div>
           </MuiThemeProvider>
@@ -118,10 +117,21 @@ class VoteListRoute extends FetchedStateComponent<{ match: any }, VoteListRouteS
 
   renderState(data: VoteListRouteState): JSX.Element {
     return <div>
-      <Typography variant="h2">Active Votes</Typography>
-      <VoteList votes={data.active} />
-      <Typography variant="h2">Closed Votes</Typography>
-      <VoteList votes={data.past.map(vote => ({ vote, ballots: [] }))} />
+      {
+        data.active.length > 0 ? [
+          <Typography variant="h2">Active Votes</Typography>,
+          <VoteList votes={data.active} />
+        ] : [
+          <Typography>No votes are currently active. Check back later!</Typography>,
+        ]
+      }
+      {
+        data.past.length > 0 && [
+          <Typography variant="h2">Closed Votes</Typography>,
+          <VoteList votes={data.past.map(vote => ({ vote, ballots: [] }))} />
+        ]
+      }
+      
     </div>;
   }
 }
@@ -132,7 +142,7 @@ type VoteRouteState = {
   ballotId?: string;
 };
 
-class VoteRoute extends FetchedStateComponent<{ match: any, history: any }, VoteRouteState> {
+class VoteRoute extends FetchedStateComponent<{ match: any, history: any, isAdmin: boolean }, VoteRouteState> {
   async fetchState(): Promise<VoteRouteState> {
     let data = await apiClient.getVote(this.props.match.params.voteId);
     return { vote: data, ballotCast: false };
@@ -148,6 +158,12 @@ class VoteRoute extends FetchedStateComponent<{ match: any, history: any }, Vote
     }
   }
 
+  async onCancelVote(voteId: string) {
+    if (await apiClient.admin.cancelVote(voteId)) {
+      this.props.history.push('/');
+    }
+  }
+
   renderState(data: VoteRouteState): JSX.Element {
     if (!data.vote && !data.ballotCast) {
       return <div>
@@ -157,7 +173,12 @@ class VoteRoute extends FetchedStateComponent<{ match: any, history: any }, Vote
     }
 
     if (data.vote) {
-      return <VotePage voteAndBallots={data.vote} ballotCast={data.ballotCast} onCastBallot={this.onCastBallot.bind(this)} />;
+      return <VotePage
+        voteAndBallots={data.vote}
+        ballotCast={data.ballotCast}
+        isAdmin={this.props.isAdmin}
+        onCastBallot={this.onCastBallot.bind(this)}
+        onCancelVote={() => this.onCancelVote(data.vote!.vote.id)} />;
     } else {
       return <VoteConfirmationPage ballotId={data.ballotId!} />;
     }

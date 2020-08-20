@@ -65,6 +65,12 @@ class ServerAdminAPIClient implements AdminAPIClient {
 
     }
 
+    async cancelVote(voteId: string): Promise<boolean> {
+        return postJSON(
+            `/api/admin/cancel-vote?voteId=${encodeURIComponent(voteId)}&deviceId=${encodeURIComponent(this.auth.deviceId)}`,
+            {});
+    }
+
     async scrapeCfc(url: string): Promise<Vote> {
         let response = await fetch(`/api/admin/scrape-cfc?url=${encodeURIComponent(url)}&deviceId=${encodeURIComponent(this.auth.deviceId)}`);
         return await response.json();

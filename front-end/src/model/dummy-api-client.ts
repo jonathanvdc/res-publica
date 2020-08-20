@@ -1,7 +1,7 @@
 import { Authenticator, makeid } from "./auth";
 import { DummyAuthenticator } from "./dummy-auth";
 import { APIClient, AdminAPIClient } from "./api-client";
-import { Vote, VoteAndBallots, Ballot } from "./vote";
+import { Vote, VoteAndBallots, Ballot, isActive } from "./vote";
 
 /**
  * An API client that fakes all interactions with the server.
@@ -72,6 +72,16 @@ export class DummyAPIClient implements APIClient {
 
 class DummyAdminAPIClient implements AdminAPIClient {
     constructor(private activeVotes: VoteAndBallots[]) {
+    }
+
+    async cancelVote(voteId: string): Promise<boolean> {
+        let index = this.activeVotes.findIndex(x => x.vote.id === voteId);
+        if (index >= 0 && isActive(this.activeVotes[index].vote)) {
+            this.activeVotes.splice(index, 1);
+            return true;
+        } else {
+            return false;
+        }
     }
 
     async createVote(proposal: Vote): Promise<Vote> {

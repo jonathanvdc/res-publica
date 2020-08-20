@@ -14,7 +14,7 @@ export class RedditAuthenticator implements Authenticator {
      * @param deviceId A device ID for the current device.
      */
     constructor(clientId?: string, redirectUrl?: string, deviceId?: string) {
-        this.deviceId = deviceId || getDeviceId();
+        this.deviceIdVal = deviceId || getDeviceId();
         this.clientId = clientId || "AvYTCpbWRP5rbA";
         this.redirectUrl = redirectUrl || window.location.origin + "/reddit-auth";
     }
@@ -40,7 +40,7 @@ export class RedditAuthenticator implements Authenticator {
 
     logOut(): void {
         // We log out by refreshing our device ID.
-        refreshDeviceId();
+        this.deviceIdVal = refreshDeviceId();
     }
 
     async getUserId(): Promise<string> {
@@ -48,7 +48,11 @@ export class RedditAuthenticator implements Authenticator {
         return await response.json();
     }
 
-    public readonly deviceId: string;
+    get deviceId(): string {
+        return this.deviceIdVal;
+    }
+
+    private deviceIdVal: string;
     private clientId: string;
     private redirectUrl: string;
 }

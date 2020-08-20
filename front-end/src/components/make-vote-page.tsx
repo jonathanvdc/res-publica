@@ -146,7 +146,7 @@ class MakeVotePage extends PureComponent<Props> {
                     <TallyButton disabled={this.props.hasSubmittedVote} value="spsv">SPSV</TallyButton>
                 </ToggleButtonGroup>
                 {ballotType.tally === "spsv"
-                    ? <PositionsTextField disabled={this.props.hasSubmittedVote} label="Number of Positions" value={ballotType.positions} type="number" onChange={this.onChangePositions.bind(this)} />
+                    ? <PositionsTextField disabled={this.props.hasSubmittedVote} label="Number of Seats" value={ballotType.positions} type="number" onChange={this.onChangePositions.bind(this)} />
                     : []}
             </div>
             <VoteCard

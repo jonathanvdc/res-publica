@@ -116,6 +116,18 @@ class VoteIndex(object):
 
         return new_vote
 
+    def cancel_vote(self, vote_id: VoteId) -> bool:
+        """Cancels a vote."""
+        if vote_id in self.votes:
+            vote = self.votes[vote_id]
+            if is_vote_active(vote):
+                del self.votes[vote_id]
+                del self.vote_secrets[vote_id]
+                self.write_index()
+                return True
+
+        return False
+
     def write_index(self):
         """Writes the index itself to disk."""
         write_json(self.vote_secrets, self.index_path)

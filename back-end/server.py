@@ -70,6 +70,16 @@ if __name__ == "__main__":
         proposal = request.json
         return jsonify(vote_index.create_vote(proposal))
 
+    @app.route('/api/admin/cancel-vote', methods=['POST'])
+    def cancel_vote():
+        """Cancels a vote."""
+        device = authenticate(request, True)
+        if not device:
+            abort(403)
+
+        vote_id = request.args.get('voteId')
+        return jsonify(vote_index.cancel_vote(vote_id))
+
     @app.route('/api/admin/scrape-cfc')
     def process_scrape_cfc():
         """Scrapes a Reddit CFC."""
@@ -93,7 +103,7 @@ if __name__ == "__main__":
             return jsonify('authenticated')
 
     @app.route('/api/user-id')
-    def check_is_authenticated():
+    def get_user_id():
         device = authenticate(request)
         return jsonify(device.user_id)
 
