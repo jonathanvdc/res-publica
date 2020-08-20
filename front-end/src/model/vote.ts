@@ -1,3 +1,19 @@
+/**
+ * Represents a candidate. Candidates allow for a more fine-grained
+ * view of a vote's "name."
+ */
+export type Candidate = {
+    /**
+     * The candidate's name.
+     */
+    name: string;
+
+    /**
+     * The candidate's party affiliation, if any.
+     */
+    affiliation?: string;
+};
+
 /// An option in an active or historical vote.
 export type VoteOption = {
     /// A unique identifier for the option.
@@ -5,6 +21,17 @@ export type VoteOption = {
 
     /// A user-friendly name for the option.
     name: string;
+
+    /**
+     * Gets the list of candidates this option consists of.
+     * The first candidate is the main candidate, all others
+     * are deputies.
+     *
+     * This is an optional property that allows for a better-looking
+     * presentation of candidates in an election than the standard
+     * "name" format.
+     */
+    ticket?: Candidate[];
 
     /// A markdown description of what this option entails.
     description: string;

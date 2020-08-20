@@ -1,9 +1,9 @@
 import React, { Component } from "react";
-import { VoteAndBallots, Ballot, BallotType, VoteOption, RateOptionsBallot, ChooseOneBallot, isActive, Vote, getBallotKind, tally } from "../model/vote";
+import { VoteAndBallots, Ballot, BallotType, VoteOption, RateOptionsBallot, ChooseOneBallot, isActive, Vote, getBallotKind, tally, Candidate } from "../model/vote";
 import ReactMarkdown from "react-markdown";
 import Typography from '@material-ui/core/Typography';
 import DeleteIcon from '@material-ui/icons/Delete';
-import { Paper, withStyles, ButtonBase, TextField, Button, Collapse } from "@material-ui/core";
+import { Paper, withStyles, ButtonBase, TextField, Button, Collapse, Chip } from "@material-ui/core";
 import ToggleButton from "@material-ui/lab/ToggleButton";
 import ToggleButtonGroup from '@material-ui/lab/ToggleButtonGroup';
 import MDEditor from '@uiw/react-md-editor';
@@ -149,6 +149,23 @@ function createMDEditorOrPreview(
     }
 }
 
+function renderTicket(ticket: Candidate[]): (JSX.Element | string)[] {
+    let results = [];
+    for (let candidate of ticket) {
+        if (results.length > 0) {
+            results.push(" & ");
+        }
+
+        let candidateBlockItems = [];
+        candidateBlockItems.push(candidate.name);
+        if (candidate.affiliation) {
+            candidateBlockItems.push(<Chip style={{marginLeft: "0.5em"}} label={candidate.affiliation} />);
+        }
+        results.push(<div style={{display: "inline-block"}}>{candidateBlockItems}</div>)
+    }
+    return results;
+}
+
 function renderVoteOptionDescription(
     option: VoteOption,
     allowVoteChanges: boolean,
@@ -157,12 +174,16 @@ function renderVoteOptionDescription(
 
     let results: JSX.Element[] = [];
 
-    results.push(
-        createTitleEditorOrPreview(
-            option.name,
-            "h4",
-            allowVoteChanges,
-            title => onChange({ ...option, name: title })));
+    if (option.ticket) {
+        results.push(<Typography variant="h4">{renderTicket(option.ticket)}</Typography>);
+    } else {
+        results.push(
+            createTitleEditorOrPreview(
+                option.name,
+                "h4",
+                allowVoteChanges,
+                title => onChange({ ...option, name: title })));
+    }
 
     if (allowVoteChanges) {
         results.push(<Button onClick={onDelete} className="DeleteVoteOptionButton"><DeleteIcon/></Button>);
