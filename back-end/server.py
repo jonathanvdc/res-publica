@@ -88,7 +88,8 @@ if __name__ == "__main__":
         return jsonify(
             scrape_cfc(
                 praw.Reddit(**config['bot-credentials']),
-                request.args.get('url')))
+                request.args.get('url'),
+                request.args.get('discernCandidates')))
 
     @app.route('/api/is-authenticated')
     def check_is_authenticated():

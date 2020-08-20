@@ -46,8 +46,9 @@ export interface AdminAPIClient {
     /**
      * Scrapes a draft vote from a Reddit CFC post.
      * @param url A URL to a Reddit CFC post.
+     * @param discernCandidates Tells if the scraper should try to discern individual candidates.
      */
-    scrapeCfc(url: string): Promise<Vote>;
+    scrapeCfc(url: string, discernCandidates: boolean): Promise<Vote>;
 
     /**
      * Creates a vote by sending in a vote proposal. The server

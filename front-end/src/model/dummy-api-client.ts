@@ -99,7 +99,7 @@ class DummyAdminAPIClient implements AdminAPIClient {
         return newVote;
     }
 
-    async scrapeCfc(url: string): Promise<Vote> {
+    async scrapeCfc(url: string, discernCandidates: boolean): Promise<Vote> {
         return mockVoteAndBallots2;
     }
 }

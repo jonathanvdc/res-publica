@@ -259,13 +259,13 @@ class MakeVoteRoute extends FetchedStateComponent<{ history: any }, MakeVoteRout
     this.setState({ ...this.state, data: { phase: "editing", draftVote: draft } });
   }
 
-  onChangeCfcUrl(url: string): Promise<Vote> {
-    return apiClient.admin.scrapeCfc(url);
+  onScrape(url: string, detectCandidates: boolean): Promise<Vote> {
+    return apiClient.admin.scrapeCfc(url, detectCandidates);
   }
 
   renderState(data: MakeVoteRouteState): JSX.Element {
     if (data.phase === "scraping-cfc") {
-      return <ScrapeCFCPage onSubmitDraft={this.onSubmitDraft.bind(this)} onChangePostUrl={this.onChangeCfcUrl.bind(this)} />;
+      return <ScrapeCFCPage onSubmitDraft={this.onSubmitDraft.bind(this)} scrape={this.onScrape.bind(this)} />;
     }
 
     if (data.createdVote) {
