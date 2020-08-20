@@ -1,6 +1,7 @@
 {
   "name": "res-publica",
   "version": "0.1.0",
+  "homepage": "/",
   "private": true,
   "dependencies": {
     "@date-io/moment": "^1.3.13",
