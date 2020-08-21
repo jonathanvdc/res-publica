@@ -40,7 +40,7 @@ class VoteIndex(object):
         """Gets a vote."""
         return self.prepare_for_transmission(self.votes[vote_id], device)
 
-    def cast_ballot(self, vote_id: VoteId, ballot: Ballot, device: RegisteredDevice) -> BallotId:
+    def cast_ballot(self, vote_id: VoteId, ballot: Ballot, device: RegisteredDevice) -> Ballot:
         """Casts a ballot."""
         ballot_id = self.get_ballot_id(vote_id, device)
         vote = self.votes[vote_id]
@@ -49,7 +49,7 @@ class VoteIndex(object):
         ballot['timestamp'] = time.time()
         vote['ballots'].append(ballot)
         self.write_vote(vote)
-        return ballot_id
+        return ballot
 
     def prepare_for_transmission(self, vote: VoteAndBallots, device: RegisteredDevice) -> VoteAndBallots:
         """Prepares a vote for transmission."""
