@@ -27,9 +27,33 @@ class VoteIndex(object):
         self.index_path = index_path
         self.votes = votes
         self.vote_secrets = vote_secrets
+        self.last_heartbeat = time.monotonic()
+
+    def heartbeat(self):
+        """Allows the vote index to perform cleanup. In practice, this means that vote secrets
+           for closed votes are deleted."""
+        if time.monotonic() - self.last_heartbeat < 10:
+            # Do nothing if the last heartbeat was less than ten seconds ago.
+            return
+
+        # Otherwise, scan for closed votes and delete their vote secrets.
+        closed_votes = {
+            name
+            for name, vote in self.votes.items()
+            if not is_vote_active(vote) and self.vote_secrets[name]
+        }
+        if closed_votes:
+            self.vote_secrets = {
+                k: '' if k in closed_votes else v
+                for k, v in self.vote_secrets.items()
+            }
+            self.write_index()
+
+        self.last_heartbeat = time.monotonic()
 
     def get_active_votes(self, device: RegisteredDevice) -> List[VoteAndBallots]:
         """Gets all currently active votes."""
+        self.heartbeat()
         return [
             self.prepare_for_transmission(vote, device)
             for vote in self.votes.values()
@@ -38,12 +62,18 @@ class VoteIndex(object):
 
     def get_vote(self, vote_id: VoteId, device: RegisteredDevice) -> Vote:
         """Gets a vote."""
+        self.heartbeat()
         return self.prepare_for_transmission(self.votes[vote_id], device)
 
     def cast_ballot(self, vote_id: VoteId, ballot: Ballot, device: RegisteredDevice) -> Ballot:
         """Casts a ballot."""
-        ballot_id = self.get_ballot_id(vote_id, device)
+        self.heartbeat()
+
         vote = self.votes[vote_id]
+        if not is_vote_active(vote):
+            return { 'error': 'Vote already closed. Sorry!' }
+
+        ballot_id = self.get_ballot_id(vote_id, device)
         vote['ballots'] = [ballot for ballot in vote['ballots'] if ballot['id'] != ballot_id]
         ballot['id'] = ballot_id
         ballot['timestamp'] = time.time()
@@ -53,6 +83,7 @@ class VoteIndex(object):
 
     def prepare_for_transmission(self, vote: VoteAndBallots, device: RegisteredDevice) -> VoteAndBallots:
         """Prepares a vote for transmission."""
+        self.heartbeat()
         if is_vote_active(vote):
             result = {
                 'vote': vote['vote'],
@@ -70,6 +101,7 @@ class VoteIndex(object):
 
     def get_ballot_id(self, vote_id: VoteId, device: RegisteredDevice) -> BallotId:
         """Gets a user's ballot ID for a particular vote."""
+        self.heartbeat()
         if not self.vote_secrets.get(vote_id):
             raise ValueError(f'Vote with ID {vote_id} either does not exist or is no longer active.')
 
@@ -79,6 +111,7 @@ class VoteIndex(object):
 
     def create_vote(self, proposal: Vote) -> Vote:
         """Creates a new vote based on a proposal."""
+        self.heartbeat()
         new_vote = proposal.copy()
 
         # Create an ID for the vote.
@@ -119,6 +152,7 @@ class VoteIndex(object):
 
     def cancel_vote(self, vote_id: VoteId) -> bool:
         """Cancels a vote."""
+        self.heartbeat()
         if vote_id in self.votes:
             vote = self.votes[vote_id]
             if is_vote_active(vote):
