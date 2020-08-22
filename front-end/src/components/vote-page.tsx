@@ -1,8 +1,8 @@
 import React, { Component } from "react";
 import CheckIcon from '@material-ui/icons/Check';
-import { Button, Theme, withStyles, CircularProgress, Paper, Typography, Fab } from "@material-ui/core";
+import { Button, Theme, withStyles, CircularProgress, Paper, Typography, Fab, DialogTitle, Dialog, DialogContent, DialogContentText, DialogActions } from "@material-ui/core";
 import { green, red } from "@material-ui/core/colors";
-import { VoteAndBallots, Ballot, Vote, isActive, isCompletableBallot, completeBallot } from "../model/vote";
+import { VoteAndBallots, Ballot, Vote, isActive, isCompletableBallot, completeBallot, isCompleteBallot, findIncompleteOptions } from "../model/vote";
 import VoteCard from "./vote-card";
 import "./vote-page.css";
 import { Link } from "react-router-dom";
@@ -17,6 +17,7 @@ type Props = {
 
 type State = {
     ballot: Ballot | undefined;
+    confirmingPartialBallot: boolean;
 };
 
 const DangerButton = withStyles((theme: Theme) => ({
@@ -46,16 +47,70 @@ class VotePage extends Component<Props, State> {
     constructor(props: Props) {
         super(props);
         this.state = {
-            ballot: this.props.voteAndBallots.ownBallot
+            ballot: this.props.voteAndBallots.ownBallot,
+            confirmingPartialBallot: false
         };
     }
 
     castBallot() {
         let vote = this.props.voteAndBallots.vote;
+        if (isCompleteBallot(this.state.ballot!, vote)) {
+            this.forceCastBallot();
+        } else {
+            this.setState({
+                ...this.state,
+                confirmingPartialBallot: true
+            });
+        }
+    }
+
+    onCancelPartialBallot() {
+        this.setState({
+            ...this.state,
+            confirmingPartialBallot: false
+        });
+    }
+
+    forceCastBallot() {
+        let vote = this.props.voteAndBallots.vote;
         let ballot = completeBallot(this.state.ballot!, vote);
         if (this.props.onCastBallot) {
             this.props.onCastBallot(vote, ballot);
         }
+    }
+
+    renderPartialBallotDialog(data: VoteAndBallots) {
+        let incomplete = findIncompleteOptions(this.state.ballot, data.vote).map(x => x.name);
+        if (incomplete.length > 3) {
+            incomplete = incomplete.slice(0, 3);
+            incomplete.push("others");
+        }
+        let incompleteText = incomplete.length === 1
+            ? incomplete[0]
+            : `${incomplete.slice(0, incomplete.length - 1).join(", ")} and ${incomplete[incomplete.length - 1]}`;
+
+        return <Dialog
+            open={this.state.confirmingPartialBallot}
+            onClose={this.onCancelPartialBallot.bind(this)}
+            aria-labelledby="alert-dialog-title"
+            aria-describedby="alert-dialog-description">
+            <DialogTitle id="alert-dialog-title">Cast partial ballot?</DialogTitle>
+            <DialogContent>
+                <DialogContentText id="alert-dialog-description">
+                    Your ballot incomplete. You have not yet expressed a preference for {incompleteText}.
+                    If you do not choose an option manually, your ballot will be autofilled
+                    with the minimum preference for those options. Are you sure you want to proceed?
+            </DialogContentText>
+            </DialogContent>
+            <DialogActions>
+                <Button onClick={this.onCancelPartialBallot.bind(this)} color="primary">
+                    No
+                </Button>
+                <Button onClick={this.forceCastBallot.bind(this)} color="primary" autoFocus>
+                    Yes
+            </Button>
+            </DialogActions>
+        </Dialog>;
     }
 
     render() {
@@ -97,6 +152,7 @@ class VotePage extends Component<Props, State> {
                         Cancel Vote
                 </DangerButton>
                 </Paper>}
+            {isActive(data.vote) && this.renderPartialBallotDialog(data)}
         </div>;
     }
 }

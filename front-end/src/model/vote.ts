@@ -126,6 +126,29 @@ export function isActive(vote: Vote): boolean {
 }
 
 /**
+ * Finds a list of all vote options that should be on the ballot but aren't.
+ * @param ballot A ballot to check.
+ * @param vote The vote to which the ballot belongs.
+ */
+export function findIncompleteOptions(ballot: Ballot | undefined, vote: Vote): VoteOption[] {
+    if (!ballot) {
+        return vote.options;
+    }
+
+    switch (getBallotKind(vote.type)) {
+        case "choose-one":
+        {
+            return [];
+        }
+        case "rate-options":
+        {
+            let ratings = (ballot as RateOptionsBallot).ratingPerOption;
+            return vote.options.filter(({ id }) => ratings.findIndex(x => x.optionId === id) === -1);
+        }
+    }
+}
+
+/**
  * Checks if a ballot is complete. Only complete ballots can be submitted.
  * @param ballot A ballot to check.
  * @param vote The vote to which the ballot belongs.
