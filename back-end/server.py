@@ -91,6 +91,10 @@ if __name__ == "__main__":
                 request.args.get('url'),
                 request.args.get('discernCandidates').lower() == 'true'))
 
+    @app.route('/api/client-id')
+    def get_client_id():
+        return jsonify(config['webapp-credentials']['client_id'])
+
     @app.route('/api/is-authenticated')
     def check_is_authenticated():
         device = authenticate(request)

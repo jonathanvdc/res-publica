@@ -16,7 +16,7 @@ export interface Authenticator {
     /**
      * Creates an authentication page.
      */
-    createAuthenticationPage(): JSX.Element;
+    createAuthenticationPage(): Promise<JSX.Element>;
 
     /**
      * Gets the user's identifier (if they are authenticated).

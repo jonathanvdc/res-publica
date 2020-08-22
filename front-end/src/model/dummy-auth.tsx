@@ -23,7 +23,7 @@ export class DummyAuthenticator implements Authenticator {
     /**
      * Creates an authentication page.
      */
-    createAuthenticationPage(): JSX.Element {
+    async createAuthenticationPage(): Promise<JSX.Element> {
         return <div />;
     }
 

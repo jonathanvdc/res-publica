@@ -9,13 +9,11 @@ import { NetworkError } from './exceptions';
 export class RedditAuthenticator implements Authenticator {
     /**
      * Creates a Reddit authenticator.
-     * @param clientId The client ID to use.
      * @param redirectUrl The client's redirect URL.
      * @param deviceId A device ID for the current device.
      */
-    constructor(clientId?: string, redirectUrl?: string, deviceId?: string) {
+    constructor(redirectUrl?: string, deviceId?: string) {
         this.deviceIdVal = deviceId || getDeviceId();
-        this.clientId = clientId || "AvYTCpbWRP5rbA";
         this.redirectUrl = redirectUrl || window.location.origin + "/reddit-auth";
     }
 
@@ -34,8 +32,10 @@ export class RedditAuthenticator implements Authenticator {
     /**
      * Creates an authentication page.
      */
-    createAuthenticationPage(): JSX.Element {
-        return <RedditAuthPage clientId={this.clientId} redirectUrl={this.redirectUrl} deviceId={this.deviceId} />;
+    async createAuthenticationPage(): Promise<JSX.Element> {
+        let response = await fetch(`/api/client-id`);
+        let clientId: string = await response.json();
+        return <RedditAuthPage clientId={clientId} redirectUrl={this.redirectUrl} deviceId={this.deviceId} />;
     }
 
     logOut(): void {
@@ -53,6 +53,5 @@ export class RedditAuthenticator implements Authenticator {
     }
 
     private deviceIdVal: string;
-    private clientId: string;
     private redirectUrl: string;
 }

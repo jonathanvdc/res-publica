@@ -37,6 +37,7 @@ const authenticator = apiClient.authenticator;
 
 type AppState = {
   authLevel: AuthenticationLevel;
+  authPage?: JSX.Element;
   userId?: string;
 };
 
@@ -48,7 +49,8 @@ class App extends FetchedStateComponent<{}, AppState> {
   async fetchState(): Promise<AppState> {
     let authLevel = await authenticator.isAuthenticated();
     if (authLevel === AuthenticationLevel.Unauthenticated) {
-      return { authLevel };
+      let authPage = await authenticator.createAuthenticationPage();
+      return { authLevel, authPage };
     }
     let userId = await authenticator.getUserId();
     return {
@@ -69,7 +71,7 @@ class App extends FetchedStateComponent<{}, AppState> {
       // an authentication page.
       return <div className={this.getMainClass()}>
         <div className="App-body App-login">
-          {authenticator.createAuthenticationPage()}
+          {state.authPage}
         </div>
       </div>;
     }
