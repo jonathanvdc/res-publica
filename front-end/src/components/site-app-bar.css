@@ -1,6 +1,6 @@
-.AppTitle, .AppTitle:hover {
+.ImplicitLink, .ImplicitLink:hover {
     text-decoration: none;
-    color: white;
+    color: inherit;
     outline: none;
     overflow: hidden;
     white-space: nowrap;

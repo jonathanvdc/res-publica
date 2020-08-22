@@ -103,12 +103,8 @@ class VotePage extends Component<Props, State> {
             </DialogContentText>
             </DialogContent>
             <DialogActions>
-                <Button onClick={this.onCancelPartialBallot.bind(this)} color="primary">
-                    No
-                </Button>
-                <Button onClick={this.forceCastBallot.bind(this)} color="primary" autoFocus>
-                    Yes
-            </Button>
+                <Button onClick={this.onCancelPartialBallot.bind(this)} color="primary">No</Button>
+                <Button onClick={this.forceCastBallot.bind(this)} color="primary" autoFocus>Yes</Button>
             </DialogActions>
         </Dialog>;
     }

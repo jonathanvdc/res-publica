@@ -1,4 +1,4 @@
-import React, { Suspense } from 'react';
+import React, { Suspense, Component } from 'react';
 import './App.css';
 import { VoteAndBallots, Vote, Ballot } from './model/vote';
 import { Route, BrowserRouter } from 'react-router-dom';
@@ -20,6 +20,8 @@ import ScrapeCFCPage from './components/scrape-cfc-page';
 import BallotTable, { ballotsToCsv } from './components/ballot-table';
 import { AuthenticationLevel } from './model/auth';
 import SiteAppBar from './components/site-app-bar';
+import { UserPreferences, getPreferences, setPreferences } from './model/preferences';
+import PreferencesPage from './components/preferences-page';
 
 let currentSeasons: string[] = [];
 
@@ -88,6 +90,7 @@ class App extends FetchedStateComponent<{}, AppState> {
             <div className="App-body">
               <Suspense fallback={<div>Loading...</div>}>
                 <Route exact path="/" component={VoteListRoute} />
+                <Route exact path="/prefs" component={PreferencesRoute} />
                 <Route exact path="/vote/:voteId" component={(props: any) => <VoteRoute isAdmin={isAdmin} {...props} />} />
                 <Route exact path="/vote/:voteId/ballots" component={VoteBallotsRoute} />
                 {isAdmin && <Route exact path="/admin/make-vote" component={MakeVoteRoute} />}
@@ -97,6 +100,22 @@ class App extends FetchedStateComponent<{}, AppState> {
         </MuiPickersUtilsProvider>
       </div>
     </BrowserRouter>;
+  }
+}
+
+class PreferencesRoute extends Component<{ match: any }, UserPreferences> {
+  constructor(props: { match: any }) {
+    super(props);
+    this.state = getPreferences();
+  }
+
+  onChange(preferences: UserPreferences) {
+    setPreferences(preferences);
+    this.setState(preferences);
+  }
+
+  render() {
+    return <PreferencesPage preferences={this.state} onChange={this.onChange.bind(this)} />;
   }
 }
 

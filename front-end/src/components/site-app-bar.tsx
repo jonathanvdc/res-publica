@@ -76,7 +76,7 @@ class SiteAppBar extends Component<SiteAppBarProps, SiteAppBarState> {
                     <IconButton edge="start" color="inherit" aria-label="menu" onClick={this.toggleDrawer.bind(this)}>
                         <MenuIcon />
                     </IconButton>}
-                <Link to="/" className="AppTitle">
+                <Link to="/" className="ImplicitLink">
                     <Typography variant="h6">SimDem Voting Booth</Typography>
                 </Link>
                 {(this.props.isAdmin || !adminDrawer) && <SwipeableDrawer
@@ -111,7 +111,7 @@ class SiteAppBar extends Component<SiteAppBarProps, SiteAppBarState> {
                         }}
                         open={!!this.state.anchorElement}
                         onClose={this.handleClose.bind(this)}>
-                        {/* <MenuItem onClick={this.handleClose.bind(this)}>Profile</MenuItem> */}
+                        <Link to="/prefs" className="ImplicitLink"><MenuItem>Preferences</MenuItem></Link>
                         <MenuItem onClick={this.handleLogout.bind(this)}>Log Out</MenuItem>
                     </Menu>
                 </div>
