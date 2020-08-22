@@ -95,8 +95,8 @@ def scrape_cfc(reddit: Reddit, url: str, discern_candidates: bool = False) -> Vo
     # Grab the options.
     options = []
     for top_level_comment in post.comments:
-        if top_level_comment.author.name.lower() == 'automoderator':
-            # Skip AutoModerator posts.
+        if not top_level_comment.author or top_level_comment.author.name.lower() == 'automoderator':
+            # Skip AutoModerator posts and posts by deleted accounts.
             continue
 
         option = parse_cfc(
