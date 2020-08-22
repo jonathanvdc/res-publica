@@ -159,6 +159,49 @@ export function isCompleteBallot(ballot: Ballot | undefined, vote: Vote): boolea
     }
 }
 
+/**
+ * Checks if a ballot can be completed automatically.
+ * @param ballot A ballot to check.
+ * @param vote The vote to which the ballot belongs.
+ */
+export function isCompletableBallot(ballot: Ballot | undefined, vote: Vote): boolean {
+    if (!ballot) {
+        return false;
+    }
+
+    switch (getBallotKind(vote.type)) {
+        case "choose-one":
+            return isCompleteBallot(ballot, vote);
+        case "rate-options":
+            return (ballot as RateOptionsBallot).ratingPerOption.length > 0;
+    }
+}
+
+/**
+ * Completes a partially filled ballot.
+ * @param ballot The ballot to complete.
+ * @param vote The vote to which the ballot belongs.
+ */
+export function completeBallot(ballot: Ballot, vote: Vote): Ballot {
+    switch (getBallotKind(vote.type)) {
+        case "choose-one":
+        {
+            return ballot;
+        }
+        case "rate-options":
+        {
+            let ratings = (ballot as RateOptionsBallot).ratingPerOption;
+            let newRatings = [...ratings];
+            for (let { id } of vote.options) {
+                if (ratings.findIndex(x => x.optionId === id) === -1) {
+                    newRatings.push({ optionId: id, rating: (vote.type as RateOptionsBallotType).min });
+                }
+            }
+            return { ...ballot, ratingPerOption: newRatings };
+        }
+    }
+}
+
 export function sortByString<T>(elements: T[], getString: (x: T) => string): T[] {
     return elements.sort((a, b) => {
         let aId = getString(a);

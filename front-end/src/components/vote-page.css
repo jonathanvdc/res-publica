@@ -1,5 +1,10 @@
-.ButtonOrProgressPanel {
-    margin: 3em 0 0 0;
+.ProgressOrButton {
+    margin: 0;
+    top: auto;
+    right: 3em;
+    bottom: 3em;
+    left: auto;
+    position: fixed;
 }
 
 .VotePagePanel .VoteDangerZone {

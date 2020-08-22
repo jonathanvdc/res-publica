@@ -1,8 +1,8 @@
 import React, { Component } from "react";
 import CheckIcon from '@material-ui/icons/Check';
-import { Button, Theme, withStyles, CircularProgress, Paper, Typography } from "@material-ui/core";
+import { Button, Theme, withStyles, CircularProgress, Paper, Typography, Fab } from "@material-ui/core";
 import { green, red } from "@material-ui/core/colors";
-import { VoteAndBallots, Ballot, isCompleteBallot, Vote, isActive } from "../model/vote";
+import { VoteAndBallots, Ballot, Vote, isActive, isCompletableBallot, completeBallot } from "../model/vote";
 import VoteCard from "./vote-card";
 import "./vote-page.css";
 import { Link } from "react-router-dom";
@@ -19,18 +19,6 @@ type State = {
     ballot: Ballot | undefined;
 };
 
-const CheckButton = withStyles((theme: Theme) => ({
-    root: {
-        borderRadius: "100%",
-        padding: "1em",
-        color: theme.palette.getContrastText(green[600]),
-        backgroundColor: green[600],
-        '&:hover': {
-            backgroundColor: green[700],
-        },
-    },
-}))(Button);
-
 const DangerButton = withStyles((theme: Theme) => ({
     root: {
         color: theme.palette.getContrastText(red[600]),
@@ -40,6 +28,16 @@ const DangerButton = withStyles((theme: Theme) => ({
         },
     },
 }))(Button);
+
+const CheckFab = withStyles((theme: Theme) => ({
+    root: {
+        color: theme.palette.common.white,
+        backgroundColor: green[500],
+        '&:hover': {
+            backgroundColor: green[600],
+        }
+    },
+}))(Fab);
 
 /**
  * A page that allows users to inspect and interact with a vote.
@@ -53,9 +51,10 @@ class VotePage extends Component<Props, State> {
     }
 
     castBallot() {
-        let ballot = this.state.ballot!;
+        let vote = this.props.voteAndBallots.vote;
+        let ballot = completeBallot(this.state.ballot!, vote);
         if (this.props.onCastBallot) {
-            this.props.onCastBallot(this.props.voteAndBallots.vote, ballot);
+            this.props.onCastBallot(vote, ballot);
         }
     }
 
@@ -65,14 +64,14 @@ class VotePage extends Component<Props, State> {
             ownBallot: this.state.ballot
         };
         let allowChanges = !this.props.ballotCast && isActive(this.props.voteAndBallots.vote);
-        let canCast = allowChanges && isCompleteBallot(data.ownBallot, data.vote);
-        let buttonOrProgress: JSX.Element;
+        let canCast = allowChanges && isCompletableBallot(data.ownBallot, data.vote);
+        let progressOrButton: JSX.Element;
         if (this.props.ballotCast) {
-            buttonOrProgress = <CircularProgress />;
+            progressOrButton = <CircularProgress />;
         } else {
-            buttonOrProgress = <CheckButton disabled={!canCast} variant="contained" className="SubmitVoteButton" onClick={this.castBallot.bind(this)} >
-                <CheckIcon fontSize="large" />
-            </CheckButton>;
+            progressOrButton = <CheckFab disabled={!canCast} aria-label="submit vote" className="SubmitVoteFab" onClick={this.castBallot.bind(this)}>
+                <CheckIcon />
+            </CheckFab>;
         }
         return <div className="VotePagePanel">
             <VoteCard
@@ -86,7 +85,7 @@ class VotePage extends Component<Props, State> {
                     }
                 }} />
             {isActive(data.vote)
-                ? <div className="ButtonOrProgressPanel">{buttonOrProgress}</div>
+                ? <div className="ProgressOrButton">{progressOrButton}</div>
                 : <Link to={`/vote/${data.vote.id}/ballots`}><Button style={{ marginBottom: "1em" }} variant="contained">View Ballots</Button></Link>}
             {isActive(data.vote) && this.props.isAdmin && this.props.onCancelVote &&
                 <Paper className="VoteDangerZone" style={{ marginTop: "5em", padding: "1em 0" }}>
