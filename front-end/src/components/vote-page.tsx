@@ -98,7 +98,7 @@ class VotePage extends Component<Props, State> {
             <DialogContent>
                 <DialogContentText id="alert-dialog-description">
                     Your ballot incomplete. You have not yet expressed a preference for {incompleteText}.
-                    If you do not choose an option manually, your ballot will be autofilled
+                    If you do not express preferences for them manually, your ballot will be autofilled
                     with the minimum preference for those options. Are you sure you want to proceed?
             </DialogContentText>
             </DialogContent>
