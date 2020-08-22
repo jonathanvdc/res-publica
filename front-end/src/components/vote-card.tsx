@@ -11,6 +11,7 @@ import { DateTimePicker } from '@material-ui/pickers'
 import DoneOutlineIcon from '@material-ui/icons/DoneOutline';
 import CountdownTimer from 'react-countdown';
 import './vote-card.css';
+import { getPreferences } from "../model/preferences";
 
 type Props = {
     voteAndBallots: VoteAndBallots;
@@ -73,7 +74,8 @@ function createTitleEditorOrPreview(
 class CollapsibleMarkdown extends Component<any, { isCollapsed: boolean }> {
     constructor(props: any) {
         super(props);
-        this.state = { isCollapsed: true };
+        let prefs = getPreferences();
+        this.state = { isCollapsed: prefs.collapseDescriptionsByDefault };
     }
 
     onToggleCollapsed() {
