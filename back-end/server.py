@@ -148,4 +148,4 @@ if __name__ == "__main__":
     def root():
         return app.send_static_file('index.html')
 
-    app.run(debug=True)
+    app.run(**config.get('host', {'debug': True}))
