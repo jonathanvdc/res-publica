@@ -34,7 +34,7 @@ const theme = createMuiTheme({
   },
 });
 
-const apiClient = new DummyAPIClient();
+const apiClient = new ServerAPIClient();
 const authenticator = apiClient.authenticator;
 
 type AppState = {
