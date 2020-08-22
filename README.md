@@ -26,6 +26,10 @@ Now navigate to the `back-end` directory. Create a file called `config.json` tha
         "username": "your-bot-for-scraping-CFCs",
         "password": "password",
         "user_agent": "simdem-voting-booth-bot-v0.0.1"
+    },
+    "host": {
+        "debug": false,
+        "host": "0.0.0.0"
     }
 }
 ```
