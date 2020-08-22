@@ -12,7 +12,11 @@ function getOptionScores(ballot: Ballot, vote: Vote): { optionId: string, rating
 }
 
 function canonicalizeBallot(ballot: Ballot, vote: Vote): RateOptionsBallot {
-    return { id: ballot.id, ratingPerOption: sortByString(getOptionScores(ballot, vote), x => x.optionId) };
+    return {
+        id: ballot.id,
+        timestamp: ballot.timestamp,
+        ratingPerOption: sortByString(getOptionScores(ballot, vote), x => x.optionId)
+    };
 }
 
 function renderTableHeader(vote: Vote): string[] {
@@ -28,7 +32,7 @@ function renderTableBody(voteAndBallots: VoteAndBallots): string[][] {
         ballot => canonicalizeBallot(ballot, voteAndBallots.vote));
     return canonicalizedBallots.map(ballot => [
         ballot.id || "",
-        ballot.timestamp ? new Date(ballot.timestamp).toUTCString() : "",
+        ballot.timestamp ? new Date(ballot.timestamp * 1000).toUTCString() : "",
         ...ballot.ratingPerOption.map(({ rating }) => rating.toString())
     ]);
 }
