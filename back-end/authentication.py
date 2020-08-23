@@ -48,12 +48,14 @@ class DeviceIndex(object):
         self,
         devices: Dict[DeviceId, RegisteredDevice],
         admins: Set[UserId],
+        registered_voters: Set[UserId],
         voter_requirements: List[VoterRequirement],
         persistence_path: str):
 
         self.persistence_path = persistence_path
         self.devices = devices
         self.admins = admins
+        self.registered_voters = registered_voters
         self.voter_requirements = voter_requirements
         self.users_to_devices = defaultdict(set)
         self.users_to_devices.update({
@@ -88,7 +90,7 @@ class DeviceIndex(object):
 
     def is_eligible(self, redditor) -> bool:
         """Tests if a Redditor is eligible to vote."""
-        return all(v for _, v in self.check_requirements(redditor))
+        return redditor.name in self.registered_voters or all(v for _, v in self.check_requirements(redditor))
 
     def unregister(self, device_id: DeviceId, persist_changes: bool = True) -> bool:
         """Unregisters a device, if it was registered."""
@@ -112,7 +114,12 @@ def read_device_index(path: str, voter_requirements: List[VoterRequirement]) -> 
         device_id: RegisteredDevice(device_id, info['user'], info['expiry'])
         for device_id, info in data['devices'].items()
     }
-    return DeviceIndex(devices, set(data['admins']), voter_requirements, path)
+    return DeviceIndex(
+        devices,
+        set(data['admins']),
+        set(data['registered-voters']),
+        voter_requirements,
+        path)
 
 
 def read_or_create_device_index(path: str, voter_requirements: List[VoterRequirement]) -> DeviceIndex:
@@ -121,7 +128,7 @@ def read_or_create_device_index(path: str, voter_requirements: List[VoterRequire
         return read_device_index(path, voter_requirements)
     except FileNotFoundError:
         Path(path).parent.mkdir(parents=True, exist_ok=True)
-        return DeviceIndex({}, set(), voter_requirements, path)
+        return DeviceIndex({}, set(), set(), voter_requirements, path)
 
 
 def write_device_index(index: DeviceIndex, path: str):
@@ -135,6 +142,7 @@ def write_device_index(index: DeviceIndex, path: str):
     }
     to_write = {
         'devices': data,
-        'admins': list(index.admins)
+        'admins': list(sorted(index.admins)),
+        'registered-voters': list(sorted(index.registered_voters))
     }
     write_json(to_write, path)
