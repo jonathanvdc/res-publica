@@ -35,6 +35,7 @@
 
 .VoteOptionDescription {
     text-align: justify;
+    overflow-wrap: anywhere;
 }
 
 .VoteResultPanel {
