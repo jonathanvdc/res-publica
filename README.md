@@ -30,7 +30,19 @@ Now navigate to the `back-end` directory. Create a file called `config.json` tha
     "host": {
         "debug": false,
         "host": "0.0.0.0"
-    }
+    },
+    "voter-requirements": [
+        {
+            "operator": ">=",
+            "lhs": "redditor.age",
+            "rhs": 60
+        },
+        {
+            "operator": ">=",
+            "lhs": "redditor.total_karma",
+            "rhs": 25
+        }
+    ]
 }
 ```
 
