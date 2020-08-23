@@ -177,7 +177,7 @@ function renderVoteOptionDescription(
     let results: JSX.Element[] = [];
 
     if (option.ticket) {
-        results.push(<Typography variant="h4">{renderTicket(option.ticket)}</Typography>);
+        results.push(<Typography className="VoteOption" variant="h4">{renderTicket(option.ticket)}</Typography>);
     } else {
         results.push(
             createTitleEditorOrPreview(
