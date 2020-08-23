@@ -116,8 +116,8 @@ def read_device_index(path: str, voter_requirements: List[VoterRequirement]) -> 
     }
     return DeviceIndex(
         devices,
-        set(data['admins']),
-        set(data['registered-voters']),
+        set(data.get('admins', [])),
+        set(data.get('registered-voters', [])),
         voter_requirements,
         path)
 
