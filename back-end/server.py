@@ -1,10 +1,12 @@
 #!/usr/bin/env python3
 
 import sys
+import json
 import praw
 from collections import defaultdict
 from flask import Flask, request, redirect, send_from_directory, jsonify, abort
 from werkzeug.exceptions import NotFound
+from werkzeug.urls import url_encode
 from authentication import read_or_create_device_index, RegisteredDevice
 from votes import read_or_create_vote_index
 from helpers import read_json
@@ -14,7 +16,7 @@ if __name__ == "__main__":
     config = read_json(sys.argv[1])
     app = Flask(__name__, static_folder='../front-end/build')
 
-    device_index = read_or_create_device_index('data/device-index.json')
+    device_index = read_or_create_device_index('data/device-index.json', config.get('voter-requirements', []))
     vote_index = read_or_create_vote_index('data/vote-index.json')
 
     def authenticate(req, require_admin=False) -> RegisteredDevice:
@@ -135,8 +137,18 @@ if __name__ == "__main__":
         reddit = praw.Reddit(**config['webapp-credentials'])
         reddit.auth.authorize(code)
 
+        redditor = reddit.user.me()
+
+        # Check that the user meetings the eligibility requirements.
+        if not device_index.is_eligible(redditor):
+            data = {
+                'error': 'requirements-not-met',
+                'requirements': json.dumps(device_index.check_requirements(redditor))
+            }
+            return redirect(f'auth-failed?${url_encode(data)}')
+
         # Associate the device ID with the Redditor's username.
-        device_index.register(device_id, reddit.user.me().name)
+        device_index.register(device_id, redditor.name)
 
         # The user has been authenticated. Time to redirect.
         return redirect(return_url)

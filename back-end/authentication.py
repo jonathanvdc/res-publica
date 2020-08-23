@@ -3,17 +3,31 @@
 import time
 from collections import defaultdict
 from pathlib import Path
-from typing import Dict, Set
+from typing import Dict, Set, List, Any
 from helpers import read_json, write_json
 
 
 DeviceId = str
 UserId = str
+VoterRequirement = Any
 
 
 # Allow devices to stay registered for thirty days until they expire.
 SECONDS_UNTIL_EXPIRY = 60 * 60 * 24 * 30
 
+OPERATORS = {
+    '>=': lambda x, y: x >= y,
+    '<=': lambda x, y: x <= y,
+    '==': lambda x, y: x == y,
+    '!=': lambda x, y: x != y,
+    '>': lambda x, y: x > y,
+    '<': lambda x, y: x > y
+}
+
+OPERANDS = {
+    'redditor.age': lambda redditor: redditor.age,
+    'redditor.karma': lambda redditor: redditor.link_karma + redditor.comment_karma
+}
 
 class RegisteredDevice(object):
     """A class that represents a device ID registered with a particular user."""
@@ -29,10 +43,17 @@ class RegisteredDevice(object):
 
 class DeviceIndex(object):
     """An index that keeps track of all registered devices."""
-    def __init__(self, devices: Dict[DeviceId, RegisteredDevice], admins: Set[UserId], persistence_path: str):
+    def __init__(
+        self,
+        devices: Dict[DeviceId, RegisteredDevice],
+        admins: Set[UserId],
+        voter_requirements: List[VoterRequirement],
+        persistence_path: str):
+
         self.persistence_path = persistence_path
         self.devices = devices
         self.admins = admins
+        self.voter_requirements = voter_requirements
         self.users_to_devices = defaultdict(set)
         self.users_to_devices.update({
             user_id: set(device for device in devices.values() if device.user_id == user_id)
@@ -51,6 +72,23 @@ class DeviceIndex(object):
 
         return device
 
+    def check_requirements(self, redditor) -> bool:
+        """Tests if a Redditor is eligible to vote."""
+        def parse_operand(operand):
+            if isinstance(operand, str):
+                return OPERANDS[operand](redditor)
+            else:
+                return operand
+
+        return [
+            (req, OPERATORS[req['operator']](parse_operand(req['lhs']), parse_operand(req['rhs'])))
+            for req in self.voter_requirements
+        ]
+
+    def is_eligible(self, redditor) -> bool:
+        """Tests if a Redditor is eligible to vote."""
+        return all(v for _, v in self.check_requirements(redditor))
+
     def unregister(self, device_id: DeviceId, persist_changes: bool = True) -> bool:
         """Unregisters a device, if it was registered."""
         if device_id in self.devices:
@@ -66,23 +104,23 @@ class DeviceIndex(object):
             return False
 
 
-def read_device_index(path: str) -> DeviceIndex:
+def read_device_index(path: str, voter_requirements: List[VoterRequirement]) -> DeviceIndex:
     """Reads the device index from a file."""
     data = read_json(path)
     devices = {
         device_id: RegisteredDevice(device_id, info['user'], info['expiry'])
         for device_id, info in data['devices'].items()
     }
-    return DeviceIndex(devices, set(data['admins']), path)
+    return DeviceIndex(devices, set(data['admins']), voter_requirements, path)
 
 
-def read_or_create_device_index(path: str) -> DeviceIndex:
+def read_or_create_device_index(path: str, voter_requirements: List[VoterRequirement]) -> DeviceIndex:
     """Reads the device index from a file or creates a fresh index if there is no such file."""
     try:
-        return read_device_index(path)
+        return read_device_index(path, voter_requirements)
     except FileNotFoundError:
         Path(path).parent.mkdir(parents=True, exist_ok=True)
-        return DeviceIndex({}, set(), path)
+        return DeviceIndex({}, set(), voter_requirements, path)
 
 
 def write_device_index(index: DeviceIndex, path: str):
