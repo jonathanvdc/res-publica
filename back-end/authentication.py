@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import time
+from datetime import date
 from collections import defaultdict
 from pathlib import Path
 from typing import Dict, Set, List, Any
@@ -25,7 +26,7 @@ OPERATORS = {
 }
 
 OPERANDS = {
-    'redditor.age': lambda redditor: redditor.age,
+    'redditor.age': lambda redditor: (date.today() - date.fromtimestamp(redditor.created_utc)).days,
     'redditor.karma': lambda redditor: redditor.link_karma + redditor.comment_karma
 }
 
