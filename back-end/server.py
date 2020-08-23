@@ -145,7 +145,7 @@ if __name__ == "__main__":
                 'error': 'requirements-not-met',
                 'requirements': json.dumps(device_index.check_requirements(redditor))
             }
-            return redirect(f'auth-failed?${url_encode(data)}')
+            return redirect(f'auth-failed?{url_encode(data)}')
 
         # Associate the device ID with the Redditor's username.
         device_index.register(device_id, redditor.name)

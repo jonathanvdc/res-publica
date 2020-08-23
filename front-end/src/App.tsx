@@ -22,6 +22,7 @@ import { AuthenticationLevel } from './model/auth';
 import SiteAppBar from './components/site-app-bar';
 import { UserPreferences, getPreferences, setPreferences } from './model/preferences';
 import PreferencesPage from './components/preferences-page';
+import AuthFailedPage from './components/auth-failed-page';
 
 let currentSeasons: string[] = [];
 
@@ -69,13 +70,28 @@ class App extends FetchedStateComponent<{}, AppState> {
 
   renderState(state: AppState): JSX.Element {
     if (state.authLevel === AuthenticationLevel.Unauthenticated) {
-      // If we aren't logged in yet, then we'll send the user to
-      // an authentication page.
+      let parsedUrl = new URL(window.location.href);
+      let pathname = parsedUrl.pathname;
+      if (pathname.endsWith('/')) {
+        pathname = pathname.slice(0, pathname.length - 1);
+      }
+
+      let content: JSX.Element | undefined;
+      if (parsedUrl.pathname.endsWith("/auth-failed")) {
+        // Auth might have failed. In that case, display the auth failed page.
+        let requirementsText = parsedUrl.searchParams.get("requirements");
+        let requirements = requirementsText ? JSON.parse(requirementsText) : undefined;
+        content = <AuthFailedPage error={parsedUrl.searchParams.get("error")!} requirements={requirements} />;
+      } else {
+        // If we aren't logged in yet, then we'll send the user to
+        // an authentication page.
+        content = state.authPage;
+      }
       return <div className={this.getMainClass()}>
-        <div className="App-body App-login">
-          {state.authPage}
-        </div>
-      </div>;
+          <div className="App-body App-login">
+            {content}
+          </div>
+        </div>;
     }
 
     let isAdmin = state.authLevel === AuthenticationLevel.AuthenticatedAdmin;

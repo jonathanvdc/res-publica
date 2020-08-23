@@ -27,7 +27,7 @@ OPERATORS = {
 
 OPERANDS = {
     'redditor.age': lambda redditor: (date.today() - date.fromtimestamp(redditor.created_utc)).days,
-    'redditor.karma': lambda redditor: redditor.link_karma + redditor.comment_karma
+    'redditor.total_karma': lambda redditor: redditor.link_karma + redditor.comment_karma
 }
 
 class RegisteredDevice(object):
