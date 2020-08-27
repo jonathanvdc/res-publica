@@ -30,11 +30,13 @@
 }
 
 .VoteOption {
+    word-break: break-word;
     overflow-wrap: anywhere;
 }
 
 .VoteOptionDescription {
     text-align: justify;
+    word-break: break-word;
     overflow-wrap: anywhere;
 }
 

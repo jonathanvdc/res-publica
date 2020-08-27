@@ -54,12 +54,10 @@ class App extends FetchedStateComponent<{}, AppState> {
     if (authLevel === AuthenticationLevel.Unauthenticated) {
       let authPage = await authenticator.createAuthenticationPage();
       return { authLevel, authPage };
+    } else {
+      let userId = await authenticator.getUserId();
+      return { authLevel, userId };
     }
-    let userId = await authenticator.getUserId();
-    return {
-      authLevel,
-      userId
-    };
   }
 
   onLogOut() {
