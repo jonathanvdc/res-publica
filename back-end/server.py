@@ -131,7 +131,7 @@ if __name__ == "__main__":
         if not can_access_optional_api(request, 'registered-voters'):
             abort(403)
 
-        return jsonify(device_index.registered_voters)
+        return jsonify(list(sorted(device_index.registered_voters)))
 
     @app.route('/reddit-auth')
     def process_auth():

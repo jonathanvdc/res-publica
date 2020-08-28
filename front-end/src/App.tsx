@@ -23,6 +23,7 @@ import SiteAppBar from './components/site-app-bar';
 import { UserPreferences, getPreferences, setPreferences } from './model/preferences';
 import PreferencesPage from './components/preferences-page';
 import AuthFailedPage from './components/auth-failed-page';
+import { OptionalAPI } from './model/api-client';
 
 let currentSeasons: string[] = [];
 
@@ -42,6 +43,7 @@ type AppState = {
   authLevel: AuthenticationLevel;
   authPage?: JSX.Element;
   userId?: string;
+  optionalAPIs?: OptionalAPI[];
 };
 
 class App extends FetchedStateComponent<{}, AppState> {
@@ -56,7 +58,8 @@ class App extends FetchedStateComponent<{}, AppState> {
       return { authLevel, authPage };
     } else {
       let userId = await authenticator.getUserId();
-      return { authLevel, userId };
+      let optionalAPIs = await apiClient.optional.getAvailable();
+      return { authLevel, userId, optionalAPIs };
     }
   }
 
@@ -108,6 +111,8 @@ class App extends FetchedStateComponent<{}, AppState> {
                 <Route exact path="/vote/:voteId" component={(props: any) => <VoteRoute isAdmin={isAdmin} {...props} />} />
                 <Route exact path="/vote/:voteId/ballots" component={VoteBallotsRoute} />
                 {isAdmin && <Route exact path="/admin/make-vote" component={MakeVoteRoute} />}
+                {state.optionalAPIs && state.optionalAPIs.includes(OptionalAPI.registeredUsers) &&
+                  <Route exact path="/registered-voters" component={RegisteredVotersRoute} />}
               </Suspense>
             </div>
           </MuiThemeProvider>
@@ -312,6 +317,19 @@ class MakeVoteRoute extends FetchedStateComponent<{ history: any }, MakeVoteRout
         hasSubmittedVote={data.phase === "submitted"}
         onMakeVote={this.onMakeVote.bind(this)} />;
     }
+  }
+}
+
+class RegisteredVotersRoute extends FetchedStateComponent<{ match: any, history: any }, string[]> {
+  fetchState(): Promise<string[]> {
+    return apiClient.optional.getRegisteredUsers();
+  }
+
+  renderState(data: string[]): JSX.Element {
+    return <div>
+      <Typography variant="h3">Registered Voters</Typography>
+      {data.sort().map(x => `u/${x}`).join(", ")}
+    </div>;
   }
 }
 
