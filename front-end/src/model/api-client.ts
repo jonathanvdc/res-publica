@@ -16,6 +16,11 @@ export interface APIClient {
     readonly admin: AdminAPIClient;
 
     /**
+     * Gets an API client for the optional APIs.
+     */
+    readonly optional: OptionalAPIClient;
+
+    /**
      * Gets all currently active votes.
      */
     getActiveVotes(): Promise<VoteAndBallots[]>;
@@ -37,6 +42,32 @@ export interface APIClient {
      * indeed well received.
      */
     castBallot(voteId: string, ballot: Ballot): Promise<FinishedBallot | { error: string }>;
+}
+
+/**
+ * An enumeration of APIs that the server might support or allow us to
+ * access.
+ */
+export enum OptionalAPI {
+    /**
+     * An API that queries the set of registered users.
+     */
+    registeredUsers = "registered-voters"
+}
+
+/**
+ * An API client for optional APIs.
+ */
+export interface OptionalAPIClient {
+    /**
+     * Gets a list of all currently available optional APIs.
+     */
+    getAvailable(): Promise<OptionalAPI[]>;
+
+    /**
+     * Gets the set of all currently registered users.
+     */
+    getRegisteredUsers(): Promise<string[]>;
 }
 
 /**

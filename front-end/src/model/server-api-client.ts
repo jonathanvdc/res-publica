@@ -1,6 +1,6 @@
 import { Authenticator } from "./auth";
 import { VoteAndBallots, Ballot, Vote, FinishedBallot } from "./vote";
-import { APIClient, AdminAPIClient } from "./api-client";
+import { APIClient, AdminAPIClient, OptionalAPIClient, OptionalAPI } from "./api-client";
 import { RedditAuthenticator } from "./reddit-auth";
 
 /**
@@ -10,6 +10,7 @@ export class ServerAPIClient implements APIClient {
     constructor() {
         this.auth = new RedditAuthenticator();
         this.admin = new ServerAdminAPIClient(this.auth);
+        this.optional = new ServerOptionalAPIClient(this.auth);
     }
 
     /**
@@ -20,6 +21,7 @@ export class ServerAPIClient implements APIClient {
     }
 
     readonly admin: ServerAdminAPIClient;
+    readonly optional: ServerOptionalAPIClient;
 
     /**
      * Gets all currently active votes.
@@ -83,6 +85,24 @@ class ServerAdminAPIClient implements AdminAPIClient {
         return postJSON(
             `/api/admin/create-vote?deviceId=${encodeURIComponent(this.auth.deviceId)}`,
             proposal);
+    }
+}
+
+class ServerOptionalAPIClient implements OptionalAPIClient {
+    constructor(private readonly auth: RedditAuthenticator) {
+
+    }
+
+    async getAvailable(): Promise<OptionalAPI[]> {
+        let response = await fetch(
+            `/api/optional/available?deviceId=${encodeURIComponent(this.auth.deviceId)}`);
+        return await response.json();
+    }
+
+    async getRegisteredUsers(): Promise<string[]> {
+        let response = await fetch(
+            `/api/optional/registered-voters?deviceId=${encodeURIComponent(this.auth.deviceId)}`);
+        return await response.json();
     }
 }
 

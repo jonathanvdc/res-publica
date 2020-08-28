@@ -1,12 +1,12 @@
 import { Authenticator, makeid } from "./auth";
 import { DummyAuthenticator } from "./dummy-auth";
-import { APIClient, AdminAPIClient } from "./api-client";
+import { APIClient, AdminAPIClient, OptionalAPIClient, OptionalAPI } from "./api-client";
 import { Vote, VoteAndBallots, Ballot, isActive, FinishedBallot } from "./vote";
 
 /**
  * An API client that fakes all interactions with the server.
  */
-export class DummyAPIClient implements APIClient {
+export class DummyAPIClient implements APIClient, OptionalAPIClient {
     constructor() {
         this.activeVotes = [
             {
@@ -28,6 +28,10 @@ export class DummyAPIClient implements APIClient {
             }
         ];
         this.admin = new DummyAdminAPIClient(this.activeVotes);
+    }
+
+    get optional(): OptionalAPIClient {
+        return this;
     }
 
     /**
@@ -69,6 +73,16 @@ export class DummyAPIClient implements APIClient {
         };
         vote.ownBallot = newBallot;
         return newBallot;
+    }
+
+    async getAvailable(): Promise<OptionalAPI[]> {
+        return [
+            OptionalAPI.registeredUsers
+        ];
+    }
+
+    async getRegisteredUsers(): Promise<string[]> {
+        return ["donald-duck"];
     }
 
     private auth = new DummyAuthenticator();

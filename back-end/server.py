@@ -3,6 +3,7 @@
 import sys
 import json
 import praw
+from typing import List
 from collections import defaultdict
 from flask import Flask, request, redirect, send_from_directory, jsonify, abort
 from werkzeug.exceptions import NotFound
@@ -26,6 +27,21 @@ if __name__ == "__main__":
             return None
         else:
             return device
+
+    def get_auth_level(req):
+        device = authenticate(req)
+        if not device:
+            return 'unauthenticated'
+        elif device.user_id in device_index.admins:
+            return 'authenticated-admin'
+        else:
+            return 'authenticated'
+
+    def get_available_optional_apis(req) -> List[str]:
+        return config.get('optional-apis', {}).get(get_auth_level(req), [])
+
+    def can_access_optional_api(req, api_name) -> bool:
+        return api_name in get_available_optional_apis(req)
 
     @app.route('/api/active-votes')
     def get_active_votes():
@@ -99,18 +115,23 @@ if __name__ == "__main__":
 
     @app.route('/api/is-authenticated')
     def check_is_authenticated():
-        device = authenticate(request)
-        if not device:
-            return jsonify('unauthenticated')
-        elif device.user_id in device_index.admins:
-            return jsonify('authenticated-admin')
-        else:
-            return jsonify('authenticated')
+        return jsonify(get_auth_level(request))
 
     @app.route('/api/user-id')
     def get_user_id():
         device = authenticate(request)
         return jsonify(device.user_id)
+
+    @app.route('/api/optional/available')
+    def process_available_optional_apis():
+        return jsonify(get_available_optional_apis(request))
+
+    @app.route('/api/optional/registered-voters')
+    def process_get_registered_users():
+        if not can_access_optional_api(request, 'registered-voters'):
+            abort(403)
+
+        return jsonify(device_index.registered_voters)
 
     @app.route('/reddit-auth')
     def process_auth():

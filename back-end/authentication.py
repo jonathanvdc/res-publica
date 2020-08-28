@@ -70,6 +70,7 @@ class DeviceIndex(object):
         device = RegisteredDevice(device_id, user_id, time.monotonic() + SECONDS_UNTIL_EXPIRY)
         self.devices[device_id] = device
         self.users_to_devices[user_id].add(device)
+        self.registered_voters.add(user_id)
 
         write_device_index(self, self.persistence_path)
 
@@ -117,7 +118,7 @@ def read_device_index(path: str, voter_requirements: List[VoterRequirement]) -> 
     return DeviceIndex(
         devices,
         set(data.get('admins', [])),
-        set(data.get('registered-voters', [])),
+        set(data.get('registered-voters', [])).union(info.user_id for info in devices.values()),
         voter_requirements,
         path)
 
