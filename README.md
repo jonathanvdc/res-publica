@@ -42,7 +42,11 @@ Now navigate to the `back-end` directory. Create a file called `config.json` tha
             "lhs": "redditor.total_karma",
             "rhs": 25
         }
-    ]
+    ],
+    "optional-apis": {
+        "authenticated": ["registered-voters"],
+        "authenticated-admin": ["registered-voters"]
+    }
 }
 ```
 
