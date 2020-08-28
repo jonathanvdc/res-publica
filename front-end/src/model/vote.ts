@@ -82,6 +82,17 @@ export type Vote = {
 
     /// A list of all available options in the vote.
     options: VoteOption[];
+
+    /**
+     * A list of elected candidates (represented as vote option IDs)
+     * that have resigned post-election. After a resignation, ballots
+     * must be re-tallied to elect a replacement candidate. Candidates
+     * who have been previously elected must of course remain elected.
+     *
+     * The list of resignations must be ordered in increasing order of
+     * resignation time.
+     */
+    resigned?: string[];
 };
 
 /// A ballot for a multiple choice vote.
@@ -253,6 +264,12 @@ function tallyFPTP(voteAndBallots: VoteAndBallots, seats?: number): string[] {
     let counts = new Map<string, number>();
     for (let ballot of voteAndBallots.ballots) {
         let fptpBallot = ballot as ChooseOneBallot;
+        if (voteAndBallots.vote.resigned
+            && voteAndBallots.vote.resigned.includes(fptpBallot.selectedOptionId)) {
+            // Don't count ballots for candidates who have resigned.
+            continue;
+        }
+
         let prevScore = counts.get(fptpBallot.selectedOptionId) || 0;
         counts.set(fptpBallot.selectedOptionId, prevScore + 1);
     }
@@ -284,7 +301,12 @@ function kotzePereira(ballot: RateOptionsBallot, type: RateOptionsBallotType): K
     return virtualBallots;
 }
 
-function tallySPSV(voteAndBallots: VoteAndBallots, seats?: number): string[] {
+function tallySPSV(
+    voteAndBallots: VoteAndBallots,
+    seats?: number,
+    preElected?: string[],
+    resigned?: string[]): string[] {
+
     let ballotType = voteAndBallots.vote.type as RateOptionsBallotType;
 
     // Apply the Kotze-Pareira transform.
@@ -295,11 +317,15 @@ function tallySPSV(voteAndBallots: VoteAndBallots, seats?: number): string[] {
 
     // Sort the candidates by ID.
     let sortedCandidates = voteAndBallots.vote.options.map(x => x.id).sort();
+    if (resigned) {
+        // Remove candidates who have resigned.
+        sortedCandidates = sortedCandidates.filter(x => !resigned.includes(x));
+    }
 
     // Then allocate seats.
     let seatCount = seats || Math.min(ballotType.positions, sortedCandidates.length);
-    let elected: string[] = [];
-    for (let i = 0; i < seatCount; i++) {
+    let elected = preElected || [];
+    while (elected.length < seatCount) {
         let candidateScores = new Map<string, number>();
         for (let ballot of virtualBallots) {
             let notYetElected = ballot.filter(x => elected.indexOf(x) === -1);
@@ -321,8 +347,25 @@ function tallySPSV(voteAndBallots: VoteAndBallots, seats?: number): string[] {
 export function tally(voteAndBallots: VoteAndBallots, seats?: number): string[] {
     switch (voteAndBallots.vote.type.tally) {
         case "first-past-the-post":
+        {
             return tallyFPTP(voteAndBallots, seats);
+        }
         case "spsv":
-            return tallySPSV(voteAndBallots, seats);
+        {
+            let result = tallySPSV(voteAndBallots, seats);
+            let resigned = voteAndBallots.vote.resigned || [];
+            for (let i = 1; i <= resigned.length; i++) {
+                // After every ballot, appoint a resignation by running a single-seat
+                // election with ballots that are weighted as those who did not resign
+                // were already elected.
+                let resignedSlice = resigned.slice(0, i);
+                result = tallySPSV(
+                    voteAndBallots,
+                    seats,
+                    result.filter(x => !resignedSlice.includes(x)),
+                    resignedSlice);
+            }
+            return result;
+        }
     }
 }
