@@ -4,13 +4,23 @@
 
 import time
 import sys
+import json
 from praw import Reddit
+from bs4 import BeautifulSoup
+from markdown import markdown
 from typing import Any, List, Union
 from helpers import read_json
 
 
 Vote = Any
 VoteOption = Any
+
+def markdown_to_plain_text(markdown_text: str) -> str:
+    # Base on Jason Coon's answer to Krish's StackOverflow
+    # question on how to convert markdown formatted text to text:
+    # https://stackoverflow.com/questions/761824/python-how-to-convert-markdown-formatted-text-to-text
+    html = markdown(markdown_text)
+    return ''.join(BeautifulSoup(html, features='html.parser').findAll(text=True))
 
 def strip_reddit_prefix(username: str) -> str:
     username = username.lstrip('/')
@@ -43,6 +53,7 @@ def parse_cfc(body: str, is_presidential: bool = False, discern_candidates: bool
         return None
 
     header, description = split_body
+    header = markdown_to_plain_text(header)
     candidate_name = header.strip().split()[0]
     candidate_id = strip_reddit_prefix(candidate_name.lower())
     candidate_id = candidate_id.strip('|/\\')
@@ -128,7 +139,9 @@ if __name__ == "__main__":
     # directly to test scraping.
     credentials = read_json(sys.argv[1])['bot-credentials']
     print(
-        scrape_cfc(
-            Reddit(**credentials),
-            'https://www.reddit.com/r/SimDemocracy/comments/i9qudc/39th_senatorial_vote_call_for_candidates/',
-            True))
+        json.dumps(
+            scrape_cfc(
+                Reddit(**credentials),
+                'https://www.reddit.com/r/SimDemocracy/comments/ii9w21/40th_senatorial_election_call_for_candidates/',
+                True),
+            indent=4))

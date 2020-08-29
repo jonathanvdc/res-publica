@@ -1,0 +1,4 @@
+pycryptodome
+flask
+beautifulsoup4
+markdown
