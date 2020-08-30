@@ -1,11 +1,12 @@
 import React, { Component } from "react";
 import CheckIcon from '@material-ui/icons/Check';
-import { Button, Theme, withStyles, CircularProgress, Paper, Typography, Fab, DialogTitle, Dialog, DialogContent, DialogContentText, DialogActions } from "@material-ui/core";
+import { Button, Theme, withStyles, CircularProgress, Paper, Typography, Fab, DialogTitle, Dialog, DialogContent, DialogContentText, DialogActions, Menu } from "@material-ui/core";
 import { green, red } from "@material-ui/core/colors";
-import { VoteAndBallots, Ballot, Vote, isActive, isCompletableBallot, completeBallot, isCompleteBallot, findIncompleteOptions } from "../model/vote";
+import { VoteAndBallots, Ballot, Vote, isActive, isCompletableBallot, completeBallot, isCompleteBallot, findIncompleteOptions, VoteOption } from "../model/vote";
 import VoteCard from "./vote-card";
 import "./vote-page.css";
 import { Link } from "react-router-dom";
+import DropDownButton from "./drop-down-button";
 
 type Props = {
     voteAndBallots: VoteAndBallots;
@@ -13,6 +14,11 @@ type Props = {
     onCastBallot?: (vote: Vote, ballot: Ballot) => void;
     isAdmin?: boolean;
     onCancelVote?: () => void;
+
+    /**
+     * A callback for when a winner resigns from their seat.
+     */
+    onResign?: (optionId: string) => void;
 };
 
 type State = {
@@ -109,6 +115,34 @@ class VotePage extends Component<Props, State> {
         </Dialog>;
     }
 
+    renderAdminZone(data: VoteAndBallots): JSX.Element | undefined {
+        let onCancelVote = this.props.onCancelVote;
+        let canCancelVote = isActive(data.vote) && this.props.onCancelVote;
+        let onResign = this.props.onResign;
+        let canResign = !isActive(data.vote) && onResign &&
+            data.vote.options.length - (data.vote.resigned?.length || 0) > 0;
+
+        if (!canCancelVote && !canResign) {
+            return undefined;
+        }
+
+        return <Paper className="VoteDangerZone" style={{ marginTop: "5em", padding: "1em 0" }}>
+            <Typography variant="h5" style={{ marginBottom: "1em" }}>Danger Zone</Typography>
+            {canResign &&
+                <DropDownButton
+                    button={props => <DangerButton {...props} variant="contained">Mark Resignation</DangerButton>}
+                    options={data.vote.options}
+                    onSelectOption={optionId => onResign!(optionId)} />}
+            {canCancelVote &&
+                <DangerButton
+                    variant="contained"
+                    onClick={() => { onCancelVote!(); }}>
+
+                    Cancel Vote
+                </DangerButton>}
+        </Paper>;
+    }
+
     render() {
         let data: VoteAndBallots = {
             ...this.props.voteAndBallots,
@@ -138,16 +172,7 @@ class VotePage extends Component<Props, State> {
             {isActive(data.vote)
                 ? <div className="ProgressOrButton">{progressOrButton}</div>
                 : <Link to={`/vote/${data.vote.id}/ballots`}><Button style={{ marginBottom: "1em" }} variant="contained">View Ballots</Button></Link>}
-            {isActive(data.vote) && this.props.isAdmin && this.props.onCancelVote &&
-                <Paper className="VoteDangerZone" style={{ marginTop: "5em", padding: "1em 0" }}>
-                    <Typography variant="h5" style={{ marginBottom: "1em" }}>Danger Zone</Typography>
-                    <DangerButton
-                        variant="contained"
-                        onClick={() => { if (this.props.onCancelVote) { this.props.onCancelVote(); } }}>
-
-                        Cancel Vote
-                </DangerButton>
-                </Paper>}
+            {this.props.isAdmin && this.renderAdminZone(data)}
             {isActive(data.vote) && this.renderPartialBallotDialog(data)}
         </div>;
     }
