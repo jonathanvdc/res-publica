@@ -204,6 +204,17 @@ class VoteRoute extends FetchedStateComponent<{ match: any, history: any, isAdmi
     }
   }
 
+  async onResign(voteId: string, optionId: string) {
+    let vote = await apiClient.admin.resign(voteId, optionId);
+    console.log(vote);
+    if ('error' in vote) {
+      this.setState({ hasConnected: true, error: vote.error });
+    } else {
+      let oldVote = this.state.data?.vote;
+      this.setState({ ...this.state, data: { ...this.state.data, vote: { ...oldVote!, vote } } });
+    }
+  }
+
   renderState(data: VoteRouteState): JSX.Element {
     if (!data.vote && !data.ballotCast) {
       return <div>
@@ -218,7 +229,8 @@ class VoteRoute extends FetchedStateComponent<{ match: any, history: any, isAdmi
         ballotCast={data.ballotCast}
         isAdmin={this.props.isAdmin}
         onCastBallot={this.onCastBallot.bind(this)}
-        onCancelVote={() => this.onCancelVote(data.vote!.vote.id)} />;
+        onCancelVote={() => this.onCancelVote(data.vote!.vote.id)}
+        onResign={optionId => this.onResign(data.vote!.vote.id, optionId)} />;
     } else {
       return <VoteConfirmationPage ballotId={data.ballotId!} />;
     }

@@ -81,6 +81,14 @@ class ServerAdminAPIClient implements AdminAPIClient {
         return await response.json();
     }
 
+    resign(voteId: string, optionId: string): Promise<Vote | { error: string }> {
+        return postJSON(
+            `/api/admin/resign?voteId=${encodeURIComponent(voteId)}` +
+            `&optionId=${encodeURIComponent(optionId)}` +
+            `&deviceId=${encodeURIComponent(this.auth.deviceId)}`,
+            {});
+    }
+
     createVote(proposal: Vote): Promise<Vote> {
         return postJSON(
             `/api/admin/create-vote?deviceId=${encodeURIComponent(this.auth.deviceId)}`,

@@ -96,6 +96,17 @@ if __name__ == "__main__":
         vote_id = request.args.get('voteId')
         return jsonify(vote_index.cancel_vote(vote_id))
 
+    @app.route('/api/admin/resign', methods=['POST'])
+    def process_resignation():
+        """Marks a candidate as having resigned from their seat."""
+        device = authenticate(request, True)
+        if not device:
+            abort(403)
+
+        vote_id = request.args.get('voteId')
+        option_id = request.args.get('optionId')
+        return jsonify(vote_index.mark_resignation(vote_id, option_id, device))
+
     @app.route('/api/admin/scrape-cfc')
     def process_scrape_cfc():
         """Scrapes a Reddit CFC."""

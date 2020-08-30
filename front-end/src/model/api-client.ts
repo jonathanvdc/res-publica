@@ -1,5 +1,5 @@
 import { Authenticator } from "./auth";
-import { VoteAndBallots, Ballot, Vote, VoteOption, FinishedBallot } from "./vote";
+import { VoteAndBallots, Ballot, Vote, FinishedBallot } from "./vote";
 
 /**
  * A client that allows the application to interact with the server's API.
@@ -96,4 +96,11 @@ export interface AdminAPIClient {
      * @param voteId The unique ID of the vote to cancel.
      */
     cancelVote(voteId: string): Promise<boolean>;
+
+    /**
+     * Has a candidate resign from a position.
+     * @param voteId The vote from which the candidate will resign.
+     * @param optionId The candidate that will resign, as an option ID.
+     */
+    resign(voteId: string, optionId: string): Promise<Vote | { error: string }>;
 }

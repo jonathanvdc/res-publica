@@ -1,12 +1,12 @@
 import React, { Component } from "react";
 import CheckIcon from '@material-ui/icons/Check';
-import { Button, Theme, withStyles, CircularProgress, Paper, Typography, Fab, DialogTitle, Dialog, DialogContent, DialogContentText, DialogActions, Menu } from "@material-ui/core";
+import { Button, Theme, withStyles, CircularProgress, Paper, Typography, Fab, DialogTitle, Dialog, DialogContent, DialogContentText, DialogActions } from "@material-ui/core";
 import { green, red } from "@material-ui/core/colors";
-import { VoteAndBallots, Ballot, Vote, isActive, isCompletableBallot, completeBallot, isCompleteBallot, findIncompleteOptions, VoteOption } from "../model/vote";
-import VoteCard from "./vote-card";
-import "./vote-page.css";
 import { Link } from "react-router-dom";
+import { VoteAndBallots, Ballot, Vote, isActive, isCompletableBallot, completeBallot, isCompleteBallot, findIncompleteOptions, tally } from "../model/vote";
+import VoteCard from "./vote-card";
 import DropDownButton from "./drop-down-button";
+import "./vote-page.css";
 
 type Props = {
     voteAndBallots: VoteAndBallots;
@@ -126,12 +126,14 @@ class VotePage extends Component<Props, State> {
             return undefined;
         }
 
+        let winners = canResign ? tally(data) : [];
+
         return <Paper className="VoteDangerZone" style={{ marginTop: "5em", padding: "1em 0" }}>
             <Typography variant="h5" style={{ marginBottom: "1em" }}>Danger Zone</Typography>
             {canResign &&
                 <DropDownButton
                     button={props => <DangerButton {...props} variant="contained">Mark Resignation</DangerButton>}
-                    options={data.vote.options}
+                    options={data.vote.options.filter(x => winners.includes(x.id))}
                     onSelectOption={optionId => onResign!(optionId)} />}
             {canCancelVote &&
                 <DangerButton

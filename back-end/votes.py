@@ -11,6 +11,7 @@ from authentication import RegisteredDevice
 
 
 VoteId = str
+OptionId = str
 BallotId = str
 Vote = Any
 VoteAndBallots = Any
@@ -80,6 +81,26 @@ class VoteIndex(object):
         vote['ballots'].append(ballot)
         self.write_vote(vote)
         return ballot
+
+    def mark_resignation(self, vote_id: VoteId, optionId: OptionId, device: RegisteredDevice) -> Vote:
+        """Indicates that a candidate has resigned from their seat."""
+        self.heartbeat()
+
+        vote = self.votes[vote_id]
+        if is_vote_active(vote):
+            return { 'error': 'Vote not closed yet.' }
+
+        resignations = vote['vote'].get('resigned', [])
+        if optionId in resignations:
+            return { 'error': 'Candidate has already resigned.' }
+
+        # Make the candidate resign.
+        resignations.append(optionId)
+        vote['vote']['resigned'] = resignations
+        self.write_vote(vote)
+
+        # Return the vote.
+        return self.prepare_for_transmission(vote, device)['vote']
 
     def prepare_for_transmission(self, vote: VoteAndBallots, device: RegisteredDevice) -> VoteAndBallots:
         """Prepares a vote for transmission."""

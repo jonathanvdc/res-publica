@@ -116,6 +116,11 @@ class DummyAdminAPIClient implements AdminAPIClient {
     async scrapeCfc(url: string, discernCandidates: boolean): Promise<Vote> {
         return mockVoteAndBallots2;
     }
+
+    resign(voteId: string, optionId: string): Promise<Vote | { error: string }> {
+        // TODO: implement this
+        throw new Error("Method not implemented.");
+    }
 }
 
 
