@@ -369,3 +369,15 @@ export function tally(voteAndBallots: VoteAndBallots, seats?: number): string[] 
         }
     }
 }
+
+/**
+ * Orders a vote's options based on how well they did during a hypothetical
+ * election where the number of seats is equal to the number of candidates
+ * and no one resigns.
+ * @param voteAndBallots A vote and its ballots.
+ */
+export function tallyOrder(voteAndBallots: VoteAndBallots): string[] {
+    return tally(
+        { ...voteAndBallots, vote: { ...voteAndBallots.vote, resigned: [] } },
+        voteAndBallots.vote.options.length);
+}

@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { VoteAndBallots, Ballot, BallotType, VoteOption, RateOptionsBallot, ChooseOneBallot, isActive, Vote, getBallotKind, tally, Candidate } from "../model/vote";
+import { VoteAndBallots, Ballot, BallotType, VoteOption, RateOptionsBallot, ChooseOneBallot, isActive, Vote, getBallotKind, tally, Candidate, tallyOrder } from "../model/vote";
 import ReactMarkdown from "react-markdown";
 import Typography from '@material-ui/core/Typography';
 import DeleteIcon from '@material-ui/icons/Delete';
@@ -9,6 +9,7 @@ import ToggleButtonGroup from '@material-ui/lab/ToggleButtonGroup';
 import MDEditor from '@uiw/react-md-editor';
 import { DateTimePicker } from '@material-ui/pickers'
 import DoneOutlineIcon from '@material-ui/icons/DoneOutline';
+import ExitIcon from '@material-ui/icons/ExitToApp';
 import CountdownTimer from 'react-countdown';
 import './vote-card.css';
 import { getPreferences } from "../model/preferences";
@@ -217,12 +218,13 @@ const StyledToggleButtonGroup = withStyles((theme) => ({
     }
   }))(ToggleButtonGroup);
 
-function renderVoteResult(description: JSX.Element[], isWinner: boolean, score: string): JSX.Element[] {
+function renderVoteResult(description: JSX.Element[], isWinner: boolean, hasResigned: boolean, score: string): JSX.Element[] {
     return [
         <div className="VoteResultPanel">
             <div className="VoteOutcomePanel">
                 <Typography variant="h4">{score}</Typography>
-                {isWinner ? <DoneOutlineIcon style={{fontSize: 40}} /> : []}
+                {isWinner && <DoneOutlineIcon style={{fontSize: 40}} />}
+                {hasResigned && <ExitIcon style={{fontSize: 40}} />}
             </div>
             <div className="VoteDescriptionPanel">{description}</div>
         </div>
@@ -255,9 +257,10 @@ function renderVoteOption(
     switch (ballotType.tally) {
         case "spsv":
             if (vote.winners.length > 0) {
-                let winnerIndex = vote.winners.indexOf(option.id);
+                let isWinner = vote.winners.includes(option.id);
+                let hasResigned = !!vote.voteAndBallots.vote.resigned?.includes(option.id);
                 let rankingIndex = vote.ranking.indexOf(option.id);
-                description = renderVoteResult(description, winnerIndex >= 0, `#${rankingIndex + 1}`)
+                description = renderVoteResult(description, isWinner, hasResigned, `#${rankingIndex + 1}`)
             }
 
             let optionBallot = ballot as RateOptionsBallot;
@@ -287,7 +290,11 @@ function renderVoteOption(
                 let ballots = vote.voteAndBallots.ballots;
                 let votePercentage = ballots.filter(x => (x as ChooseOneBallot).selectedOptionId === option.id).length / ballots.length;
                 console.log(vote.ranking);
-                description = renderVoteResult(description, vote.winners.indexOf(option.id) !== -1, `${Math.round(100 * votePercentage)}%`)
+                description = renderVoteResult(
+                    description,
+                    vote.winners.includes(option.id),
+                    !!vote.voteAndBallots.vote.resigned?.includes(option.id),
+                    `${Math.round(100 * votePercentage)}%`)
             }
 
             let contents = <div className="VotePanelContents">
@@ -394,7 +401,7 @@ class VoteCard extends Component<Props, State> {
         let ballot = this.props.voteAndBallots.ownBallot || createEmptyBallot(vote.type);
         let shouldTally = this.props.voteAndBallots.ballots.length > 0;
         let ranking = shouldTally
-            ? tally(this.props.voteAndBallots, this.props.voteAndBallots.vote.options.length)
+            ? tallyOrder(this.props.voteAndBallots)
             : vote.options.map(x => x.id);
         let talliedVote = {
             voteAndBallots: this.props.voteAndBallots,
