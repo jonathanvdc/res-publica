@@ -32,12 +32,12 @@ class SiteAppBar extends Component<SiteAppBarProps, SiteAppBarState> {
         this.setAnchorEl(event.currentTarget);
     }
 
-    handleClose() {
+    closeMenu() {
         this.setAnchorEl(null);
     }
 
     handleLogout() {
-        this.handleClose();
+        this.closeMenu();
         if (this.props.onLogOut) {
             this.props.onLogOut();
         }
@@ -110,8 +110,10 @@ class SiteAppBar extends Component<SiteAppBarProps, SiteAppBarState> {
                             horizontal: 'right',
                         }}
                         open={!!this.state.anchorElement}
-                        onClose={this.handleClose.bind(this)}>
-                        <Link to="/prefs" className="ImplicitLink"><MenuItem>Preferences</MenuItem></Link>
+                        onClose={this.closeMenu.bind(this)}>
+                        <Link to="/prefs" className="ImplicitLink">
+                            <MenuItem onClick={this.closeMenu.bind(this)}>Preferences</MenuItem>
+                        </Link>
                         <MenuItem onClick={this.handleLogout.bind(this)}>Log Out</MenuItem>
                     </Menu>
                 </div>
