@@ -384,14 +384,14 @@ function tallySTAR(voteAndBallots: VoteAndBallots, seats?: number): string[] {
     let winners: string[] = [];
     let ballotType = voteAndBallots.vote.type as RateOptionsBallotType;
     seats = Math.min(seats || ballotType.positions, voteAndBallots.vote.options.length);
-    for (let i = 0; i < seats; i++) {
-        let eligible = voteAndBallots.vote.options.filter(x => !winners.includes(x.id));
+    while (winners.length < seats) {
+        let eligible = voteAndBallots.vote.options.map(x => x.id).filter(x => !winners.includes(x));
         if (eligible.length === 1) {
-            winners.push(eligible[0].id);
+            winners.push(eligible[0]);
             break;
         }
 
-        let [a, b] = firstRoundSTAR(voteAndBallots.ballots as RateOptionsBallot[], winners, rng);
+        let [a, b] = firstRoundSTAR(voteAndBallots.ballots as RateOptionsBallot[], eligible, rng);
         winners.push(runoffRoundSTAR(voteAndBallots.ballots as RateOptionsBallot[], a, b, rng));
     }
     return winners;
