@@ -106,6 +106,9 @@ class MakeVotePage extends PureComponent<Props> {
             case "first-past-the-post":
                 type = { tally: "first-past-the-post" };
                 break;
+            case "star":
+                type = { tally: "star", positions: 1, min: 0, max: 5 };
+                break;
             case "spsv":
             default:
                 type = { tally: "spsv", positions: 1, min: 0, max: 5 };
@@ -124,7 +127,7 @@ class MakeVotePage extends PureComponent<Props> {
         }
         this.updateDraft({
             ...this.props.draft,
-            type: { tally: "spsv", positions: newValue, min: 0, max: 5 }
+            type: { tally: this.props.draft.type.tally, positions: newValue, min: 0, max: 5 }
         });
     }
 
@@ -143,6 +146,7 @@ class MakeVotePage extends PureComponent<Props> {
                     exclusive
                     onChange={this.onChangeTallyType.bind(this)}>
                     <TallyButton disabled={this.props.hasSubmittedVote} value="first-past-the-post">FPTP</TallyButton>
+                    <TallyButton disabled={this.props.hasSubmittedVote} value="star">STAR</TallyButton>
                     <TallyButton disabled={this.props.hasSubmittedVote} value="spsv">SPSV</TallyButton>
                 </ToggleButtonGroup>
                 {ballotType.tally === "spsv"

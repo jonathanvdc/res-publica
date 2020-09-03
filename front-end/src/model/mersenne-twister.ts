@@ -83,7 +83,7 @@ export class MersenneTwister {
     private mti = this.N + 1;  /* mti==N+1 means mt[N] is not initialized */
 
     constructor(seed?: number) {
-        if (seed == undefined) {
+        if (seed === undefined) {
             seed = new Date().getTime();
         }
         this.init_genrand(seed);
@@ -110,12 +110,12 @@ export class MersenneTwister {
     /* key_length is its length */
     /* slight change for C++, 2004/2/26 */
     init_by_array(init_key: number[], key_length: number) {
-        var i, j, k;
         this.init_genrand(19650218);
-        i = 1; j = 0;
-        k = (this.N > key_length ? this.N : key_length);
+        let i = 1;
+        let j = 0;
+        let k = (this.N > key_length ? this.N : key_length);
         for (; k; k--) {
-            var s = this.mt[i - 1] ^ (this.mt[i - 1] >>> 30)
+            let s = this.mt[i - 1] ^ (this.mt[i - 1] >>> 30)
             this.mt[i] = (this.mt[i] ^ (((((s & 0xffff0000) >>> 16) * 1664525) << 16) + ((s & 0x0000ffff) * 1664525)))
                 + init_key[j] + j; /* non linear */
             this.mt[i] >>>= 0; /* for WORDSIZE > 32 machines */
@@ -124,7 +124,7 @@ export class MersenneTwister {
             if (j >= key_length) j = 0;
         }
         for (k = this.N - 1; k; k--) {
-            var s = this.mt[i - 1] ^ (this.mt[i - 1] >>> 30);
+            let s = this.mt[i - 1] ^ (this.mt[i - 1] >>> 30);
             this.mt[i] = (this.mt[i] ^ (((((s & 0xffff0000) >>> 16) * 1566083941) << 16) + (s & 0x0000ffff) * 1566083941))
                 - i; /* non linear */
             this.mt[i] >>>= 0; /* for WORDSIZE > 32 machines */
@@ -138,13 +138,13 @@ export class MersenneTwister {
     /* generates a random number on [0,0xffffffff]-interval */
     genrand_int32() {
         var y;
-        var mag01 = new Array(0x0, this.MATRIX_A);
+        var mag01 = [0x0, this.MATRIX_A];
         /* mag01[x] = x * MATRIX_A  for x=0,1 */
 
         if (this.mti >= this.N) { /* generate N words at one time */
             var kk;
 
-            if (this.mti == this.N + 1)   /* if init_genrand() has not been called, */
+            if (this.mti === this.N + 1)   /* if init_genrand() has not been called, */
                 this.init_genrand(5489); /* a default initial seed is used */
 
             for (kk = 0; kk < this.N - this.M; kk++) {

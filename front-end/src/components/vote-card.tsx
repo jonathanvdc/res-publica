@@ -256,6 +256,7 @@ function renderVoteOption(
 
     switch (ballotType.tally) {
         case "spsv":
+        case "star":
             if (vote.winners.length > 0) {
                 let isWinner = vote.winners.includes(option.id);
                 let hasResigned = !!vote.voteAndBallots.vote.resigned?.includes(option.id);
