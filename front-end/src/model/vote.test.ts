@@ -47,4 +47,35 @@ test('STAR gets runoff right', () => {
     ], 'star', 1);
 
     expect(tally(vote)).toEqual(['option-1']);
+
+    vote = generateVoteFromBallots([
+        [0, 2, 4, 0],
+        [0, 2, 4, 5],
+        [0, 2, 4, 5],
+    ], 'star', 1);
+
+    expect(tally(vote)).toEqual(['option-3']);
+});
+
+test('STAR breaks first round tie', () => {
+    let vote = generateVoteFromBallots([
+        [0, 0, 4, 4],
+        [1, 3, 4, 4],
+        [1, 4, 2, 4],
+        [0, 5, 2, 0],
+    ], 'star', 1);
+
+    expect(tally(vote)).toEqual(['option-3']);
+});
+
+test('STAR breaks runoff tie', () => {
+    let vote = generateVoteFromBallots([
+        [0, 0, 2, 2],
+        [0, 5, 2, 4],
+        [0, 4, 2, 4],
+        [0, 5, 1, 4],
+        [0, 3, 1, 5],
+    ], 'star', 1);
+
+    expect(tally(vote)).toEqual(['option-3']);
 });

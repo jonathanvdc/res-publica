@@ -349,7 +349,13 @@ function compareForRunoffSTAR(ballots: RateOptionsBallot[], a: string, b: string
             winsForB++;
         }
     }
-    return winsForB - winsForA;
+
+    if (winsForA === winsForB) {
+        let scores = computeTotalScores(ballots);
+        return (scores.get(b) || 0) - (scores.get(a) || 0);
+    } else {
+        return winsForB - winsForA;
+    }
 }
 
 function runoffRoundSTAR(ballots: RateOptionsBallot[], a: string, b: string, rng: MersenneTwister): string {
