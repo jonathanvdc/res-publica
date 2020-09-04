@@ -3,7 +3,7 @@ import { VoteAndBallots, Ballot, BallotType, VoteOption, RateOptionsBallot, Choo
 import ReactMarkdown from "react-markdown";
 import Typography from '@material-ui/core/Typography';
 import DeleteIcon from '@material-ui/icons/Delete';
-import { Paper, withStyles, ButtonBase, TextField, Button, Collapse, Chip } from "@material-ui/core";
+import { Paper, withStyles, ButtonBase, TextField, Button, Collapse, Chip, Link } from "@material-ui/core";
 import ToggleButton from "@material-ui/lab/ToggleButton";
 import ToggleButtonGroup from '@material-ui/lab/ToggleButtonGroup';
 import MDEditor from '@uiw/react-md-editor';
@@ -121,6 +121,10 @@ function countLines(source: string, lineLength: number = 80): number {
     return lineCount;
 }
 
+function renderLink(props: { href: string, title: string, children: any[] }) {
+    return <Link href={props.href} title={props.title} target="_blank">{props.children}</Link>;
+}
+
 function createMDEditorOrPreview(
     source: string,
     className: string,
@@ -136,18 +140,20 @@ function createMDEditorOrPreview(
             previewOptions={{escapeHtml: false, unwrapDisallowed: true}} />;
     } else {
         const maxLines = 4;
+        let renderers = {
+            link: renderLink
+        };
+        let props = {
+            className,
+            source,
+            renderers,
+            escapeHtml: false,
+            unwrapDisallowed: true
+        };
         if (allowCollapse && countLines(source) > maxLines) {
-            return <CollapsibleMarkdown
-                className={className}
-                source={source}
-                escapeHtml={false}
-                unwrapDisallowed={true} />;
+            return <CollapsibleMarkdown {...props} />;
         } else {
-            return <ReactMarkdown
-                className={className}
-                source={source}
-                escapeHtml={false}
-                unwrapDisallowed={true} />;
+            return <ReactMarkdown {...props} />;
         }
     }
 }

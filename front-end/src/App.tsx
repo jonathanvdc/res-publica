@@ -1,7 +1,7 @@
 import React, { Suspense, Component } from 'react';
 import './App.css';
-import { VoteAndBallots, Vote, Ballot } from './model/vote';
-import { Route, BrowserRouter } from 'react-router-dom';
+import { VoteAndBallots, Vote, Ballot, isActive } from './model/vote';
+import { Route, BrowserRouter, Prompt } from 'react-router-dom';
 import { createMuiTheme, MuiThemeProvider } from '@material-ui/core/styles';
 import { green } from '@material-ui/core/colors';
 import VoteList from './components/vote-list';
@@ -224,13 +224,18 @@ class VoteRoute extends FetchedStateComponent<{ match: any, history: any, isAdmi
     }
 
     if (data.vote) {
-      return <VotePage
-        voteAndBallots={data.vote}
-        ballotCast={data.ballotCast}
-        isAdmin={this.props.isAdmin}
-        onCastBallot={this.onCastBallot.bind(this)}
-        onCancelVote={() => this.onCancelVote(data.vote!.vote.id)}
-        onResign={optionId => this.onResign(data.vote!.vote.id, optionId)} />;
+      return <React.Fragment>
+        <Prompt
+          when={!data.ballotCast && !data.vote.ownBallot && isActive(data.vote.vote)}
+          message="You haven't cast your ballot yet. Are you sure you want to leave?" />
+        <VotePage
+          voteAndBallots={data.vote}
+          ballotCast={data.ballotCast}
+          isAdmin={this.props.isAdmin}
+          onCastBallot={this.onCastBallot.bind(this)}
+          onCancelVote={() => this.onCancelVote(data.vote!.vote.id)}
+          onResign={optionId => this.onResign(data.vote!.vote.id, optionId)} />
+      </React.Fragment>;
     } else {
       return <VoteConfirmationPage ballotId={data.ballotId!} />;
     }
