@@ -46,6 +46,107 @@ const CheckFab = withStyles((theme: Theme) => ({
     },
 }))(Fab);
 
+type AdminZoneProps = {
+    data: VoteAndBallots;
+    onCancelVote?: () => void;
+    onResign?: (optionId: string) => void;
+};
+
+type AdminZoneState = {
+    dialogOpen: true;
+    dialogText: JSX.Element;
+    confirmAction: () => void;
+} | {
+    dialogOpen: false;
+    dialogText?: JSX.Element;
+};
+
+class AdminZone extends Component<AdminZoneProps, AdminZoneState> {
+    constructor(props: AdminZoneProps) {
+        super(props);
+        this.state = { dialogOpen: false };
+    }
+
+    confirmThenAct(dialogText: JSX.Element, confirmAction: () => void) {
+        this.setState({
+            dialogOpen: true,
+            dialogText,
+            confirmAction
+        });
+    }
+
+    onCancelAction() {
+        this.setState({ dialogOpen: false, dialogText: this.state.dialogText });
+    }
+
+    onProceedWithAction() {
+        if (this.state.dialogOpen) {
+            let callback = this.state.confirmAction;
+            this.onCancelAction();
+            callback();
+        }
+    }
+
+    render() {
+        let data = this.props.data;
+        let onCancelVote = this.props.onCancelVote;
+        let canCancelVote = isActive(data.vote) && this.props.onCancelVote;
+        let onResign = this.props.onResign;
+        let canResign = !isActive(data.vote) && onResign &&
+            data.vote.options.length - (data.vote.resigned?.length || 0) > 0;
+
+        if (!canCancelVote && !canResign) {
+            return undefined;
+        }
+
+        let winners = canResign ? tally(data) : [];
+
+        return <Paper className="VoteDangerZone" style={{ marginTop: "5em", padding: "1em 0" }}>
+            <Typography variant="h5" style={{ marginBottom: "1em" }}>Danger Zone</Typography>
+            {canResign &&
+                <DropDownButton
+                    button={props => <DangerButton {...props} variant="contained">Mark Resignation</DangerButton>}
+                    options={data.vote.options.filter(x => winners.includes(x.id))}
+                    onSelectOption={optionId =>
+                        this.confirmThenAct(
+                            <span>
+                                You are about to mark <b>{data.vote.options.find(x => x.id === optionId)?.name}</b>'s resignation.
+                                This cannot be undone. Proceed?
+                            </span>,
+                            () => onResign!(optionId))}
+                />}
+            {canCancelVote &&
+                <DangerButton
+                    variant="contained"
+                    onClick={() => this.confirmThenAct(
+                        <span>
+                            You are about to cancel <b>{data.vote.name}</b>.
+                            This cannot be undone. Proceed?
+                        </span>,
+                        () => onCancelVote!())}>
+
+                    Cancel Vote
+                </DangerButton>}
+            <Dialog
+                open={this.state.dialogOpen}
+                onClose={this.onCancelAction.bind(this)}
+                aria-labelledby="alert-dialog-title"
+                aria-describedby="alert-dialog-description">
+                <DialogTitle id="alert-dialog-title">Are you sure?</DialogTitle>
+                <DialogContent>
+                    <DialogContentText id="alert-dialog-description">
+                        {this.state.dialogText}
+                    </DialogContentText>
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={this.onCancelAction.bind(this)} color="primary">No</Button>
+                    <Button onClick={this.onProceedWithAction.bind(this)} color="primary" autoFocus>Yes</Button>
+                </DialogActions>
+            </Dialog>
+        </Paper>;
+    }
+}
+
 /**
  * A page that allows users to inspect and interact with a vote.
  */
@@ -115,34 +216,8 @@ class VotePage extends Component<Props, State> {
         </Dialog>;
     }
 
-    renderAdminZone(data: VoteAndBallots): JSX.Element | undefined {
-        let onCancelVote = this.props.onCancelVote;
-        let canCancelVote = isActive(data.vote) && this.props.onCancelVote;
-        let onResign = this.props.onResign;
-        let canResign = !isActive(data.vote) && onResign &&
-            data.vote.options.length - (data.vote.resigned?.length || 0) > 0;
-
-        if (!canCancelVote && !canResign) {
-            return undefined;
-        }
-
-        let winners = canResign ? tally(data) : [];
-
-        return <Paper className="VoteDangerZone" style={{ marginTop: "5em", padding: "1em 0" }}>
-            <Typography variant="h5" style={{ marginBottom: "1em" }}>Danger Zone</Typography>
-            {canResign &&
-                <DropDownButton
-                    button={props => <DangerButton {...props} variant="contained">Mark Resignation</DangerButton>}
-                    options={data.vote.options.filter(x => winners.includes(x.id))}
-                    onSelectOption={optionId => onResign!(optionId)} />}
-            {canCancelVote &&
-                <DangerButton
-                    variant="contained"
-                    onClick={() => { onCancelVote!(); }}>
-
-                    Cancel Vote
-                </DangerButton>}
-        </Paper>;
+    renderAdminZone(data: VoteAndBallots) {
+        return <AdminZone data={data} onCancelVote={this.props.onCancelVote} onResign={this.props.onResign} />;
     }
 
     render() {
