@@ -5,7 +5,7 @@ import { Route, BrowserRouter, Prompt } from 'react-router-dom';
 import { createMuiTheme, MuiThemeProvider } from '@material-ui/core/styles';
 import { green } from '@material-ui/core/colors';
 import VoteList from './components/vote-list';
-import { Typography, Button } from '@material-ui/core';
+import { Typography, Button, Paper } from '@material-ui/core';
 import { MuiPickersUtilsProvider } from '@material-ui/pickers';
 import MomentUtils from '@date-io/moment';
 import { saveAs } from 'file-saver';
@@ -24,6 +24,8 @@ import { UserPreferences, getPreferences, setPreferences } from './model/prefere
 import PreferencesPage from './components/preferences-page';
 import AuthFailedPage from './components/auth-failed-page';
 import { OptionalAPI } from './model/api-client';
+import RegisteredVotersList from './components/registered-voter-list';
+import TitlePaper from './components/title-paper';
 
 let currentSeasons: string[] = [];
 
@@ -343,10 +345,9 @@ class RegisteredVotersRoute extends FetchedStateComponent<{ match: any, history:
   }
 
   renderState(data: string[]): JSX.Element {
-    return <div>
-      <Typography variant="h3">Registered Voters</Typography>
-      {data.sort().map(x => `u/${x}`).join(", ")}
-    </div>;
+    return <TitlePaper title="Registered Voters">
+      <RegisteredVotersList registeredVoters={data} />
+    </TitlePaper>;
   }
 }
 

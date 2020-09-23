@@ -1,6 +1,7 @@
 import React, { PureComponent } from "react";
 import { UserPreferences } from "../model/preferences";
-import { FormControl, FormLabel, FormGroup, FormControlLabel, Switch, FormHelperText, Paper, Typography } from "@material-ui/core";
+import { FormControl, FormLabel, FormGroup, FormControlLabel, Switch, FormHelperText } from "@material-ui/core";
+import TitlePaper from "./title-paper";
 
 type Props = {
     preferences: UserPreferences;
@@ -19,8 +20,7 @@ class PreferencesPage extends PureComponent<Props> {
     }
 
     render() {
-        return <Paper style={{padding: "2em"}}>
-            <Typography variant="h4" style={{marginBottom: "1em"}}>Preferences</Typography>
+        return <TitlePaper title="Preferences">
             <FormControl component="fieldset">
                 <FormLabel component="legend">User Interface</FormLabel>
                 <FormGroup>
@@ -37,7 +37,7 @@ class PreferencesPage extends PureComponent<Props> {
                     If you use a different device or browser, you will need to reconfigure them.
                 </FormHelperText>
             </FormControl>
-        </Paper>;
+        </TitlePaper>;
     }
 }
 
