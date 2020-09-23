@@ -6,12 +6,14 @@ import CreateIcon from '@material-ui/icons/Create';
 import ListWithCheckIcon from '@material-ui/icons/PlaylistAddCheck';
 import { Link } from "react-router-dom";
 import { isMobile } from "react-device-detect";
+import { OptionalAPI } from "../model/api-client";
 import "./site-app-bar.css";
 
 type SiteAppBarProps = {
     onLogOut?: () => void;
     userId?: string;
     isAdmin?: boolean;
+    optionalAPIs?: OptionalAPI[];
 };
 
 type SiteAppBarState = {
@@ -60,6 +62,7 @@ class SiteAppBar extends Component<SiteAppBarProps, SiteAppBarState> {
         function ListItemLink<T>(props: T) {
             return <ListItem button component={Link} onClick={self.toggleDrawer.bind(self)} {...props} />;
         }
+        let optionalAPIs = this.props.optionalAPIs || [];
         let drawerItems = [
             {
                 adminOnly: true,
@@ -67,15 +70,17 @@ class SiteAppBar extends Component<SiteAppBarProps, SiteAppBarState> {
                     <ListItemIcon><CreateIcon /></ListItemIcon>
                     <ListItemText primary="Create New Vote" />
                 </ListItemLink>
-            },
-            {
+            }
+        ];
+        if (optionalAPIs.includes(OptionalAPI.registeredUsers)) {
+            drawerItems.push({
                 adminOnly: false,
                 item: <ListItemLink to="/registered-voters">
                     <ListItemIcon><ListWithCheckIcon /></ListItemIcon>
                     <ListItemText primary="Registered Voters" />
                 </ListItemLink>
-            }
-        ];
+            });
+        }
         let adminDrawer = drawerItems.filter(x => x.adminOnly).length === drawerItems.length;
 
         return <AppBar position="sticky">

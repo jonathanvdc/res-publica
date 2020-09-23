@@ -105,7 +105,8 @@ class App extends FetchedStateComponent<{}, AppState> {
             <SiteAppBar
               onLogOut={this.onLogOut.bind(this)}
               userId={state.userId}
-              isAdmin={isAdmin} />
+              isAdmin={isAdmin}
+              optionalAPIs={state.optionalAPIs} />
             <div className="App-body">
               <Suspense fallback={<div>Loading...</div>}>
                 <Route exact path="/" component={VoteListRoute} />
