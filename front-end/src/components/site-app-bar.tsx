@@ -3,6 +3,7 @@ import { AppBar, Toolbar, Typography, Menu, MenuItem, Chip, Avatar, SwipeableDra
 import AccountCircle from '@material-ui/icons/AccountCircle';
 import MenuIcon from '@material-ui/icons/Menu';
 import CreateIcon from '@material-ui/icons/Create';
+import ListWithCheckIcon from '@material-ui/icons/PlaylistAddCheck';
 import { Link } from "react-router-dom";
 import { isMobile } from "react-device-detect";
 import "./site-app-bar.css";
@@ -65,6 +66,13 @@ class SiteAppBar extends Component<SiteAppBarProps, SiteAppBarState> {
                 item: <ListItemLink to="/admin/make-vote">
                     <ListItemIcon><CreateIcon /></ListItemIcon>
                     <ListItemText primary="Create New Vote" />
+                </ListItemLink>
+            },
+            {
+                adminOnly: false,
+                item: <ListItemLink to="/registered-voters">
+                    <ListItemIcon><ListWithCheckIcon /></ListItemIcon>
+                    <ListItemText primary="Registered Voters" />
                 </ListItemLink>
             }
         ];
