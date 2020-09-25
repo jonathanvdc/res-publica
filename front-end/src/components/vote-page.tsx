@@ -204,10 +204,10 @@ class VotePage extends Component<Props, State> {
             <DialogTitle id="alert-dialog-title">Cast partial ballot?</DialogTitle>
             <DialogContent>
                 <DialogContentText id="alert-dialog-description">
-                    Your ballot incomplete. You have not yet expressed a preference for {incompleteText}.
+                    Your ballot is incomplete. You have not yet expressed a preference for {incompleteText}.
                     If you do not express preferences for them manually, your ballot will be autofilled
                     with the minimum preference for those options. Are you sure you want to proceed?
-            </DialogContentText>
+                </DialogContentText>
             </DialogContent>
             <DialogActions>
                 <Button onClick={this.onCancelPartialBallot.bind(this)} color="primary">No</Button>

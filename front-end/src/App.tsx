@@ -114,7 +114,7 @@ class App extends FetchedStateComponent<{}, AppState> {
                 <Route exact path="/vote/:voteId" component={(props: any) => <VoteRoute isAdmin={isAdmin} {...props} />} />
                 <Route exact path="/vote/:voteId/ballots" component={VoteBallotsRoute} />
                 {isAdmin && <Route exact path="/admin/make-vote" component={MakeVoteRoute} />}
-                {state.optionalAPIs && state.optionalAPIs.includes(OptionalAPI.registeredUsers) &&
+                {state.optionalAPIs && state.optionalAPIs.includes(OptionalAPI.registeredVoters) &&
                   <Route exact path="/registered-voters" component={RegisteredVotersRoute} />}
               </Suspense>
             </div>
@@ -340,14 +340,36 @@ class MakeVoteRoute extends FetchedStateComponent<{ history: any }, MakeVoteRout
   }
 }
 
-class RegisteredVotersRoute extends FetchedStateComponent<{ match: any, history: any }, string[]> {
-  fetchState(): Promise<string[]> {
-    return apiClient.optional.getRegisteredUsers();
+type RegisteredVotersState = {
+  voters: string[];
+  optionalAPIs: OptionalAPI[];
+};
+
+class RegisteredVotersRoute extends FetchedStateComponent<{ match: any, history: any }, RegisteredVotersState> {
+  async fetchState(): Promise<RegisteredVotersState> {
+    let apis = apiClient.optional.getAvailable();
+    let voters = apiClient.optional.getRegisteredVoters();
+    return {
+      voters: await voters,
+      optionalAPIs: await apis
+    };
   }
 
-  renderState(data: string[]): JSX.Element {
+  async onAddVoter(username: string) {
+    await apiClient.optional.addRegisteredVoter(username);
+    this.refetchInitialState();
+  }
+
+  async onRemoveVoter(username: string) {
+    await apiClient.optional.removeRegisteredVoter(username);
+    this.refetchInitialState();
+  }
+
+  renderState(data: RegisteredVotersState): JSX.Element {
+    let onAdd = data.optionalAPIs.includes(OptionalAPI.addRegisteredVoter) ? this.onAddVoter.bind(this) : undefined;
+    let onRemove = data.optionalAPIs.includes(OptionalAPI.removeRegisteredVoter) ? this.onRemoveVoter.bind(this) : undefined;
     return <TitlePaper title="Registered Voters">
-      <RegisteredVotersList registeredVoters={data} />
+      <RegisteredVotersList registeredVoters={data.voters} addRegisteredVoter={onAdd} removeRegisteredVoter={onRemove} />
     </TitlePaper>;
   }
 }

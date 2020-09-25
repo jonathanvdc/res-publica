@@ -72,7 +72,7 @@ class SiteAppBar extends Component<SiteAppBarProps, SiteAppBarState> {
                 </ListItemLink>
             }
         ];
-        if (optionalAPIs.includes(OptionalAPI.registeredUsers)) {
+        if (optionalAPIs.includes(OptionalAPI.registeredVoters)) {
             drawerItems.push({
                 adminOnly: false,
                 item: <ListItemLink to="/registered-voters">
