@@ -9,3 +9,6 @@ def read_json(path):
 def write_json(data, path):
     with open(path, 'w') as f:
         return json.dump(data, f, indent=4)
+
+def sendToLog(string):
+    print(string)
