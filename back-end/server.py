@@ -138,11 +138,27 @@ if __name__ == "__main__":
         return jsonify(get_available_optional_apis(request))
 
     @app.route('/api/optional/registered-voters')
-    def process_get_registered_users():
+    def process_get_registered_voters():
         if not can_access_optional_api(request, 'registered-voters'):
             abort(403)
 
         return jsonify(list(sorted(device_index.registered_voters)))
+
+    @app.route('/api/optional/add-registered-voter', methods=['POST'])
+    def process_add_registered_voter():
+        if not can_access_optional_api(request, 'add-registered-voter'):
+            abort(403)
+
+        device_index.register_user(request.args.get('userId'))
+        return jsonify({})
+
+    @app.route('/api/optional/remove-registered-voter', methods=['POST'])
+    def process_remove_registered_voter():
+        if not can_access_optional_api(request, 'remove-registered-voter'):
+            abort(403)
+
+        device_index.unregister_user(request.args.get('userId'))
+        return jsonify({})
 
     @app.route('/reddit-auth')
     def process_auth():

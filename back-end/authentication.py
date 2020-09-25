@@ -70,11 +70,29 @@ class DeviceIndex(object):
         device = RegisteredDevice(device_id, user_id, time.monotonic() + SECONDS_UNTIL_EXPIRY)
         self.devices[device_id] = device
         self.users_to_devices[user_id].add(device)
-        self.registered_voters.add(user_id)
+        self.register_user(user_id, persist_changes=False)
 
         write_device_index(self, self.persistence_path)
 
         return device
+
+    def register_user(self, user_id: UserId, persist_changes: bool=True):
+        """Adds a new user to the device index, but does not add an associated device."""
+        self.registered_voters.add(user_id)
+
+        if persist_changes:
+            write_device_index(self, self.persistence_path)
+
+    def unregister_user(self, user_id: UserId, persist_changes: bool=True):
+        """Removes a user from the device index. Removes any associated devices."""
+        self.registered_voters.remove(user_id)
+        for device in self.users_to_devices[user_id]:
+            del self.users_to_devices[device.device_id]
+
+        del self.users_to_devices[user_id]
+
+        if persist_changes:
+            write_device_index(self, self.persistence_path)
 
     def check_requirements(self, redditor) -> bool:
         """Tests if a Redditor is eligible to vote."""
