@@ -50,9 +50,17 @@ export interface APIClient {
  */
 export enum OptionalAPI {
     /**
-     * An API that queries the set of registered users.
+     * An API that queries the set of registered voters.
      */
-    registeredUsers = "registered-voters"
+    registeredVoters = "registered-voters",
+    /**
+     * An API that registers a voter.
+     */
+    addRegisteredVoter = "add-registered-voter",
+    /**
+     * An API that unregisters a voter.
+     */
+    removeRegisteredVoter = "remove-registered-voter"
 }
 
 /**
@@ -67,7 +75,17 @@ export interface OptionalAPIClient {
     /**
      * Gets the set of all currently registered users.
      */
-    getRegisteredUsers(): Promise<string[]>;
+    getRegisteredVoters(): Promise<string[]>;
+
+    /**
+     * Registers a new voter.
+     */
+    addRegisteredVoter(username: string): Promise<{}>;
+
+    /**
+     * Unregisters an existing voter.
+     */
+    removeRegisteredVoter(username: string): Promise<{}>;
 }
 
 /**

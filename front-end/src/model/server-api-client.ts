@@ -107,10 +107,30 @@ class ServerOptionalAPIClient implements OptionalAPIClient {
         return await response.json();
     }
 
-    async getRegisteredUsers(): Promise<string[]> {
+    async getRegisteredVoters(): Promise<string[]> {
         let response = await fetch(
             `/api/optional/registered-voters?deviceId=${encodeURIComponent(this.auth.deviceId)}`);
         return await response.json();
+    }
+
+    /**
+     * Registers a new voter.
+     */
+    async addRegisteredVoter(username: string): Promise<{}> {
+        return postJSON(
+            `/api/optional/add-registered-voter?deviceId=${encodeURIComponent(this.auth.deviceId)}` +
+            `&userId=${encodeURIComponent(username)}`,
+            {});
+    }
+
+    /**
+     * Unregisters an existing voter.
+     */
+    async removeRegisteredVoter(username: string): Promise<{}> {
+        return postJSON(
+            `/api/optional/remove-registered-voter?deviceId=${encodeURIComponent(this.auth.deviceId)}` +
+            `&userId=${encodeURIComponent(username)}`,
+            {});
     }
 }
 

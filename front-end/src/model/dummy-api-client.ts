@@ -77,16 +77,36 @@ export class DummyAPIClient implements APIClient, OptionalAPIClient {
 
     async getAvailable(): Promise<OptionalAPI[]> {
         return [
-            OptionalAPI.registeredUsers
+            OptionalAPI.registeredVoters
         ];
     }
 
-    async getRegisteredUsers(): Promise<string[]> {
-        return ["donald-duck"];
+    async getRegisteredVoters(): Promise<string[]> {
+        return this.registeredVoters;
+    }
+
+    /**
+     * Registers a new voter.
+     */
+    async addRegisteredVoter(username: string): Promise<{}> {
+        this.registeredVoters.push(username);
+        return {};
+    }
+
+    /**
+     * Unregisters an existing voter.
+     */
+    async removeRegisteredVoter(username: string): Promise<{}> {
+        let index = this.registeredVoters.indexOf(username);
+        if (index > 0) {
+            this.registeredVoters.splice(index, 1);
+        }
+        return {};
     }
 
     private auth = new DummyAuthenticator();
     private activeVotes: VoteAndBallots[];
+    private registeredVoters: string[] = ["donald-duck"];
 }
 
 class DummyAdminAPIClient implements AdminAPIClient {
