@@ -41,6 +41,14 @@ export abstract class FetchedStateComponent<TProps, TData> extends Component<TPr
             reason => this.setState({ hasConnected: false, error: reason }));
     }
 
+    async waitAndContinue<T>(promise: Promise<T>, continuation: (data: T) => void) {
+        try {
+            continuation(await promise);
+        } catch (error) {
+            this.setState({ hasConnected: false, error });
+        }
+    }
+
     componentDidMount() {
         if (this.state.hasConnected) {
             return;
