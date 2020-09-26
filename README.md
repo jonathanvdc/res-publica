@@ -1,4 +1,4 @@
-# Res Publica (A proposed SimDem Voting Booth website)
+# Res Publica (the SimDem election website)
 
 ## Build Instructions
 
