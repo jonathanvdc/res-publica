@@ -356,13 +356,15 @@ class RegisteredVotersRoute extends FetchedStateComponent<{ match: any, history:
   }
 
   async onAddVoter(username: string) {
-    await apiClient.optional.addRegisteredVoter(username);
-    this.refetchInitialState();
+    this.waitAndContinue(
+      apiClient.optional.addRegisteredVoter(username),
+      () => this.refetchInitialState());
   }
 
   async onRemoveVoter(username: string) {
-    await apiClient.optional.removeRegisteredVoter(username);
-    this.refetchInitialState();
+    this.waitAndContinue(
+      apiClient.optional.removeRegisteredVoter(username),
+      () => this.refetchInitialState());
   }
 
   renderState(data: RegisteredVotersState): JSX.Element {
