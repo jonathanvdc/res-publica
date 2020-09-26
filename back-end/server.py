@@ -3,6 +3,7 @@
 import sys
 import json
 import praw
+import prawcore.exceptions
 from typing import List
 from collections import defaultdict
 from flask import Flask, request, redirect, send_from_directory, jsonify, abort
@@ -10,7 +11,7 @@ from werkzeug.exceptions import NotFound
 from werkzeug.urls import url_encode
 from authentication import read_or_create_device_index, RegisteredDevice
 from votes import read_or_create_vote_index
-from helpers import read_json
+from helpers import read_json, sendToLog
 from scrape import scrape_cfc
 
 if __name__ == "__main__":
@@ -64,7 +65,11 @@ if __name__ == "__main__":
         if not device:
             abort(403)
 
-        return jsonify(vote_index.get_vote(request.args.get('voteId'), device))
+        vote_index = vote_index.get_vote(request.args.get('voteId'), device)
+        if vote_index is None:
+            abort(404)
+        else:
+            return jsonify(vote_index)
 
     @app.route('/api/cast-ballot', methods=['POST'])
     def cast_ballot():
@@ -182,10 +187,14 @@ if __name__ == "__main__":
         device_id, return_url = state.split(';', maxsplit=2)
 
         # Log in with Reddit.
-        reddit = praw.Reddit(**config['webapp-credentials'])
-        reddit.auth.authorize(code)
+        try:
+            reddit = praw.Reddit(**config['webapp-credentials'])
+            reddit.auth.authorize(code)
 
-        redditor = reddit.user.me()
+            redditor = reddit.user.me()
+        except prawcore.exceptions.OAuthException as e:
+            sendToLog(f'Failed to log into reddit with error: {e}')
+            return None
 
         # Check that the user meetings the eligibility requirements.
         if not device_index.is_eligible(redditor):

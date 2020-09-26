@@ -5,7 +5,7 @@ from datetime import date
 from collections import defaultdict
 from pathlib import Path
 from typing import Dict, Set, List, Any
-from helpers import read_json, write_json
+from helpers import read_json, write_json, sendToLog
 
 
 DeviceId = str
@@ -86,8 +86,13 @@ class DeviceIndex(object):
     def unregister_user(self, user_id: UserId, persist_changes: bool=True):
         """Removes a user from the device index. Removes any associated devices."""
         self.registered_voters.remove(user_id)
-        for device in self.users_to_devices[user_id]:
-            del self.users_to_devices[device.device_id]
+        try:
+            for device in self.users_to_devices[user_id]:
+                del self.users_to_devices[device.device_id]   
+        except KeyError:
+            sendToLog('Attempted to delete non-existent user!')
+            return None
+                
 
         del self.users_to_devices[user_id]
 
