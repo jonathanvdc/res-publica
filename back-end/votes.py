@@ -6,7 +6,7 @@ import os
 from Crypto.Hash import SHA3_256
 from pathlib import Path
 from typing import Any, Dict, List
-from helpers import read_json, write_json, sendToLog
+from helpers import read_json, write_json, send_to_log
 from authentication import RegisteredDevice
 
 
@@ -67,8 +67,8 @@ class VoteIndex(object):
         try:
             return self.prepare_for_transmission(self.votes[vote_id], device)
         except KeyError:
-            sendToLog('Attempted to get non-existent vote!')
-            return None
+            send_to_log(f'Attempted to get nonexistent vote {vote_id}')
+            raise
 
     def cast_ballot(self, vote_id: VoteId, ballot: Ballot, device: RegisteredDevice) -> Ballot:
         """Casts a ballot."""

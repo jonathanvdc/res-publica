@@ -11,7 +11,7 @@ from werkzeug.exceptions import NotFound
 from werkzeug.urls import url_encode
 from authentication import read_or_create_device_index, RegisteredDevice
 from votes import read_or_create_vote_index
-from helpers import read_json, sendToLog
+from helpers import read_json, send_to_log
 from scrape import scrape_cfc
 
 if __name__ == "__main__":
@@ -193,8 +193,8 @@ if __name__ == "__main__":
 
             redditor = reddit.user.me()
         except prawcore.exceptions.OAuthException as e:
-            sendToLog(f'Failed to log into reddit with error: {e}')
-            return None
+            send_to_log(f'Failed to log into reddit with error: {e}')
+            raise
 
         # Check that the user meetings the eligibility requirements.
         if not device_index.is_eligible(redditor):

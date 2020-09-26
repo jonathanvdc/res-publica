@@ -5,7 +5,7 @@ from datetime import date
 from collections import defaultdict
 from pathlib import Path
 from typing import Dict, Set, List, Any
-from helpers import read_json, write_json, sendToLog
+from helpers import read_json, write_json, send_to_log
 
 
 DeviceId = str
@@ -90,7 +90,7 @@ class DeviceIndex(object):
             try:
                 del self.devices[device.device_id]
             except KeyError:
-                sendToLog(f'Attempted to delete nonexistent device {device.device_id}')
+                send_to_log(f'Attempted to delete nonexistent device {device.device_id}')
                 raise
 
         del self.users_to_devices[user_id]
