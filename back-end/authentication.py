@@ -86,13 +86,12 @@ class DeviceIndex(object):
     def unregister_user(self, user_id: UserId, persist_changes: bool=True):
         """Removes a user from the device index. Removes any associated devices."""
         self.registered_voters.remove(user_id)
-        try:
-            for device in self.users_to_devices[user_id]:
-                del self.users_to_devices[device.device_id]   
-        except KeyError:
-            sendToLog('Attempted to delete non-existent user!')
-            return None
-                
+        for device in self.users_to_devices[user_id]:
+            try:
+                del self.devices[device.device_id]
+            except KeyError:
+                sendToLog(f'Attempted to delete nonexistent device {device.device_id}')
+                raise
 
         del self.users_to_devices[user_id]
 
