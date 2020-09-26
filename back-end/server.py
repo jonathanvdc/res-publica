@@ -65,11 +65,11 @@ if __name__ == "__main__":
         if not device:
             abort(403)
 
-        vote_index = vote_index.get_vote(request.args.get('voteId'), device)
-        if vote_index is None:
+        vote_data = vote_index.get_vote(request.args.get('voteId'), device)
+        if vote_data is None:
             abort(404)
         else:
-            return jsonify(vote_index)
+            return jsonify(vote_data)
 
     @app.route('/api/cast-ballot', methods=['POST'])
     def cast_ballot():
