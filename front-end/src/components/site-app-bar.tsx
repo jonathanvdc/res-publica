@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { AppBar, Toolbar, Typography, Menu, MenuItem, Chip, Avatar, SwipeableDrawer, List, ListItem, ListItemText, IconButton, ListItemIcon } from "@material-ui/core";
+import { AppBar, Toolbar, Menu, MenuItem, Chip, Avatar, SwipeableDrawer, List, ListItem, ListItemText, IconButton, ListItemIcon } from "@material-ui/core";
 import AccountCircle from '@material-ui/icons/AccountCircle';
 import MenuIcon from '@material-ui/icons/Menu';
 import CreateIcon from '@material-ui/icons/Create';
@@ -7,6 +7,7 @@ import ListWithCheckIcon from '@material-ui/icons/PlaylistAddCheck';
 import { Link } from "react-router-dom";
 import { isMobile } from "react-device-detect";
 import { OptionalAPI } from "../model/api-client";
+import Logo from "../logo.svg";
 import "./site-app-bar.css";
 
 type SiteAppBarProps = {
@@ -90,7 +91,7 @@ class SiteAppBar extends Component<SiteAppBarProps, SiteAppBarState> {
                         <MenuIcon />
                     </IconButton>}
                 <Link to="/" className="ImplicitLink">
-                    <Typography variant="h6">SimDem Voting Booth</Typography>
+                    <img style={{height: "32px"}} src={Logo} alt="SimDem Voting Booth"/>
                 </Link>
                 {(this.props.isAdmin || !adminDrawer) && <SwipeableDrawer
                     anchor="left"
