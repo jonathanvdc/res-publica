@@ -10,7 +10,7 @@ from praw import Reddit
 from bs4 import BeautifulSoup
 from markdown import markdown
 from typing import Any, List, Union
-from helpers import read_json
+from helpers import read_json, send_to_log
 
 
 Vote = Any
@@ -93,8 +93,8 @@ def scrape_cfc(reddit: Reddit, url: str, discern_candidates: bool = False) -> Vo
     try:
         post = reddit.submission(url=url)
     except praw.exceptions.InvalidURL:
-        sendToLog('Invalid URL passed to scrape_cfc!')
-        return None
+        send_to_log('Invalid URL passed to scrape_cfc!')
+        raise
 
     # Parse the title.
     title = post.title
