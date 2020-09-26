@@ -5,6 +5,7 @@
 import time
 import sys
 import json
+import praw.exceptions
 from praw import Reddit
 from bs4 import BeautifulSoup
 from markdown import markdown
@@ -89,7 +90,11 @@ def parse_cfc(body: str, is_presidential: bool = False, discern_candidates: bool
 def scrape_cfc(reddit: Reddit, url: str, discern_candidates: bool = False) -> Vote:
     """Scrapes a CFC from Reddit."""
 
-    post = reddit.submission(url=url)
+    try:
+        post = reddit.submission(url=url)
+    except praw.exceptions.InvalidURL:
+        sendToLog('Invalid URL passed to scrape_cfc!')
+        return None
 
     # Parse the title.
     title = post.title
