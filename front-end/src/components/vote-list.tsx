@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 import { VoteAndBallots, isActive } from "../model/vote";
 import './vote-list.css';
 import { Button } from "@material-ui/core";
+import { sortBy } from "../model/util";
 
 type Props = {
     votes: VoteAndBallots[];
@@ -19,7 +20,7 @@ function createVoteLink(voteId: string): string {
 class VoteList extends PureComponent<Props> {
     render() {
         let elements: JSX.Element[] = [];
-        for (let vote of this.props.votes) {
+        for (let vote of sortBy(this.props.votes, x => x.vote.deadline, true)) {
             elements.push(
                 <Link className="VoteLink" to={createVoteLink(vote.vote.id)}>
                     <Button className="VoteButton" variant={isActive(vote.vote) ? "contained" : "outlined"} color="primary">

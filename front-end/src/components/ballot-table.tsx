@@ -1,5 +1,6 @@
 import React, { PureComponent } from "react";
-import { VoteAndBallots, Ballot, Vote, RateOptionsBallot, sortByString } from "../model/vote";
+import { VoteAndBallots, Ballot, Vote, RateOptionsBallot } from "../model/vote";
+import { sortBy } from "../model/util";
 import "./vote-page.css";
 import { Table, TableHead, TableCell, Paper, TableRow } from "@material-ui/core";
 
@@ -15,7 +16,7 @@ function canonicalizeBallot(ballot: Ballot, vote: Vote): RateOptionsBallot {
     return {
         id: ballot.id,
         timestamp: ballot.timestamp,
-        ratingPerOption: sortByString(getOptionScores(ballot, vote), x => x.optionId)
+        ratingPerOption: sortBy(getOptionScores(ballot, vote), x => x.optionId)
     };
 }
 
@@ -23,7 +24,7 @@ function renderTableHeader(vote: Vote): string[] {
     return [
         "Ballot ID",
         "Timestamp",
-        ...sortByString(vote.options, x => x.id).map(x => x.id)
+        ...sortBy(vote.options, x => x.id).map(x => x.id)
     ];
 }
 

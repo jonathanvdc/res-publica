@@ -3,6 +3,7 @@ import { List, ListItem, ListItemText, ListItemSecondaryAction, IconButton, List
 import PlusIcon from '@material-ui/icons/PlusOne';
 import DeleteIcon from '@material-ui/icons/Delete';
 import './reddit-auth-page.css';
+import { sortBy } from "../model/util";
 
 type Props = {
     registeredVoters: string[];
@@ -58,11 +59,15 @@ class RegisteredVoterList extends Component<Props, State> {
         this.setState({ addVoterDialogOpen: false });
     }
 
+    redirectToVoterHomepage(voterId: string) {
+        window.location.href = `https://reddit.com/u/${voterId}`;
+    }
+
     render() {
         return <React.Fragment>
             <List dense>
-                {this.props.registeredVoters.sort().map((value) =>
-                    <ListItem key={`u/${value}`}>
+                {sortBy(this.props.registeredVoters, x => x.toLowerCase()).map((value) =>
+                    <ListItem button key={`u/${value}`} onClick={() => this.redirectToVoterHomepage(value)}>
                         <ListItemText primary={`u/${value}`} />
                         {this.props.removeRegisteredVoter && <ListItemSecondaryAction>
                             <IconButton edge="end" aria-label="delete" onClick={() => this.props.removeRegisteredVoter!(value)}>
