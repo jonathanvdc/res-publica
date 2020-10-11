@@ -26,13 +26,17 @@ import AuthFailedPage from './components/auth-failed-page';
 import { OptionalAPI } from './model/api-client';
 import RegisteredVotersList from './components/registered-voter-list';
 import TitlePaper from './components/title-paper';
-
-let currentSeasons: string[] = [];
+import { currentSeasons, getSeasonalPropertyValue } from './model/season';
 
 const theme = createMuiTheme({
   palette: {
     primary: {
-      main: '#1976d2',
+      main: getSeasonalPropertyValue({
+        seasonal: [
+          ['Halloween', '#ff5722']
+        ],
+        default: '#1976d2'
+      }),
     },
     secondary: green
   },
