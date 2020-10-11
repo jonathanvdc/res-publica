@@ -7,6 +7,7 @@ import { Vote, BallotType } from "../model/vote";
 import VoteCard from "./vote-card";
 import ToggleButtonGroup from "@material-ui/lab/ToggleButtonGroup";
 import ToggleButton from "@material-ui/lab/ToggleButton";
+import { changeLuminance } from "../model/util";
 
 type Props = {
     hasSubmittedVote: boolean;
@@ -39,15 +40,15 @@ const PlusButton = withStyles((theme: Theme) => ({
 const TallyButton = withStyles((theme: Theme) => ({
     root: {
         color: "white",
-        backgroundColor: blue[500],
+        backgroundColor: theme.palette.primary.main,
         '&:hover': {
-            backgroundColor: blue[600],
+            backgroundColor: theme.palette.primary.dark,
         },
         '&.MuiToggleButton-root.Mui-selected': {
             color: "white",
-            backgroundColor: blue[700],
+            backgroundColor: changeLuminance(theme.palette.primary.dark, -0.1),
             '&:hover': {
-                backgroundColor: blue[700],
+                backgroundColor: changeLuminance(theme.palette.primary.dark, -0.1),
             }
         },
     },
