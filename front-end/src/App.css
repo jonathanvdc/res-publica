@@ -42,3 +42,10 @@
     transform: rotate(360deg);
   }
 }
+
+/* Holiday cheer! */
+.Halloween .MuiAppBar-root {
+  background-image: url(seasonal/halloween.svg);
+  background-size: 3em;
+  background-repeat: repeat;
+}
