@@ -2,7 +2,7 @@ import React, { PureComponent } from "react";
 import CheckIcon from '@material-ui/icons/Check';
 import PlusIcon from '@material-ui/icons/Add';
 import { Button, Theme, withStyles, TextField, CircularProgress } from "@material-ui/core";
-import { green, blue } from "@material-ui/core/colors";
+import { green } from "@material-ui/core/colors";
 import { Vote, BallotType } from "../model/vote";
 import VoteCard from "./vote-card";
 import ToggleButtonGroup from "@material-ui/lab/ToggleButtonGroup";
