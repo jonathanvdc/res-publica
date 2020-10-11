@@ -239,16 +239,6 @@ export function completeBallot(ballot: Ballot, vote: Vote): Ballot {
     }
 }
 
-export function sortByString<T>(elements: T[], getString: (x: T) => string): T[] {
-    return elements.sort((a, b) => {
-        let aId = getString(a);
-        let bId = getString(b);
-        if (aId > bId) { return -1; }
-        else if (aId < bId) { return 1; }
-        else { return 0; }
-    });
-}
-
 function max<TItem, TProp>(seq: TItem[], getProp: (x: TItem) => TProp): TItem {
     let result: TItem = seq[0];
     let maxVal: TProp = getProp(seq[0]);
