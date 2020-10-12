@@ -49,3 +49,17 @@
   background-size: 3em;
   background-repeat: repeat;
 }
+
+.Pride .MuiAppBar-root {
+  background-image: linear-gradient(to bottom, #dc2231, #dc2231 16.6%, #ee8b2e 16.6%, #ee8b2e 33.3%, #f5f129 33.3%, #f5f129 50%, #278042 50%, #278042 66.6%, #485caa 66.6%, #485caa 83.3%, #712883 83.3%, #712883);
+}
+
+.Pride .MuiAppBar-root .MuiSvgIcon-root {
+  background-color: rgba(0, 0, 0, 0.3);
+  box-shadow: 0px 0px 20px 20px rgba(0, 0, 0, 0.3);
+}
+
+.Pride .MuiAppBar-root .ImplicitLink {
+  background-color: rgba(0, 0, 0, 0.3);
+  box-shadow: 0px 0px 20px 20px rgba(0, 0, 0, 0.3);
+}

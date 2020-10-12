@@ -1,4 +1,4 @@
-export type Season = "Halloween" | "Christmas" | "NewYear";
+export type Season = "Pride" | "Halloween" | "Christmas" | "NewYear";
 
 type SeasonDuration = {
     from: { month: number, day: number },
@@ -40,6 +40,13 @@ function isInSeason(date: Date, season: SeasonDuration): boolean {
 
 function getCurrentSeasons(): Season[] {
     let seasons: SeasonDescription[] = [
+        {
+            name: "Pride",
+            duration: {
+                from: { month: 6, day: 1 },
+                to: { month: 6, day: 30 }
+            }
+        },
         {
             name: "Halloween",
             duration: {
