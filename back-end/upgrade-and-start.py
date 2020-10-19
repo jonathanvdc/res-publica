@@ -25,6 +25,9 @@ def main(config_path):
     while is_port_in_use(config.get('host', {}).get('port', 8000)):
         pass
 
+    # Run a git pull.
+    subprocess.check_call(['git', 'pull'])
+
     parent_path = os.path.join(os.path.realpath(__file__), '..')
 
     # Build the front-end.
