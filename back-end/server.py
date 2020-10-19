@@ -1,9 +1,11 @@
 #!/usr/bin/env python3
 
+import os
 import sys
 import json
 import praw
 import prawcore.exceptions
+import subprocess
 from typing import List
 from collections import defaultdict
 from flask import Flask, request, redirect, send_from_directory, jsonify, abort
@@ -11,7 +13,7 @@ from werkzeug.exceptions import NotFound
 from werkzeug.urls import url_encode
 from authentication import read_or_create_device_index, RegisteredDevice
 from votes import read_or_create_vote_index
-from helpers import read_json, send_to_log
+from helpers import read_json, send_to_log, start_and_monitor
 from scrape import scrape_cfc
 
 if __name__ == "__main__":
@@ -23,6 +25,10 @@ if __name__ == "__main__":
 
     def authenticate(req, require_admin=False) -> RegisteredDevice:
         device_id = req.args.get('deviceId')
+        if device_id is None:
+            json_data = req.json
+            device_id = json_data.get('deviceId')
+
         device = device_index.devices.get(device_id)
         if require_admin and device is not None and device.user_id not in device_index.admins:
             return None
@@ -163,6 +169,21 @@ if __name__ == "__main__":
             abort(403)
 
         device_index.unregister_user(request.args.get('userId'))
+        return jsonify({})
+
+    @app.route('/api/optional/upgrade-server', methods=['POST'])
+    def process_upgrade_server():
+        if not can_access_optional_api(request, 'upgrade-server'):
+            abort(403)
+
+        upgrade_script = os.path.realpath(os.path.join(os.path.realpath(__file__), '..', 'upgrade-and-start.py'))
+        start_and_monitor(['python3', upgrade_script] + sys.argv)
+
+        func = request.environ.get('werkzeug.server.shutdown')
+        if func is None:
+            raise RuntimeError('Not running with the Werkzeug Server')
+
+        func()
         return jsonify({})
 
     @app.route('/reddit-auth')
