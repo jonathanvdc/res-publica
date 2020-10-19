@@ -3,3 +3,6 @@ __pycache__/
 
 # Never commit server data.
 data/
+
+# Ignore log files.
+*.log
