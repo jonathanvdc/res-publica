@@ -16,10 +16,15 @@ from .persistence.votes import read_or_create_vote_index
 from .persistence.helpers import write_json, send_to_log
 from .scrape import scrape_cfc
 
-def create_app(config, bottle_path, data_path='data'):
+DEFAULT_STATIC_FOLDER = os.path.join(
+    os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__)))),
+    'front-end',
+    'build')
+
+def create_app(config, bottle_path, data_path='data', static_folder=DEFAULT_STATIC_FOLDER):
     """Creates the server as a Flask app."""
 
-    app = Flask(__name__, static_folder='../front-end/build')
+    app = Flask(__name__, static_folder=static_folder)
 
     Path(data_path).mkdir(parents=True, exist_ok=True)
     device_index = read_or_create_device_index(
@@ -247,7 +252,7 @@ def create_app(config, bottle_path, data_path='data'):
     @app.route('/<path:path>')
     def send_build(path):
         try:
-            return send_from_directory('../front-end/build', path)
+            return send_from_directory(static_folder, path)
         except NotFound:
             return app.send_static_file('index.html')
 
