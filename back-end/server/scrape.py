@@ -10,7 +10,7 @@ from praw import Reddit
 from bs4 import BeautifulSoup
 from markdown import markdown
 from typing import Any, List, Union
-from helpers import read_json, send_to_log
+from .persistence.helpers import read_json, send_to_log
 
 
 Vote = Any

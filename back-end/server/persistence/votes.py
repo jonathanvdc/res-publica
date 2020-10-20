@@ -6,8 +6,8 @@ import os
 from Crypto.Hash import SHA3_256
 from pathlib import Path
 from typing import Any, Dict, List
-from helpers import read_json, write_json, send_to_log
-from authentication import RegisteredDevice
+from .helpers import read_json, write_json, send_to_log
+from .authentication import RegisteredDevice
 
 
 VoteId = str
