@@ -1,5 +1,5 @@
 import React from 'react';
-import RedditAuthPage from "../components/reddit-auth-page";
+import RedditAuthPage from "../components/pages/reddit-auth-page";
 import { Authenticator, getDeviceId, AuthenticationLevel, refreshDeviceId } from "./auth";
 import { NetworkError } from './exceptions';
 

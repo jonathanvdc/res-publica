@@ -1,7 +1,7 @@
 import React, { Component } from "react";
 import CheckIcon from '@material-ui/icons/Check';
 import { Button, TextField, Paper, Typography, Checkbox, FormControlLabel } from "@material-ui/core";
-import { Vote } from "../model/vote";
+import { Vote } from "../../model/vote";
 
 type Props = {
     scrape: (postUrl: string, detectCandidates: boolean) => Promise<Vote>;

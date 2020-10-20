@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import ErrorPage from "./error-page";
+import ErrorPage from "./pages/error-page";
 
 export type FetchedState<T> = {
     hasConnected: boolean;

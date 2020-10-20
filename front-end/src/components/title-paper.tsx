@@ -1,6 +1,5 @@
 import React, { PureComponent } from "react";
 import { Typography, Paper } from "@material-ui/core";
-import './reddit-auth-page.css';
 
 type Props = {
     title: React.ReactNode;

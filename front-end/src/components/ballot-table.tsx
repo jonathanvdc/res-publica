@@ -1,7 +1,6 @@
 import React, { PureComponent } from "react";
 import { VoteAndBallots, Ballot, Vote, RateOptionsBallot } from "../model/vote";
 import { sortBy } from "../model/util";
-import "./vote-page.css";
 import { Table, TableHead, TableCell, Paper, TableRow } from "@material-ui/core";
 
 function getOptionScores(ballot: Ballot, vote: Vote): { optionId: string, rating: number }[] {
