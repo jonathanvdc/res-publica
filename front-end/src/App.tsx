@@ -26,6 +26,7 @@ import { OptionalAPI } from './api/api-client';
 import RegisteredVotersList from './components/registered-voter-list';
 import TitlePaper from './components/title-paper';
 import { currentSeasons, getSeasonalPropertyValue } from './model/season';
+import ServerManagementPage from './components/pages/server-management-page';
 
 const theme = createMuiTheme({
   palette: {
@@ -119,6 +120,8 @@ class App extends FetchedStateComponent<{}, AppState> {
                 {isAdmin && <Route exact path="/admin/make-vote" component={MakeVoteRoute} />}
                 {state.optionalAPIs && state.optionalAPIs.includes(OptionalAPI.registeredVoters) &&
                   <Route exact path="/registered-voters" component={RegisteredVotersRoute} />}
+                {state.optionalAPIs && state.optionalAPIs.includes(OptionalAPI.upgradeServer) &&
+                  <Route exact path="/server-management" component={ServerManagementRoute} />}
               </Suspense>
             </div>
           </MuiThemeProvider>
@@ -376,6 +379,22 @@ class RegisteredVotersRoute extends FetchedStateComponent<{ match: any, history:
     return <TitlePaper title="Registered Voters">
       <RegisteredVotersList registeredVoters={data.voters} addRegisteredVoter={onAdd} removeRegisteredVoter={onRemove} />
     </TitlePaper>;
+  }
+}
+
+class ServerManagementRoute extends FetchedStateComponent<{ match: any, history: any }, {}> {
+  async fetchState(): Promise<{}> {
+    return {};
+  }
+
+  onUpgradeServer() {
+    this.waitAndContinue(
+      apiClient.optional.upgradeServer(),
+      () => {});
+  }
+
+  renderState(_data: {}): JSX.Element {
+    return <ServerManagementPage onUpgradeServer={this.onUpgradeServer.bind(this)} />;
   }
 }
 

@@ -5,7 +5,8 @@ import { VoteAndBallots, Ballot, Vote, isActive, isCompletableBallot, completeBa
 import VoteCard from "../vote-card";
 import DropDownButton from "../drop-down-button";
 import "./vote-page.css";
-import { DangerButton, CheckFab } from "../buttons";
+import { DangerButton } from "../danger-button";
+import { CheckFab } from "../check-fab";
 
 type Props = {
     voteAndBallots: VoteAndBallots;

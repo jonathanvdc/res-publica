@@ -1,2 +1,5 @@
 # Make sure we don't commit our secrets.
 config.json
+
+# Ignore VS Code config.
+.vscode/

@@ -52,5 +52,5 @@ Now navigate to the `back-end` directory. Create a file called `config.json` tha
 
 With the `config.json` in place, run the server like so:
 ```
-python3 ./server.py config.json
+python3 ./server-manager.py config.json
 ```
