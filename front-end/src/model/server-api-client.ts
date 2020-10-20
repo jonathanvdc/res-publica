@@ -132,6 +132,12 @@ class ServerOptionalAPIClient implements OptionalAPIClient {
             `&userId=${encodeURIComponent(username)}`,
             {});
     }
+
+    async upgradeServer(): Promise<{}> {
+        return postJSON('/api/optional/upgrade-server', {
+            'deviceId': this.auth.deviceId
+        });
+    }
 }
 
 async function postJSON(url: string, data: any) {
