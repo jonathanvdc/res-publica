@@ -1,5 +1,5 @@
 import { Authenticator } from "./auth";
-import { VoteAndBallots, Ballot, Vote, FinishedBallot } from "./vote";
+import { VoteAndBallots, Ballot, Vote, FinishedBallot } from "../model/vote";
 
 /**
  * A client that allows the application to interact with the server's API.

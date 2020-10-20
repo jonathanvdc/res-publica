@@ -6,7 +6,7 @@ import CreateIcon from '@material-ui/icons/Create';
 import ListWithCheckIcon from '@material-ui/icons/PlaylistAddCheck';
 import { Link } from "react-router-dom";
 import { isMobile } from "react-device-detect";
-import { OptionalAPI } from "../model/api-client";
+import { OptionalAPI } from "../api/api-client";
 import Logo from "../logo.svg";
 import "./site-app-bar.css";
 

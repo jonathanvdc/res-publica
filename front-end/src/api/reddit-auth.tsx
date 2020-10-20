@@ -1,7 +1,7 @@
 import React from 'react';
 import RedditAuthPage from "../components/pages/reddit-auth-page";
 import { Authenticator, getDeviceId, AuthenticationLevel, refreshDeviceId } from "./auth";
-import { NetworkError } from './exceptions';
+import { NetworkError } from '../model/exceptions';
 
 /**
  * A type that handles Reddit authentication.

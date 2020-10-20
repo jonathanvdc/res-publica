@@ -1,5 +1,5 @@
 import { Authenticator } from "./auth";
-import { VoteAndBallots, Ballot, Vote, FinishedBallot } from "./vote";
+import { VoteAndBallots, Ballot, Vote, FinishedBallot } from "../model/vote";
 import { APIClient, AdminAPIClient, OptionalAPIClient, OptionalAPI } from "./api-client";
 import { RedditAuthenticator } from "./reddit-auth";
 

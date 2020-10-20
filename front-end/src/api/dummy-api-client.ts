@@ -1,7 +1,7 @@
 import { Authenticator, makeid } from "./auth";
 import { DummyAuthenticator } from "./dummy-auth";
 import { APIClient, AdminAPIClient, OptionalAPIClient, OptionalAPI } from "./api-client";
-import { Vote, VoteAndBallots, Ballot, isActive, FinishedBallot } from "./vote";
+import { Vote, VoteAndBallots, Ballot, isActive, FinishedBallot } from "../model/vote";
 
 /**
  * An API client that fakes all interactions with the server.
