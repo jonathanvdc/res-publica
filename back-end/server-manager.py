@@ -27,7 +27,7 @@ def main(config_path):
 
         # Upgrade the server.
         upgrade_script = os.path.realpath(os.path.join(os.path.realpath(__file__), '..', 'upgrade.py'))
-        run_and_monitor(['python3', upgrade_script] + sys.argv[1:], log_file_prefix='upgrade')
+        run_and_monitor(['python3', upgrade_script], log_file_prefix='upgrade')
 
         # Clear message-in-a-bottle file.
         bottle_path = 'logs/bottle.log'
