@@ -6,7 +6,7 @@ import os
 import socket
 import sys
 import subprocess
-from helpers import read_json
+from helpers import read_json, start_and_monitor
 
 def is_port_in_use(port):
     """Tells if a port is in use."""
@@ -41,12 +41,11 @@ def main(config_path):
         cwd=os.path.realpath(parent_path))
 
     # Restart the server.
-    log = open('server.log', 'a')
-    subprocess.Popen(args=[
+    start_and_monitor([
         'python3',
         os.path.realpath(os.path.join(parent_path, 'server.py')),
         os.path.realpath(config_path)
-    ], stdout=log, stderr=log, stdin=subprocess.DEVNULL)
+    ])
 
 if __name__ == "__main__":
     main(sys.argv[1])

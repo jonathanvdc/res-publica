@@ -177,7 +177,7 @@ if __name__ == "__main__":
             abort(403)
 
         upgrade_script = os.path.realpath(os.path.join(os.path.realpath(__file__), '..', 'upgrade-and-start.py'))
-        start_and_monitor(['python3', upgrade_script] + sys.argv)
+        start_and_monitor(['python3', upgrade_script] + sys.argv, log_file_prefix='upgrade')
 
         func = request.environ.get('werkzeug.server.shutdown')
         if func is None:
