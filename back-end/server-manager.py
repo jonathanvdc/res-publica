@@ -8,8 +8,7 @@ import sys
 import subprocess
 from pathlib import Path
 from datetime import datetime, timezone
-from helpers import read_json, write_json
-
+from server.persistence.helpers import read_json, write_json
 
 def run_and_monitor(args, log_file_prefix='server'):
     """Runs a program to completion and sends its output to a log."""
@@ -39,7 +38,7 @@ def main(config_path):
         try:
             run_and_monitor([
                 'python3',
-                os.path.join(back_end_path, 'server.py'),
+                os.path.join(back_end_path, 'server', 'start-server.py'),
                 os.path.realpath(config_path),
                 bottle_path
             ])

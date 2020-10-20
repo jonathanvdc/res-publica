@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 
 import os
-import sys
 import json
 import praw
 import prawcore.exceptions
@@ -12,10 +11,10 @@ from collections import defaultdict
 from flask import Flask, request, redirect, send_from_directory, jsonify, abort
 from werkzeug.exceptions import NotFound
 from werkzeug.urls import url_encode
-from authentication import read_or_create_device_index, RegisteredDevice
-from votes import read_or_create_vote_index
-from helpers import read_json, write_json, send_to_log
-from scrape import scrape_cfc
+from .persistence.authentication import read_or_create_device_index, RegisteredDevice
+from .persistence.votes import read_or_create_vote_index
+from .persistence.helpers import write_json, send_to_log
+from .scrape import scrape_cfc
 
 def create_app(config, bottle_path, data_path='data'):
     """Creates the server as a Flask app."""
@@ -257,8 +256,3 @@ def create_app(config, bottle_path, data_path='data'):
         return app.send_static_file('index.html')
 
     return app
-
-if __name__ == "__main__":
-    config = read_json(sys.argv[1])
-    bottle_path = sys.argv[2]
-    create_app(config, bottle_path).run(**config.get('host', {'debug': True}))
