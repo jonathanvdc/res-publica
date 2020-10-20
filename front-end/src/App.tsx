@@ -17,7 +17,7 @@ import MakeVotePage from './components/pages/make-vote-page';
 import MakeVoteConfirmationPage from './components/pages/make-vote-confirmation-page';
 import ScrapeCFCPage from './components/pages/scrape-cfc-page';
 import BallotTable, { ballotsToCsv } from './components/ballot-table';
-import { AuthenticationLevel } from './api/auth';
+import { AuthenticationLevel, isAdmin } from './api/auth';
 import SiteAppBar from './components/site-app-bar';
 import { UserPreferences, getPreferences, setPreferences } from './model/preferences';
 import PreferencesPage from './components/pages/preferences-page';
@@ -101,7 +101,6 @@ class App extends FetchedStateComponent<{}, AppState> {
         </div>;
     }
 
-    let isAdmin = state.authLevel === AuthenticationLevel.AuthenticatedAdmin;
     return <BrowserRouter>
       <div className={this.getMainClass()}>
         <MuiPickersUtilsProvider utils={MomentUtils}>
@@ -109,15 +108,15 @@ class App extends FetchedStateComponent<{}, AppState> {
             <SiteAppBar
               onLogOut={this.onLogOut.bind(this)}
               userId={state.userId}
-              isAdmin={isAdmin}
+              isAdmin={isAdmin(state.authLevel)}
               optionalAPIs={state.optionalAPIs} />
             <div className="App-body">
               <Suspense fallback={<div>Loading...</div>}>
                 <Route exact path="/" component={VoteListRoute} />
                 <Route exact path="/prefs" component={PreferencesRoute} />
-                <Route exact path="/vote/:voteId" component={(props: any) => <VoteRoute isAdmin={isAdmin} {...props} />} />
+                <Route exact path="/vote/:voteId" component={(props: any) => <VoteRoute isAdmin={isAdmin(state.authLevel)} {...props} />} />
                 <Route exact path="/vote/:voteId/ballots" component={VoteBallotsRoute} />
-                {isAdmin && <Route exact path="/admin/make-vote" component={MakeVoteRoute} />}
+                {isAdmin(state.authLevel) && <Route exact path="/admin/make-vote" component={MakeVoteRoute} />}
                 {state.optionalAPIs && state.optionalAPIs.includes(OptionalAPI.registeredVoters) &&
                   <Route exact path="/registered-voters" component={RegisteredVotersRoute} />}
                 {state.optionalAPIs && state.optionalAPIs.includes(OptionalAPI.upgradeServer) &&

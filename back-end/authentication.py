@@ -48,6 +48,7 @@ class DeviceIndex(object):
         self,
         devices: Dict[DeviceId, RegisteredDevice],
         admins: Set[UserId],
+        developers: Set[UserId],
         registered_voters: Set[UserId],
         voter_requirements: List[VoterRequirement],
         persistence_path: str):
@@ -55,6 +56,7 @@ class DeviceIndex(object):
         self.persistence_path = persistence_path
         self.devices = devices
         self.admins = admins
+        self.developers = developers
         self.registered_voters = registered_voters
         self.voter_requirements = voter_requirements
         self.users_to_devices = defaultdict(set)
@@ -140,6 +142,7 @@ def read_device_index(path: str, voter_requirements: List[VoterRequirement]) -> 
     return DeviceIndex(
         devices,
         set(data.get('admins', [])),
+        set(data.get('developers', [])),
         set(data.get('registered-voters', [])).union(info.user_id for info in devices.values()),
         voter_requirements,
         path)
@@ -151,7 +154,7 @@ def read_or_create_device_index(path: str, voter_requirements: List[VoterRequire
         return read_device_index(path, voter_requirements)
     except FileNotFoundError:
         Path(path).parent.mkdir(parents=True, exist_ok=True)
-        return DeviceIndex({}, set(), set(), voter_requirements, path)
+        return DeviceIndex({}, set(), set(), set(), voter_requirements, path)
 
 
 def write_device_index(index: DeviceIndex, path: str):
@@ -166,6 +169,7 @@ def write_device_index(index: DeviceIndex, path: str):
     to_write = {
         'devices': data,
         'admins': list(sorted(index.admins)),
+        'developers': list(sorted(index.developers)),
         'registered-voters': list(sorted(index.registered_voters))
     }
     write_json(to_write, path)
