@@ -26,6 +26,7 @@ def main(config_path):
         restart = False
 
         # Upgrade the server.
+        print(' >>> Upgrading server')
         upgrade_script = os.path.realpath(os.path.join(os.path.realpath(__file__), '..', 'upgrade.py'))
         run_and_monitor(['python3', upgrade_script], log_file_prefix='upgrade')
 
@@ -34,6 +35,7 @@ def main(config_path):
         write_json({}, bottle_path)
 
         # Start the server. Give it a file so it can pass us a final message if it wants to.
+        print(' >>> Starting server')
         try:
             run_and_monitor([
                 'python3',
@@ -49,6 +51,9 @@ def main(config_path):
         message = read_json(bottle_path)
         if message.get('action') == 'restart':
             restart = True
+            print(' >>> Restart requested')
+        else:
+            print(' >>> Goodbye!')
 
 if __name__ == "__main__":
     main(sys.argv[1])
