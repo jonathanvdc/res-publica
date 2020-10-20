@@ -3,6 +3,7 @@ import { AppBar, Toolbar, Menu, MenuItem, Chip, Avatar, SwipeableDrawer, List, L
 import AccountCircle from '@material-ui/icons/AccountCircle';
 import MenuIcon from '@material-ui/icons/Menu';
 import CreateIcon from '@material-ui/icons/Create';
+import BuildIcon from '@material-ui/icons/Build';
 import ListWithCheckIcon from '@material-ui/icons/PlaylistAddCheck';
 import { Link } from "react-router-dom";
 import { isMobile } from "react-device-detect";
@@ -79,6 +80,15 @@ class SiteAppBar extends Component<SiteAppBarProps, SiteAppBarState> {
                 item: <ListItemLink to="/registered-voters">
                     <ListItemIcon><ListWithCheckIcon /></ListItemIcon>
                     <ListItemText primary="Registered Voters" />
+                </ListItemLink>
+            });
+        }
+        if (optionalAPIs.includes(OptionalAPI.upgradeServer)) {
+            drawerItems.push({
+                adminOnly: true,
+                item: <ListItemLink to="/server-management">
+                    <ListItemIcon><BuildIcon /></ListItemIcon>
+                    <ListItemText primary="Server Management" />
                 </ListItemLink>
             });
         }
