@@ -1,12 +1,11 @@
 import React, { Component } from "react";
-import CheckIcon from '@material-ui/icons/Check';
-import { Button, Theme, withStyles, CircularProgress, Paper, Typography, Fab, DialogTitle, Dialog, DialogContent, DialogContentText, DialogActions } from "@material-ui/core";
-import { green, red } from "@material-ui/core/colors";
+import { Button, CircularProgress, Paper, Typography, DialogTitle, Dialog, DialogContent, DialogContentText, DialogActions } from "@material-ui/core";
 import { Link } from "react-router-dom";
 import { VoteAndBallots, Ballot, Vote, isActive, isCompletableBallot, completeBallot, isCompleteBallot, findIncompleteOptions, tally } from "../../model/vote";
 import VoteCard from "../vote-card";
 import DropDownButton from "../drop-down-button";
 import "./vote-page.css";
+import { DangerButton, CheckFab } from "../buttons";
 
 type Props = {
     voteAndBallots: VoteAndBallots;
@@ -25,26 +24,6 @@ type State = {
     ballot: Ballot | undefined;
     confirmingPartialBallot: boolean;
 };
-
-const DangerButton = withStyles((theme: Theme) => ({
-    root: {
-        color: theme.palette.getContrastText(red[600]),
-        backgroundColor: red[600],
-        '&:hover': {
-            backgroundColor: red[700],
-        },
-    },
-}))(Button);
-
-const CheckFab = withStyles((theme: Theme) => ({
-    root: {
-        color: theme.palette.common.white,
-        backgroundColor: green[500],
-        '&:hover': {
-            backgroundColor: green[600],
-        }
-    },
-}))(Fab);
 
 type AdminZoneProps = {
     data: VoteAndBallots;
@@ -231,9 +210,7 @@ class VotePage extends Component<Props, State> {
         if (this.props.ballotCast) {
             progressOrButton = <CircularProgress />;
         } else {
-            progressOrButton = <CheckFab disabled={!canCast} aria-label="submit vote" className="SubmitVoteFab" onClick={this.castBallot.bind(this)}>
-                <CheckIcon />
-            </CheckFab>;
+            progressOrButton = <CheckFab disabled={!canCast} aria-label="submit vote" className="SubmitVoteFab" onClick={this.castBallot.bind(this)} />;
         }
         return <div className="VotePagePanel">
             <VoteCard
