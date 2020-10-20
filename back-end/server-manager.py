@@ -38,7 +38,7 @@ def main(config_path):
         try:
             run_and_monitor([
                 'python3',
-                os.path.join(back_end_path, 'server', 'start-server.py'),
+                os.path.join(back_end_path, 'start-server.py'),
                 os.path.realpath(config_path),
                 bottle_path
             ])
