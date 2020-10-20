@@ -29,11 +29,16 @@ def main(config_path):
     subprocess.check_call(['git', 'pull'])
 
     parent_path = os.path.join(os.path.realpath(__file__), '..')
+    front_end_path = os.path.realpath(os.path.join(parent_path, '..', 'front-end'))
 
     # Build the front-end.
+    subprocess.check_call(['npm', 'install'], cwd=front_end_path)
+    subprocess.check_call(['npm', 'run-script', 'build'], cwd=front_end_path)
+
+    # Install Python packages.
     subprocess.check_call(
-        ['npm', 'run-script', 'build'],
-        cwd=os.path.realpath(os.path.join(parent_path, '..', 'front-end')))
+        ['pip3', 'install', '-r', 'requirements.txt'],
+        cwd=os.path.realpath(parent_path))
 
     # Restart the server.
     log = open('server.log', 'a')
