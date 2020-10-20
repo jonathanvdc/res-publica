@@ -13,11 +13,12 @@ from werkzeug.exceptions import NotFound
 from werkzeug.urls import url_encode
 from authentication import read_or_create_device_index, RegisteredDevice
 from votes import read_or_create_vote_index
-from helpers import read_json, send_to_log, start_and_monitor
+from helpers import read_json, write_json, send_to_log
 from scrape import scrape_cfc
 
 if __name__ == "__main__":
     config = read_json(sys.argv[1])
+    bottle_path = sys.argv[2]
     app = Flask(__name__, static_folder='../front-end/build')
 
     device_index = read_or_create_device_index('data/device-index.json', config.get('voter-requirements', []))
@@ -176,8 +177,8 @@ if __name__ == "__main__":
         if not can_access_optional_api(request, 'upgrade-server'):
             abort(403)
 
-        upgrade_script = os.path.realpath(os.path.join(os.path.realpath(__file__), '..', 'upgrade-and-start.py'))
-        start_and_monitor(['python3', upgrade_script] + sys.argv, log_file_prefix='upgrade')
+        # Ask the manager to upgrade and restart us after we shut down.
+        write_json({ 'action': 'restart' }, bottle_path)
 
         func = request.environ.get('werkzeug.server.shutdown')
         if func is None:
