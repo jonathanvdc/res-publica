@@ -104,6 +104,10 @@ export class DummyAPIClient implements APIClient, OptionalAPIClient {
         return {};
     }
 
+    async upgradeServer(): Promise<{}> {
+        return {};
+    }
+
     private auth = new DummyAuthenticator();
     private activeVotes: VoteAndBallots[];
     private registeredVoters: string[] = ["donald-duck"];

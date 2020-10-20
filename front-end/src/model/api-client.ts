@@ -53,14 +53,21 @@ export enum OptionalAPI {
      * An API that queries the set of registered voters.
      */
     registeredVoters = "registered-voters",
+
     /**
      * An API that registers a voter.
      */
     addRegisteredVoter = "add-registered-voter",
+
     /**
      * An API that unregisters a voter.
      */
-    removeRegisteredVoter = "remove-registered-voter"
+    removeRegisteredVoter = "remove-registered-voter",
+
+    /**
+     * An API that upgrades and restarts the server.
+     */
+    upgradeServer = "upgrade-server"
 }
 
 /**
@@ -86,6 +93,11 @@ export interface OptionalAPIClient {
      * Unregisters an existing voter.
      */
     removeRegisteredVoter(username: string): Promise<{}>;
+
+    /**
+     * Upgrades and restarts the server.
+     */
+    upgradeServer(): Promise<{}>;
 }
 
 /**
