@@ -3,9 +3,9 @@ import CheckIcon from '@material-ui/icons/Check';
 import { Button, Theme, withStyles, CircularProgress, Paper, Typography, Fab, DialogTitle, Dialog, DialogContent, DialogContentText, DialogActions } from "@material-ui/core";
 import { green, red } from "@material-ui/core/colors";
 import { Link } from "react-router-dom";
-import { VoteAndBallots, Ballot, Vote, isActive, isCompletableBallot, completeBallot, isCompleteBallot, findIncompleteOptions, tally } from "../model/vote";
-import VoteCard from "./vote-card";
-import DropDownButton from "./drop-down-button";
+import { VoteAndBallots, Ballot, Vote, isActive, isCompletableBallot, completeBallot, isCompleteBallot, findIncompleteOptions, tally } from "../../model/vote";
+import VoteCard from "../vote-card";
+import DropDownButton from "../drop-down-button";
 import "./vote-page.css";
 
 type Props = {

@@ -1,7 +1,6 @@
 import React, { PureComponent } from "react";
-import './vote-card.css';
 import { Typography } from "@material-ui/core";
-import { NetworkError } from "../model/exceptions";
+import { NetworkError } from "../../model/exceptions";
 
 type Props = {
     error: any;

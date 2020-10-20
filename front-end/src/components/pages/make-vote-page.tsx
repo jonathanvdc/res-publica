@@ -3,11 +3,11 @@ import CheckIcon from '@material-ui/icons/Check';
 import PlusIcon from '@material-ui/icons/Add';
 import { Button, Theme, withStyles, TextField, CircularProgress } from "@material-ui/core";
 import { green } from "@material-ui/core/colors";
-import { Vote, BallotType } from "../model/vote";
-import VoteCard from "./vote-card";
+import { Vote, BallotType } from "../../model/vote";
+import VoteCard from "../vote-card";
 import ToggleButtonGroup from "@material-ui/lab/ToggleButtonGroup";
 import ToggleButton from "@material-ui/lab/ToggleButton";
-import { changeLuminance } from "../model/util";
+import { changeLuminance } from "../../model/util";
 
 type Props = {
     hasSubmittedVote: boolean;
