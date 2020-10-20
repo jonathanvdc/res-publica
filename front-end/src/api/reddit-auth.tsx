@@ -2,6 +2,7 @@ import React from 'react';
 import RedditAuthPage from "../components/pages/reddit-auth-page";
 import { Authenticator, getDeviceId, AuthenticationLevel, refreshDeviceId } from "./auth";
 import { NetworkError } from '../model/exceptions';
+import { postJSON } from './api-client';
 
 /**
  * A type that handles Reddit authentication.
@@ -20,13 +21,10 @@ export class RedditAuthenticator implements Authenticator {
     /**
      * Tests if this device is authenticated.
      */
-    async isAuthenticated(): Promise<AuthenticationLevel> {
-        const response = await fetch(`/api/is-authenticated?deviceId=${encodeURIComponent(this.deviceId)}`);
-        if (response.ok) {
-            return await response.json();
-        } else {
-            throw new NetworkError(response);
-        }
+    isAuthenticated(): Promise<AuthenticationLevel> {
+        return postJSON('/api/is-authenticated', {
+            deviceId: this.deviceId
+        });
     }
 
     /**
@@ -43,9 +41,10 @@ export class RedditAuthenticator implements Authenticator {
         this.deviceIdVal = refreshDeviceId();
     }
 
-    async getUserId(): Promise<string> {
-        let response = await fetch(`/api/user-id?deviceId=${encodeURIComponent(this.deviceId)}`);
-        return await response.json();
+    getUserId(): Promise<string> {
+        return postJSON('/api/user-id', {
+            deviceId: this.deviceId
+        });
     }
 
     get deviceId(): string {

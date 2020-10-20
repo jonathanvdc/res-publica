@@ -1,5 +1,6 @@
 import { Authenticator } from "./auth";
 import { VoteAndBallots, Ballot, Vote, FinishedBallot } from "../model/vote";
+import { NetworkError } from "../model/exceptions";
 
 /**
  * A client that allows the application to interact with the server's API.
@@ -133,4 +134,21 @@ export interface AdminAPIClient {
      * @param optionId The candidate that will resign, as an option ID.
      */
     resign(voteId: string, optionId: string): Promise<Vote | { error: string }>;
+}
+
+async function requestJSON(method: string, url: string, data: any) {
+    let response = await fetch(url, {
+        method,
+        body: JSON.stringify(data),
+        headers: {'Content-Type': 'application/json; charset=UTF-8'}
+    });
+    if (response.ok) {
+        return await response.json();
+    } else {
+        throw new NetworkError(response);
+    }
+}
+
+export function postJSON(url: string, data: any) {
+    return requestJSON('POST', url, data);
 }

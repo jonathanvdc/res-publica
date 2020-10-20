@@ -1,6 +1,6 @@
 import { Authenticator } from "./auth";
 import { VoteAndBallots, Ballot, Vote, FinishedBallot } from "../model/vote";
-import { APIClient, AdminAPIClient, OptionalAPIClient, OptionalAPI } from "./api-client";
+import { APIClient, AdminAPIClient, OptionalAPIClient, OptionalAPI, postJSON } from "./api-client";
 import { RedditAuthenticator } from "./reddit-auth";
 
 /**
@@ -26,25 +26,29 @@ export class ServerAPIClient implements APIClient {
     /**
      * Gets all currently active votes.
      */
-    async getActiveVotes(): Promise<VoteAndBallots[]> {
-        let response = await fetch(`/api/active-votes?deviceId=${encodeURIComponent(this.auth.deviceId)}`);
-        return await response.json();
+    getActiveVotes(): Promise<VoteAndBallots[]> {
+        return postJSON('/api/active-votes', {
+            deviceId: this.auth.deviceId
+        });
     }
 
     /**
      * Gets a list of all votes so far.
      */
-    async getAllVotes(): Promise<Vote[]> {
-        let response = await fetch("/api/all-votes");
-        return await response.json();
+    getAllVotes(): Promise<Vote[]> {
+        return postJSON('/api/all-votes', {
+            deviceId: this.auth.deviceId
+        });
     }
 
     /**
      * Gets a specific vote.
      */
-    async getVote(id: string): Promise<VoteAndBallots | undefined> {
-        let response = await fetch(`/api/vote?voteId=${encodeURIComponent(id)}&deviceId=${encodeURIComponent(this.auth.deviceId)}`);
-        return await response.json();
+    getVote(id: string): Promise<VoteAndBallots | undefined> {
+        return postJSON('/api/vote', {
+            deviceId: this.auth.deviceId,
+            voteId: id
+        });
     }
 
     /**
@@ -54,9 +58,11 @@ export class ServerAPIClient implements APIClient {
      * indeed well received.
      */
     castBallot(voteId: string, ballot: Ballot): Promise<FinishedBallot | { error: string }> {
-        return postJSON(
-            `/api/cast-ballot?voteId=${encodeURIComponent(voteId)}&deviceId=${encodeURIComponent(this.auth.deviceId)}`,
-            ballot);
+        return postJSON('/api/cast-ballot', {
+            deviceId: this.auth.deviceId,
+            voteId,
+            ballot
+        });
     }
 
     private auth: RedditAuthenticator;
@@ -67,32 +73,34 @@ class ServerAdminAPIClient implements AdminAPIClient {
 
     }
 
-    async cancelVote(voteId: string): Promise<boolean> {
-        return postJSON(
-            `/api/admin/cancel-vote?voteId=${encodeURIComponent(voteId)}&deviceId=${encodeURIComponent(this.auth.deviceId)}`,
-            {});
+    cancelVote(voteId: string): Promise<boolean> {
+        return postJSON('/api/admin/cancel-vote', {
+            deviceId: this.auth.deviceId,
+            voteId
+        });
     }
 
-    async scrapeCfc(url: string, discernCandidates: boolean): Promise<Vote> {
-        let response = await fetch(
-            `/api/admin/scrape-cfc?url=${encodeURIComponent(url)}` +
-            `&deviceId=${encodeURIComponent(this.auth.deviceId)}` +
-            `&discernCandidates=${discernCandidates}`);
-        return await response.json();
+    scrapeCfc(url: string, discernCandidates: boolean): Promise<Vote> {
+        return postJSON('/api/admin/scrape-cfc', {
+            deviceId: this.auth.deviceId,
+            url,
+            discernCandidates
+        });
     }
 
     resign(voteId: string, optionId: string): Promise<Vote | { error: string }> {
-        return postJSON(
-            `/api/admin/resign?voteId=${encodeURIComponent(voteId)}` +
-            `&optionId=${encodeURIComponent(optionId)}` +
-            `&deviceId=${encodeURIComponent(this.auth.deviceId)}`,
-            {});
+        return postJSON('/api/admin/resign', {
+            deviceId: this.auth.deviceId,
+            voteId,
+            optionId
+        });
     }
 
     createVote(proposal: Vote): Promise<Vote> {
-        return postJSON(
-            `/api/admin/create-vote?deviceId=${encodeURIComponent(this.auth.deviceId)}`,
-            proposal);
+        return postJSON('/api/admin/create-vote', {
+            deviceId: this.auth.deviceId,
+            proposal
+        });
     }
 }
 
@@ -101,52 +109,41 @@ class ServerOptionalAPIClient implements OptionalAPIClient {
 
     }
 
-    async getAvailable(): Promise<OptionalAPI[]> {
-        let response = await fetch(
-            `/api/optional/available?deviceId=${encodeURIComponent(this.auth.deviceId)}`);
-        return await response.json();
+    getAvailable(): Promise<OptionalAPI[]> {
+        return postJSON('/api/optional/available', {
+            deviceId: this.auth.deviceId
+        });
     }
 
-    async getRegisteredVoters(): Promise<string[]> {
-        let response = await fetch(
-            `/api/optional/registered-voters?deviceId=${encodeURIComponent(this.auth.deviceId)}`);
-        return await response.json();
+    getRegisteredVoters(): Promise<string[]> {
+        return postJSON('/api/optional/registered-voters', {
+            deviceId: this.auth.deviceId
+        });
     }
 
     /**
      * Registers a new voter.
      */
-    async addRegisteredVoter(username: string): Promise<{}> {
-        return postJSON(
-            `/api/optional/add-registered-voter?deviceId=${encodeURIComponent(this.auth.deviceId)}` +
-            `&userId=${encodeURIComponent(username)}`,
-            {});
+    addRegisteredVoter(username: string): Promise<{}> {
+        return postJSON('/api/optional/add-registered-voter', {
+            deviceId: this.auth.deviceId,
+            userId: username
+        });
     }
 
     /**
      * Unregisters an existing voter.
      */
-    async removeRegisteredVoter(username: string): Promise<{}> {
-        return postJSON(
-            `/api/optional/remove-registered-voter?deviceId=${encodeURIComponent(this.auth.deviceId)}` +
-            `&userId=${encodeURIComponent(username)}`,
-            {});
+    removeRegisteredVoter(username: string): Promise<{}> {
+        return postJSON('/api/optional/remove-registered-voter', {
+            deviceId: this.auth.deviceId,
+            userId: username
+        });
     }
 
-    async upgradeServer(): Promise<{}> {
+    upgradeServer(): Promise<{}> {
         return postJSON('/api/optional/upgrade-server', {
-            'deviceId': this.auth.deviceId
+            deviceId: this.auth.deviceId
         });
     }
-}
-
-async function postJSON(url: string, data: any) {
-    let response = await fetch(
-        url,
-        {
-            method: "POST",
-            body: JSON.stringify(data),
-            headers: {'Content-Type': 'application/json; charset=UTF-8'}
-        });
-    return await response.json();
 }

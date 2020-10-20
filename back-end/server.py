@@ -36,6 +36,12 @@ if __name__ == "__main__":
         else:
             return device
 
+    def get_json_arg(req, key: str):
+        try:
+            return req.json[key]
+        except KeyError:
+            abort(400)
+
     def get_auth_level(req):
         device = authenticate(req)
         if not device:
@@ -53,7 +59,7 @@ if __name__ == "__main__":
     def can_access_optional_api(req, api_name) -> bool:
         return api_name in get_available_optional_apis(req)
 
-    @app.route('/api/active-votes')
+    @app.route('/api/active-votes', methods=['POST'])
     def get_active_votes():
         """Gets all currently active votes."""
         device = authenticate(request)
@@ -62,19 +68,19 @@ if __name__ == "__main__":
 
         return jsonify(vote_index.get_active_votes(device))
 
-    @app.route('/api/all-votes')
+    @app.route('/api/all-votes', methods=['POST'])
     def get_all_votes():
         """Gets all votes."""
         return jsonify([vote['vote'] for vote in vote_index.votes.values()])
 
-    @app.route('/api/vote')
+    @app.route('/api/vote', methods=['POST'])
     def get_vote():
         """Gets a specific vote."""
         device = authenticate(request)
         if not device:
             abort(403)
 
-        vote_data = vote_index.get_vote(request.args.get('voteId'), device)
+        vote_data = vote_index.get_vote(get_json_arg(request, 'voteId'), device)
         if vote_data is None:
             abort(404)
         else:
@@ -87,8 +93,9 @@ if __name__ == "__main__":
         if not device:
             abort(403)
 
-        ballot = request.json
-        return jsonify(vote_index.cast_ballot(request.args.get('voteId'), ballot, device))
+        ballot = get_json_arg(request, 'ballot')
+        voteId = get_json_arg(request, 'voteId')
+        return jsonify(vote_index.cast_ballot(voteId, ballot, device))
 
     @app.route('/api/admin/create-vote', methods=['POST'])
     def create_vote():
@@ -97,7 +104,7 @@ if __name__ == "__main__":
         if not device:
             abort(403)
 
-        proposal = request.json
+        proposal = get_json_arg(request, 'proposal')
         return jsonify(vote_index.create_vote(proposal))
 
     @app.route('/api/admin/cancel-vote', methods=['POST'])
@@ -107,7 +114,7 @@ if __name__ == "__main__":
         if not device:
             abort(403)
 
-        vote_id = request.args.get('voteId')
+        vote_id = get_json_arg(request, 'voteId')
         return jsonify(vote_index.cancel_vote(vote_id))
 
     @app.route('/api/admin/resign', methods=['POST'])
@@ -117,11 +124,11 @@ if __name__ == "__main__":
         if not device:
             abort(403)
 
-        vote_id = request.args.get('voteId')
-        option_id = request.args.get('optionId')
+        vote_id = get_json_arg(request, 'voteId')
+        option_id = get_json_arg(request, 'optionId')
         return jsonify(vote_index.mark_resignation(vote_id, option_id, device))
 
-    @app.route('/api/admin/scrape-cfc')
+    @app.route('/api/admin/scrape-cfc', methods=['POST'])
     def process_scrape_cfc():
         """Scrapes a Reddit CFC."""
         device = authenticate(request, True)
@@ -131,27 +138,27 @@ if __name__ == "__main__":
         return jsonify(
             scrape_cfc(
                 praw.Reddit(**config['bot-credentials']),
-                request.args.get('url'),
-                request.args.get('discernCandidates').lower() == 'true'))
+                get_json_arg(request, 'url'),
+                get_json_arg(request, 'discernCandidates')))
 
     @app.route('/api/client-id')
     def get_client_id():
         return jsonify(config['webapp-credentials']['client_id'])
 
-    @app.route('/api/is-authenticated')
+    @app.route('/api/is-authenticated', methods=['POST'])
     def check_is_authenticated():
         return jsonify(get_auth_level(request))
 
-    @app.route('/api/user-id')
+    @app.route('/api/user-id', methods=['POST'])
     def get_user_id():
         device = authenticate(request)
         return jsonify(device.user_id)
 
-    @app.route('/api/optional/available')
+    @app.route('/api/optional/available', methods=['POST'])
     def process_available_optional_apis():
         return jsonify(get_available_optional_apis(request))
 
-    @app.route('/api/optional/registered-voters')
+    @app.route('/api/optional/registered-voters', methods=['POST'])
     def process_get_registered_voters():
         if not can_access_optional_api(request, 'registered-voters'):
             abort(403)
@@ -163,7 +170,7 @@ if __name__ == "__main__":
         if not can_access_optional_api(request, 'add-registered-voter'):
             abort(403)
 
-        device_index.register_user(request.args.get('userId'))
+        device_index.register_user(get_json_arg(request, 'userId'))
         return jsonify({})
 
     @app.route('/api/optional/remove-registered-voter', methods=['POST'])
@@ -171,7 +178,7 @@ if __name__ == "__main__":
         if not can_access_optional_api(request, 'remove-registered-voter'):
             abort(403)
 
-        device_index.unregister_user(request.args.get('userId'))
+        device_index.unregister_user(get_json_arg(request, 'userId'))
         return jsonify({})
 
     @app.route('/api/optional/upgrade-server', methods=['POST'])
