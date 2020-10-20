@@ -2,4 +2,5 @@ pycryptodome
 flask
 beautifulsoup4
 markdown
+praw
 pytest
