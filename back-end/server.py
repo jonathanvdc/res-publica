@@ -6,6 +6,7 @@ import json
 import praw
 import prawcore.exceptions
 import subprocess
+from pathlib import Path
 from typing import List
 from collections import defaultdict
 from flask import Flask, request, redirect, send_from_directory, jsonify, abort
@@ -16,13 +17,16 @@ from votes import read_or_create_vote_index
 from helpers import read_json, write_json, send_to_log
 from scrape import scrape_cfc
 
-if __name__ == "__main__":
-    config = read_json(sys.argv[1])
-    bottle_path = sys.argv[2]
+def create_app(config, bottle_path, data_path='data'):
+    """Creates the server as a Flask app."""
+
     app = Flask(__name__, static_folder='../front-end/build')
 
-    device_index = read_or_create_device_index('data/device-index.json', config.get('voter-requirements', []))
-    vote_index = read_or_create_vote_index('data/vote-index.json')
+    Path(data_path).mkdir(parents=True, exist_ok=True)
+    device_index = read_or_create_device_index(
+        os.path.join(data_path, 'device-index.json'),
+        config.get('voter-requirements', []))
+    vote_index = read_or_create_vote_index(os.path.join(data_path, 'vote-index.json'))
 
     def authenticate(req, require_admin=False) -> RegisteredDevice:
         device_id = req.args.get('deviceId')
@@ -252,4 +256,9 @@ if __name__ == "__main__":
     def root():
         return app.send_static_file('index.html')
 
-    app.run(**config.get('host', {'debug': True}))
+    return app
+
+if __name__ == "__main__":
+    config = read_json(sys.argv[1])
+    bottle_path = sys.argv[2]
+    create_app(config, bottle_path).run(**config.get('host', {'debug': True}))
