@@ -40,6 +40,8 @@ if __name__ == "__main__":
         device = authenticate(req)
         if not device:
             return 'unauthenticated'
+        elif device.user_id in device_index.developers:
+            return 'authenticated-developer'
         elif device.user_id in device_index.admins:
             return 'authenticated-admin'
         else:
