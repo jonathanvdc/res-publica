@@ -24,4 +24,4 @@ def test_main_page(client):
     """Tests that the server will serve the main page."""
 
     rv = client.get('/')
-    assert rv.data.startswith(b'<!DOCTYPE HTML PUBLIC')
+    assert rv.data.startswith(b'<!doctype html>')
