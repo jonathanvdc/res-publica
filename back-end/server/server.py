@@ -59,7 +59,9 @@ def create_app(config, bottle_path, data_path='data', static_folder=DEFAULT_STAT
         return api_name in get_available_optional_apis(req)
 
     # Register the core APIs.
-    app.register_blueprint(create_core_blueprint(device_index, vote_index), url_prefix='/api/core')
+    app.register_blueprint(
+        create_core_blueprint(device_index, vote_index),
+        url_prefix='/api/core')
 
     # Add `/api/core/client-id` as a special case since it needs to peer deeply into the config.
     @app.route('/api/core/client-id')
@@ -67,7 +69,9 @@ def create_app(config, bottle_path, data_path='data', static_folder=DEFAULT_STAT
         return jsonify(config['webapp-credentials']['client_id'])
 
     # Register the election management APIs.
-    app.register_blueprint(create_election_management_blueprint(device_index, vote_index), url_prefix='/api/election-management')
+    app.register_blueprint(
+        create_election_management_blueprint(device_index, vote_index),
+        url_prefix='/api/election-management')
 
     # Add `/api/election-management/scrape-cfc` as a special case since it needs to peer deeply into the config.
     @app.route('/api/election-management/scrape-cfc', methods=['POST'])
