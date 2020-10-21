@@ -21,7 +21,7 @@ export class RedditAuthenticator implements Authenticator {
      * Tests if this device is authenticated.
      */
     isAuthenticated(): Promise<AuthenticationLevel> {
-        return postJSON('/api/is-authenticated', {
+        return postJSON('/api/core/is-authenticated', {
             deviceId: this.deviceId
         });
     }
@@ -30,7 +30,7 @@ export class RedditAuthenticator implements Authenticator {
      * Creates an authentication page.
      */
     async createAuthenticationPage(): Promise<JSX.Element> {
-        let response = await fetch(`/api/client-id`);
+        let response = await fetch('/api/core/client-id');
         let clientId: string = await response.json();
         return <RedditAuthPage clientId={clientId} redirectUrl={this.redirectUrl} deviceId={this.deviceId} />;
     }
@@ -41,7 +41,7 @@ export class RedditAuthenticator implements Authenticator {
     }
 
     getUserId(): Promise<string> {
-        return postJSON('/api/user-id', {
+        return postJSON('/api/core/user-id', {
             deviceId: this.deviceId
         });
     }

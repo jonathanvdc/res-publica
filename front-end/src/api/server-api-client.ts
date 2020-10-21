@@ -27,7 +27,7 @@ export class ServerAPIClient implements APIClient {
      * Gets all currently active votes.
      */
     getActiveVotes(): Promise<VoteAndBallots[]> {
-        return postJSON('/api/active-votes', {
+        return postJSON('/api/core/active-votes', {
             deviceId: this.auth.deviceId
         });
     }
@@ -36,7 +36,7 @@ export class ServerAPIClient implements APIClient {
      * Gets a list of all votes so far.
      */
     getAllVotes(): Promise<Vote[]> {
-        return postJSON('/api/all-votes', {
+        return postJSON('/api/core/all-votes', {
             deviceId: this.auth.deviceId
         });
     }
@@ -45,7 +45,7 @@ export class ServerAPIClient implements APIClient {
      * Gets a specific vote.
      */
     getVote(id: string): Promise<VoteAndBallots | undefined> {
-        return postJSON('/api/vote', {
+        return postJSON('/api/core/vote', {
             deviceId: this.auth.deviceId,
             voteId: id
         });
@@ -58,7 +58,7 @@ export class ServerAPIClient implements APIClient {
      * indeed well received.
      */
     castBallot(voteId: string, ballot: Ballot): Promise<FinishedBallot | { error: string }> {
-        return postJSON('/api/cast-ballot', {
+        return postJSON('/api/core/cast-ballot', {
             deviceId: this.auth.deviceId,
             voteId,
             ballot
