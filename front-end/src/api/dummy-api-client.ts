@@ -1,6 +1,6 @@
 import { Authenticator, makeid } from "./auth";
 import { DummyAuthenticator } from "./dummy-auth";
-import { APIClient, AdminAPIClient, OptionalAPIClient, OptionalAPI } from "./api-client";
+import { APIClient, ElectionManagementClient, OptionalAPIClient, OptionalAPI } from "./api-client";
 import { Vote, VoteAndBallots, Ballot, isActive, FinishedBallot } from "../model/vote";
 
 /**
@@ -27,7 +27,7 @@ export class DummyAPIClient implements APIClient, OptionalAPIClient {
                 ]
             }
         ];
-        this.admin = new DummyAdminAPIClient(this.activeVotes);
+        this.electionManagement = new DummyElectionManagementClient(this.activeVotes);
     }
 
     get optional(): OptionalAPIClient {
@@ -41,7 +41,7 @@ export class DummyAPIClient implements APIClient, OptionalAPIClient {
         return this.auth;
     }
 
-    readonly admin: DummyAdminAPIClient;
+    readonly electionManagement: DummyElectionManagementClient;
 
     async getActiveVotes(): Promise<VoteAndBallots[]> {
         return this.activeVotes;
@@ -113,7 +113,7 @@ export class DummyAPIClient implements APIClient, OptionalAPIClient {
     private registeredVoters: string[] = ["donald-duck"];
 }
 
-class DummyAdminAPIClient implements AdminAPIClient {
+class DummyElectionManagementClient implements ElectionManagementClient {
     constructor(private activeVotes: VoteAndBallots[]) {
     }
 

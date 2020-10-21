@@ -14,7 +14,7 @@ export interface APIClient {
     /**
      * Gets an API client for admin-related actions.
      */
-    readonly admin: AdminAPIClient;
+    readonly electionManagement: ElectionManagementClient;
 
     /**
      * Gets an API client for the optional APIs.
@@ -102,9 +102,9 @@ export interface OptionalAPIClient {
 }
 
 /**
- * An API client for admin-only actions.
+ * An API client for election management.
  */
-export interface AdminAPIClient {
+export interface ElectionManagementClient {
     /**
      * Scrapes a draft vote from a Reddit CFC post.
      * @param url A URL to a Reddit CFC post.

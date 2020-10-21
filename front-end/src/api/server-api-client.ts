@@ -1,6 +1,6 @@
 import { Authenticator } from "./auth";
 import { VoteAndBallots, Ballot, Vote, FinishedBallot } from "../model/vote";
-import { APIClient, AdminAPIClient, OptionalAPIClient, OptionalAPI, postJSON } from "./api-client";
+import { APIClient, ElectionManagementClient, OptionalAPIClient, OptionalAPI, postJSON } from "./api-client";
 import { RedditAuthenticator } from "./reddit-auth";
 
 /**
@@ -9,7 +9,7 @@ import { RedditAuthenticator } from "./reddit-auth";
 export class ServerAPIClient implements APIClient {
     constructor() {
         this.auth = new RedditAuthenticator();
-        this.admin = new ServerAdminAPIClient(this.auth);
+        this.electionManagement = new ServerElectionManagementClient(this.auth);
         this.optional = new ServerOptionalAPIClient(this.auth);
     }
 
@@ -20,7 +20,7 @@ export class ServerAPIClient implements APIClient {
         return this.auth;
     }
 
-    readonly admin: ServerAdminAPIClient;
+    readonly electionManagement: ServerElectionManagementClient;
     readonly optional: ServerOptionalAPIClient;
 
     /**
@@ -68,20 +68,20 @@ export class ServerAPIClient implements APIClient {
     private auth: RedditAuthenticator;
 }
 
-class ServerAdminAPIClient implements AdminAPIClient {
+class ServerElectionManagementClient implements ElectionManagementClient {
     constructor(private readonly auth: RedditAuthenticator) {
 
     }
 
     cancelVote(voteId: string): Promise<boolean> {
-        return postJSON('/api/admin/cancel-vote', {
+        return postJSON('/api/election-management/cancel-vote', {
             deviceId: this.auth.deviceId,
             voteId
         });
     }
 
     scrapeCfc(url: string, discernCandidates: boolean): Promise<Vote> {
-        return postJSON('/api/admin/scrape-cfc', {
+        return postJSON('/api/election-management/scrape-cfc', {
             deviceId: this.auth.deviceId,
             url,
             discernCandidates
@@ -89,7 +89,7 @@ class ServerAdminAPIClient implements AdminAPIClient {
     }
 
     resign(voteId: string, optionId: string): Promise<Vote | { error: string }> {
-        return postJSON('/api/admin/resign', {
+        return postJSON('/api/election-management/resign', {
             deviceId: this.auth.deviceId,
             voteId,
             optionId
@@ -97,7 +97,7 @@ class ServerAdminAPIClient implements AdminAPIClient {
     }
 
     createVote(proposal: Vote): Promise<Vote> {
-        return postJSON('/api/admin/create-vote', {
+        return postJSON('/api/election-management/create-vote', {
             deviceId: this.auth.deviceId,
             proposal
         });
