@@ -11,6 +11,7 @@ from collections import defaultdict
 from flask import Flask, request, redirect, send_from_directory, jsonify, abort
 from werkzeug.exceptions import NotFound
 from werkzeug.urls import url_encode
+from .api.core import create_core_blueprint, get_auth_level
 from .persistence.authentication import read_or_create_device_index, RegisteredDevice
 from .persistence.votes import read_or_create_vote_index
 from .persistence.helpers import write_json, send_to_log
@@ -50,60 +51,19 @@ def create_app(config, bottle_path, data_path='data', static_folder=DEFAULT_STAT
         except KeyError:
             abort(400)
 
-    def get_auth_level(req):
-        device = authenticate(req)
-        if not device:
-            return 'unauthenticated'
-        elif device.user_id in device_index.developers:
-            return 'authenticated-developer'
-        elif device.user_id in device_index.admins:
-            return 'authenticated-admin'
-        else:
-            return 'authenticated'
-
     def get_available_optional_apis(req) -> List[str]:
-        return config.get('optional-apis', {}).get(get_auth_level(req), [])
+        return config.get('optional-apis', {}).get(get_auth_level(req, device_index), [])
 
     def can_access_optional_api(req, api_name) -> bool:
         return api_name in get_available_optional_apis(req)
 
-    @app.route('/api/active-votes', methods=['POST'])
-    def get_active_votes():
-        """Gets all currently active votes."""
-        device = authenticate(request)
-        if not device:
-            abort(403)
+    # Register the core APIs.
+    app.register_blueprint(create_core_blueprint(device_index, vote_index), url_prefix='/api/core')
 
-        return jsonify(vote_index.get_active_votes(device))
-
-    @app.route('/api/all-votes', methods=['POST'])
-    def get_all_votes():
-        """Gets all votes."""
-        return jsonify([vote['vote'] for vote in vote_index.votes.values()])
-
-    @app.route('/api/vote', methods=['POST'])
-    def get_vote():
-        """Gets a specific vote."""
-        device = authenticate(request)
-        if not device:
-            abort(403)
-
-        vote_data = vote_index.get_vote(get_json_arg(request, 'voteId'), device)
-        if vote_data is None:
-            abort(404)
-        else:
-            return jsonify(vote_data)
-
-    @app.route('/api/cast-ballot', methods=['POST'])
-    def cast_ballot():
-        """Receives a cast ballot."""
-        device = authenticate(request)
-        if not device:
-            abort(403)
-
-        ballot = get_json_arg(request, 'ballot')
-        voteId = get_json_arg(request, 'voteId')
-        return jsonify(vote_index.cast_ballot(voteId, ballot, device))
+    # Add `/api/core/client-id` as a special case since it needs to peer deeply into the config.
+    @app.route('/api/core/client-id')
+    def get_client_id():
+        return jsonify(config['webapp-credentials']['client_id'])
 
     @app.route('/api/admin/create-vote', methods=['POST'])
     def create_vote():
@@ -148,19 +108,6 @@ def create_app(config, bottle_path, data_path='data', static_folder=DEFAULT_STAT
                 praw.Reddit(**config['bot-credentials']),
                 get_json_arg(request, 'url'),
                 get_json_arg(request, 'discernCandidates')))
-
-    @app.route('/api/client-id')
-    def get_client_id():
-        return jsonify(config['webapp-credentials']['client_id'])
-
-    @app.route('/api/is-authenticated', methods=['POST'])
-    def check_is_authenticated():
-        return jsonify(get_auth_level(request))
-
-    @app.route('/api/user-id', methods=['POST'])
-    def get_user_id():
-        device = authenticate(request)
-        return jsonify(device.user_id)
 
     @app.route('/api/optional/available', methods=['POST'])
     def process_available_optional_apis():
