@@ -13,7 +13,11 @@ def authenticate(req, device_index, require_admin=False) -> RegisteredDevice:
         device_id = json_data.get('deviceId')
 
     device = device_index.devices.get(device_id)
-    if require_admin and device is not None and device.user_id not in device_index.admins:
+
+    if require_admin and device is not None \
+        and device.user_id not in device_index.admins \
+        and device.user_id not in device_index.developers:
+
         return None
     else:
         return device
