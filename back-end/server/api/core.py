@@ -1,3 +1,7 @@
+#!/usr/bin/env python3
+
+"""Implements the core APIs, which handle authentication and basic functionality that all citizens can access."""
+
 from flask import Blueprint, abort, jsonify, request
 from ..persistence.authentication import DeviceIndex, RegisteredDevice
 from ..persistence.votes import VoteIndex
