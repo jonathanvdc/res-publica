@@ -207,13 +207,13 @@ class VoteRoute extends FetchedStateComponent<{ match: any, history: any, isAdmi
   }
 
   async onCancelVote(voteId: string) {
-    if (await apiClient.admin.cancelVote(voteId)) {
+    if (await apiClient.electionManagement.cancelVote(voteId)) {
       this.props.history.push('/');
     }
   }
 
   async onResign(voteId: string, optionId: string) {
-    let vote = await apiClient.admin.resign(voteId, optionId);
+    let vote = await apiClient.electionManagement.resign(voteId, optionId);
     console.log(vote);
     if ('error' in vote) {
       this.setState({ hasConnected: true, error: vote.error });
@@ -297,7 +297,7 @@ class MakeVoteRoute extends FetchedStateComponent<{ history: any }, MakeVoteRout
   async onMakeVote(proposal: Vote) {
     this.setState({ ...this.state, data: { ...this.state.data, phase: "submitted" } });
     try {
-      let vote = await apiClient.admin.createVote(proposal);
+      let vote = await apiClient.electionManagement.createVote(proposal);
       this.setState({ ...this.state, data: { ...this.state.data, phase: "submitted", createdVote: vote } });
     } catch (ex) {
       this.setState({ ...this.state, error: ex });
@@ -325,7 +325,7 @@ class MakeVoteRoute extends FetchedStateComponent<{ history: any }, MakeVoteRout
   }
 
   onScrape(url: string, detectCandidates: boolean): Promise<Vote> {
-    return apiClient.admin.scrapeCfc(url, detectCandidates);
+    return apiClient.electionManagement.scrapeCfc(url, detectCandidates);
   }
 
   renderState(data: MakeVoteRouteState): JSX.Element {

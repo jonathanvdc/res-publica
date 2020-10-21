@@ -12,6 +12,7 @@ from flask import Flask, request, redirect, send_from_directory, jsonify, abort
 from werkzeug.exceptions import NotFound
 from werkzeug.urls import url_encode
 from .api.core import create_core_blueprint, get_auth_level
+from .api.election_management import create_election_management_blueprint
 from .persistence.authentication import read_or_create_device_index, RegisteredDevice
 from .persistence.votes import read_or_create_vote_index
 from .persistence.helpers import write_json, send_to_log
@@ -65,38 +66,11 @@ def create_app(config, bottle_path, data_path='data', static_folder=DEFAULT_STAT
     def get_client_id():
         return jsonify(config['webapp-credentials']['client_id'])
 
-    @app.route('/api/admin/create-vote', methods=['POST'])
-    def create_vote():
-        """Creates a new vote."""
-        device = authenticate(request, True)
-        if not device:
-            abort(403)
+    # Register the election management APIs.
+    app.register_blueprint(create_election_management_blueprint(device_index, vote_index), url_prefix='/api/election-management')
 
-        proposal = get_json_arg(request, 'proposal')
-        return jsonify(vote_index.create_vote(proposal))
-
-    @app.route('/api/admin/cancel-vote', methods=['POST'])
-    def cancel_vote():
-        """Cancels a vote."""
-        device = authenticate(request, True)
-        if not device:
-            abort(403)
-
-        vote_id = get_json_arg(request, 'voteId')
-        return jsonify(vote_index.cancel_vote(vote_id))
-
-    @app.route('/api/admin/resign', methods=['POST'])
-    def process_resignation():
-        """Marks a candidate as having resigned from their seat."""
-        device = authenticate(request, True)
-        if not device:
-            abort(403)
-
-        vote_id = get_json_arg(request, 'voteId')
-        option_id = get_json_arg(request, 'optionId')
-        return jsonify(vote_index.mark_resignation(vote_id, option_id, device))
-
-    @app.route('/api/admin/scrape-cfc', methods=['POST'])
+    # Add `/api/election-management/scrape-cfc` as a special case since it needs to peer deeply into the config.
+    @app.route('/api/election-management/scrape-cfc', methods=['POST'])
     def process_scrape_cfc():
         """Scrapes a Reddit CFC."""
         device = authenticate(request, True)
