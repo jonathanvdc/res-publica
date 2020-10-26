@@ -19,6 +19,19 @@ export function sortBy<T, V>(elements: T[], getKey: (x: T) => V, reverse: boolea
     });
 }
 
+export function max<TItem, TProp>(seq: TItem[], getProp: (x: TItem) => TProp): TItem {
+    let result: TItem = seq[0];
+    let maxVal: TProp = getProp(seq[0]);
+    for (let item of seq.slice(1)) {
+        let val = getProp(item);
+        if (val > maxVal) {
+            result = item;
+            maxVal = val;
+        }
+    }
+    return result;
+}
+
 /**
  * Changes the luminance of a hex color.
  * @param hex A hex color string.
