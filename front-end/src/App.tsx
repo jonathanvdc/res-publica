@@ -1,6 +1,6 @@
 import React, { Suspense, Component } from 'react';
 import './App.css';
-import { VoteAndBallots, Vote, Ballot, isActive } from './model/vote';
+import { VoteAndBallots, Vote, Ballot, isActive, tryGetTallyVisualizer } from './model/vote';
 import { Route, BrowserRouter, Prompt } from 'react-router-dom';
 import { createMuiTheme, MuiThemeProvider } from '@material-ui/core/styles';
 import { green } from '@material-ui/core/colors';
@@ -27,6 +27,7 @@ import RegisteredVotersList from './components/registered-voter-list';
 import TitlePaper from './components/title-paper';
 import { currentSeasons, getSeasonalPropertyValue } from './model/season';
 import ServerManagementPage from './components/pages/server-management-page';
+import VisualizeTallyPage from './components/pages/visualize-tally-page';
 
 const theme = createMuiTheme({
   palette: {
@@ -116,6 +117,7 @@ class App extends FetchedStateComponent<{}, AppState> {
                 <Route exact path="/prefs" component={PreferencesRoute} />
                 <Route exact path="/vote/:voteId" component={(props: any) => <VoteRoute isAdmin={isAdmin(state.authLevel)} {...props} />} />
                 <Route exact path="/vote/:voteId/ballots" component={VoteBallotsRoute} />
+                <Route exact path="/vote/:voteId/visualize" component={VoteVisualizationRoute} />
                 {isAdmin(state.authLevel) && <Route exact path="/admin/make-vote" component={MakeVoteRoute} />}
                 {state.optionalAPIs && state.optionalAPIs.includes(OptionalAPI.registeredVoters) &&
                   <Route exact path="/registered-voters" component={RegisteredVotersRoute} />}
@@ -274,6 +276,23 @@ class VoteBallotsRoute extends FetchedStateComponent<{ match: any, history: any 
         Download as CSV
       </Button>
     </div>;
+  }
+}
+
+class VoteVisualizationRoute extends FetchedStateComponent<{ match: any, history: any }, VoteAndBallots | undefined> {
+  fetchState(): Promise<VoteAndBallots | undefined> {
+    return apiClient.getVote(this.props.match.params.voteId);
+  }
+
+  renderState(data: VoteAndBallots | undefined): JSX.Element {
+    if (!data) {
+      return <div>
+        <h1>Error 404</h1>
+        Vote with ID '{this.props.match.params.voteId}' not found.
+      </div>;
+    }
+
+    return <VisualizeTallyPage rounds={tryGetTallyVisualizer(data)!(data)} />;
   }
 }
 

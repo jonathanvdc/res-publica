@@ -1,7 +1,7 @@
 import React, { Component } from "react";
 import { Button, CircularProgress, Paper, Typography, DialogTitle, Dialog, DialogContent, DialogContentText, DialogActions } from "@material-ui/core";
 import { Link } from "react-router-dom";
-import { VoteAndBallots, Ballot, Vote, isActive, isCompletableBallot, completeBallot, isCompleteBallot, findIncompleteOptions, tally } from "../../model/vote";
+import { VoteAndBallots, Ballot, Vote, isActive, isCompletableBallot, completeBallot, isCompleteBallot, findIncompleteOptions, tally, tryGetTallyVisualizer } from "../../model/vote";
 import VoteCard from "../vote-card";
 import DropDownButton from "../drop-down-button";
 import "./vote-page.css";
@@ -227,6 +227,8 @@ class VotePage extends Component<Props, State> {
             {isActive(data.vote)
                 ? <div className="ProgressOrButton">{progressOrButton}</div>
                 : <Link to={`/vote/${data.vote.id}/ballots`}><Button style={{ marginBottom: "1em" }} variant="contained">View Ballots</Button></Link>}
+            {isActive(data.vote) && tryGetTallyVisualizer(data) &&
+                <Link to={`/vote/${data.vote.id}/visualize`}><Button style={{ marginBottom: "1em" }} variant="contained">Visualize</Button></Link>}
             {this.props.isAdmin && this.renderAdminZone(data)}
             {isActive(data.vote) && this.renderPartialBallotDialog(data)}
         </div>;

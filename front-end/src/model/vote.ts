@@ -1,3 +1,8 @@
+import { tallyFPTP } from "./voting/fptp";
+import { tallySTAR } from "./voting/star";
+import { tallySPSV } from "./voting/spsv";
+import { VoteAndBallots } from "./voting/types";
+
 export type {
     Candidate, VoteOption, ChooseOneBallotType, RateOptionsBallotType,
     BallotType, Vote, ChooseOneBallot, RateOptionsBallot, Ballot,
@@ -8,10 +13,25 @@ export {
     isCompletableBallot, completeBallot
 } from "./voting/types";
 
-import { tallyFPTP } from "./voting/fptp";
-import { tallySTAR } from "./voting/star";
-import { tallySPSV } from "./voting/spsv";
-import { VoteAndBallots } from "./voting/types";
+/**
+ * Visualizes a tally.
+ * @param voteAndBallots A vote and its associated ballots.
+ * @param seats The number of seats.
+ * @returns A list of UI elements, each of which represent a "round" during the tallying.
+ */
+type TallyVisualizer = (voteAndBallots: VoteAndBallots, seats?: number) => JSX.Element[];
+
+/**
+ * Gets an appropriate visualizer for ballot tallying, if we have one.
+ * @param voteAndBallots A vote and its associated ballots.
+ */
+export function tryGetTallyVisualizer(voteAndBallots: VoteAndBallots): TallyVisualizer | undefined {
+    switch (voteAndBallots.vote.type.tally) {
+        case "spsv":
+        default:
+            return undefined;
+    }
+}
 
 export function tally(voteAndBallots: VoteAndBallots, seats?: number): string[] {
     switch (voteAndBallots.vote.type.tally) {
