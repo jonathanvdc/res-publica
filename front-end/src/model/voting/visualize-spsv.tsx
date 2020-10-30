@@ -1,8 +1,17 @@
 import React, { ReactNode } from "react";
 import { Typography } from "@material-ui/core";
 import TitlePaper from "../../components/title-paper";
-import { SPSVRound, tallySPSVWithRounds } from "./spsv";
+import { SPSVCandidate, SPSVRound, tallySPSVWithRounds } from "./spsv";
 import { VoteAndBallots } from "./types";
+import Ticket from "../../components/election/ticket";
+
+function idToCandidate(candidateId: string, round: SPSVRound): SPSVCandidate {
+    let data = round.candidates.find(x => x.option.id === candidateId);
+    if (!data) {
+        throw new Error(`Cannot find candidate ${candidateId}.`);
+    }
+    return data;
+}
 
 /**
  * Renders an SPSV round name.
@@ -13,9 +22,12 @@ function renderRoundName(round: SPSVRound): ReactNode {
         case "initial":
             return `Round ${round.kind.seatIndex + 1}`;
         case "replacement":
-            // TODO: render original candidate's name better.
-            // (IDs are ugly)
-            return `Replacement for ${round.kind.resignerId}`;
+            let option = idToCandidate(round.kind.resignerId, round).option;
+            if (option.ticket) {
+                return <span>Replacement for <Ticket candidates={option.ticket} /></span>;
+            } else {
+                return `Replacement for ${option.name}`;
+            }
     }
 }
 
