@@ -236,3 +236,11 @@ export function completeBallot(ballot: Ballot, vote: Vote): Ballot {
         }
     }
 }
+
+/**
+ * Visualizes a tally.
+ * @param voteAndBallots A vote and its associated ballots.
+ * @param seats The number of seats.
+ * @returns A list of UI elements, each of which represent a "round" during the tallying.
+ */
+export type TallyVisualizer = (voteAndBallots: VoteAndBallots, seats?: number) => JSX.Element[];

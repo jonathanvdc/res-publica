@@ -1,25 +1,18 @@
 import { tallyFPTP } from "./voting/fptp";
 import { tallySTAR } from "./voting/star";
 import { tallySPSV } from "./voting/spsv";
-import { VoteAndBallots } from "./voting/types";
+import { VoteAndBallots, TallyVisualizer } from "./voting/types";
+import { visuallyTallySPSV } from "./voting/visualize-spsv";
 
 export type {
     Candidate, VoteOption, ChooseOneBallotType, RateOptionsBallotType,
     BallotType, Vote, ChooseOneBallot, RateOptionsBallot, Ballot,
-    FinishedBallot, VoteAndBallots
+    FinishedBallot, VoteAndBallots, TallyVisualizer
 } from "./voting/types";
 export {
     getBallotKind, isActive, findIncompleteOptions, isCompleteBallot,
     isCompletableBallot, completeBallot
 } from "./voting/types";
-
-/**
- * Visualizes a tally.
- * @param voteAndBallots A vote and its associated ballots.
- * @param seats The number of seats.
- * @returns A list of UI elements, each of which represent a "round" during the tallying.
- */
-type TallyVisualizer = (voteAndBallots: VoteAndBallots, seats?: number) => JSX.Element[];
 
 /**
  * Gets an appropriate visualizer for ballot tallying, if we have one.
@@ -28,6 +21,7 @@ type TallyVisualizer = (voteAndBallots: VoteAndBallots, seats?: number) => JSX.E
 export function tryGetTallyVisualizer(voteAndBallots: VoteAndBallots): TallyVisualizer | undefined {
     switch (voteAndBallots.vote.type.tally) {
         case "spsv":
+            return visuallyTallySPSV;
         default:
             return undefined;
     }
@@ -45,20 +39,7 @@ export function tally(voteAndBallots: VoteAndBallots, seats?: number): string[] 
         }
         case "spsv":
         {
-            let result = tallySPSV(voteAndBallots, seats);
-            let resigned = voteAndBallots.vote.resigned || [];
-            for (let i = 1; i <= resigned.length; i++) {
-                // After every ballot, appoint a resignation by running a single-seat
-                // election with ballots that are weighted as those who did not resign
-                // were already elected.
-                let resignedSlice = resigned.slice(0, i);
-                result = tallySPSV(
-                    voteAndBallots,
-                    seats,
-                    result.filter(x => !resignedSlice.includes(x)),
-                    resignedSlice);
-            }
-            return result;
+            return tallySPSV(voteAndBallots, seats);
         }
     }
 }
