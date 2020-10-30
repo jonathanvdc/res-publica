@@ -47,7 +47,7 @@ def parse_candidate(candidate_name: str, affiliation_separators: List[str]):
         username, party = split
         return { "name": username.strip(), "affiliation": party.strip() }
 
-def parse_cfc(body: str, is_presidential: bool = False, discern_candidates: bool = False) -> Union[VoteOption, None]:
+def parse_cfc(body: str, discern_candidates: bool = False) -> Union[VoteOption, None]:
     """Parses a CFC."""
     split_body = body.strip().split('\n', maxsplit=1)
     if len(split_body) < 2:
@@ -67,22 +67,9 @@ def parse_cfc(body: str, is_presidential: bool = False, discern_candidates: bool
 
     if discern_candidates:
         # Note: Sometimes people use a slash instead of a bar for their CFCs (how vexing).
-        if is_presidential:
-            # The CFC format for presidential CFCs is
-            # /u/YourRedditUsername - Your political party | /u/YourVicePresidentUsername - Their political party
-            split = split_on_one_of(header, ['|', '/'], 1)
-            if len(split) == 1:
-                option['ticket'] = [parse_candidate(header, ['\\-', '- '])]
-            else:
-                first_candidate, second_candidate = split
-                option['ticket'] = [
-                    parse_candidate(first_candidate, ['\\-', '- ']),
-                    parse_candidate(second_candidate, ['\\-', '- '])
-                ]
-        else:
-            # The CFC format for senatorial CFCs is
-            # /u/YourRedditUsername | Your political party
-            option['ticket'] = [parse_candidate(header, ['|', '\\', '/'])]
+        # The format for CFCs is
+        # /u/YourRedditUsername | Your political party
+        option['ticket'] = [parse_candidate(header, ['|', '\\', '/', '-'])]
 
     return option
 
@@ -106,8 +93,6 @@ def scrape_cfc(reddit: Reddit, url: str, discern_candidates: bool = False) -> Vo
 
         title = title.strip().strip(':').strip()
 
-    is_presidential = 'president' in title.lower()
-
     # Grab the options.
     options = []
     for top_level_comment in post.comments:
@@ -117,7 +102,6 @@ def scrape_cfc(reddit: Reddit, url: str, discern_candidates: bool = False) -> Vo
 
         option = parse_cfc(
             top_level_comment.body,
-            is_presidential=is_presidential,
             discern_candidates=discern_candidates)
         if option is None:
             continue
