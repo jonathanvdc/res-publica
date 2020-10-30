@@ -13,6 +13,7 @@ import ExitIcon from '@material-ui/icons/ExitToApp';
 import CountdownTimer from 'react-countdown';
 import './vote-card.css';
 import { getPreferences } from "../model/preferences";
+import Ticket from "./election/ticket";
 
 type Props = {
     voteAndBallots: VoteAndBallots;
@@ -158,23 +159,6 @@ function createMDEditorOrPreview(
     }
 }
 
-function renderTicket(ticket: Candidate[]): (JSX.Element | string)[] {
-    let results = [];
-    for (let candidate of ticket) {
-        if (results.length > 0) {
-            results.push(" & ");
-        }
-
-        let candidateBlockItems = [];
-        candidateBlockItems.push(candidate.name);
-        if (candidate.affiliation) {
-            candidateBlockItems.push(<Chip style={{marginLeft: "0.5em"}} label={candidate.affiliation} />);
-        }
-        results.push(<div style={{display: "inline-block"}}>{candidateBlockItems}</div>)
-    }
-    return results;
-}
-
 function renderVoteOptionDescription(
     option: VoteOption,
     allowVoteChanges: boolean,
@@ -184,7 +168,9 @@ function renderVoteOptionDescription(
     let results: JSX.Element[] = [];
 
     if (option.ticket) {
-        results.push(<Typography className="VoteOption" variant="h4">{renderTicket(option.ticket)}</Typography>);
+        results.push(<Typography className="VoteOption" variant="h4">
+            <Ticket candidates={option.ticket} />
+        </Typography>);
     } else {
         results.push(
             createTitleEditorOrPreview(

@@ -54,7 +54,7 @@ function getBallotWeight(ballot: KotzePereiraBallot, round: SPSVRoundInProgress)
 /**
  * Describes a candidate during the SPSV process.
  */
-type SPSVCandidate = {
+export type SPSVCandidate = {
     /**
      * This candidate as a vote option.
      */
