@@ -33,6 +33,21 @@ export function max<TItem, TProp>(seq: TItem[], getProp: (x: TItem) => TProp): T
 }
 
 /**
+ * Removes an item from a list, if it is in the list.
+ * @param list The list from which the item should be removed.
+ * @param item The item to remove.
+ */
+export function removeItem<T>(list: T[], item: T): boolean {
+    let index = list.indexOf(item);
+    if (index >= 0) {
+        list.splice(index, 1);
+        return true;
+    } else {
+        return false;
+    }
+}
+
+/**
  * Changes the luminance of a hex color.
  * @param hex A hex color string.
  * @param lum The new luminance.
@@ -75,3 +90,5 @@ export function changeLuminance(hex: string, lum: number = 0): string {
 
     return rgb;
 }
+
+export type Without<T, K> = Pick<T, Exclude<keyof T, K>>;

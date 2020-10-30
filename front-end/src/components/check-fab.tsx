@@ -2,6 +2,7 @@ import React from "react";
 import { Fab, FabProps, Theme, withStyles } from "@material-ui/core";
 import { green } from "@material-ui/core/colors";
 import CheckIcon from '@material-ui/icons/Check';
+import { Without } from "../model/util";
 
 const CheckFabTy = withStyles((theme: Theme) => ({
     root: {
@@ -12,8 +13,6 @@ const CheckFabTy = withStyles((theme: Theme) => ({
         }
     },
 }))(Fab);
-
-type Without<T, K> = Pick<T, Exclude<keyof T, K>>;
 
 /**
  * A green floating action button with a checkmark inside.
