@@ -1,24 +1,10 @@
-.VotePanel {
-    margin: 1.5em;
-}
-
 .VoteContainer {
     max-width: 90vw;
     width: 640px;
 }
 
-.VoteContainer .SelectedVotePanel {
-    background-color: #159957;
-    background-image: linear-gradient(120deg, #155799, #159957);
-    color: white;
-}
-
-.VotePanel .VotePanelButton {
+.CandidatePanel .CandidatePanelButton {
     width: 100%;
-}
-
-.VotePanelContents {
-    margin: 1.5em;
 }
 
 .EditableVoteOptionHeader {
