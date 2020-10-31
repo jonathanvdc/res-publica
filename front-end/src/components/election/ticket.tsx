@@ -27,7 +27,7 @@ class Ticket extends PureComponent<Props> {
         }
 
         return <React.Fragment>
-            {...results}
+            {results}
         </React.Fragment>;
     }
 }
