@@ -1,6 +1,4 @@
-import { Chip } from "@material-ui/core";
 import React, { PureComponent } from "react"
-import { Candidate } from "../../model/vote";
 
 type Props = {
     /**
