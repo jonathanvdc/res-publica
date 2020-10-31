@@ -235,10 +235,18 @@ export function tallySPSVWithRounds(voteAndBallots: VoteAndBallots, seats?: numb
         // After every resignation, appoint a replacement by running a single-seat
         // election with ballots that are weighted as those who did not resign
         // were already elected.
+
         let resignedSlice = resigned.slice(0, i);
         let resignerId = resigned[i - 1];
         let lastRound = rounds[rounds.length - 1];
-        let preElected = getElectedCandidatesAtEnd(lastRound).filter(x => !resignedSlice.includes(x))
+        let preElected = getElectedCandidatesAtEnd(lastRound).filter(x => !resignedSlice.includes(x));
+
+        // If all candidates are already elected, then we can't appoint a replacement.
+        let remainingCandidateCount = voteAndBallots.vote.options.length - resignedSlice.length - preElected.length;
+        if (remainingCandidateCount === 0) {
+            break;
+        }
+
         rounds.push(
             ...tallySPSVWithRoundsNoResignations(
                 voteAndBallots,
