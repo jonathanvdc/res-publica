@@ -1,9 +1,9 @@
 import React, { Component } from "react";
-import { VoteAndBallots, Ballot, BallotType, VoteOption, RateOptionsBallot, ChooseOneBallot, isActive, Vote, getBallotKind, tally, Candidate, tallyOrder } from "../model/vote";
+import { VoteAndBallots, Ballot, BallotType, VoteOption, RateOptionsBallot, ChooseOneBallot, isActive, Vote, getBallotKind, tally, tallyOrder } from "../model/vote";
 import ReactMarkdown from "react-markdown";
 import Typography from '@material-ui/core/Typography';
 import DeleteIcon from '@material-ui/icons/Delete';
-import { Paper, withStyles, ButtonBase, TextField, Button, Collapse, Chip, Link } from "@material-ui/core";
+import { Paper, withStyles, ButtonBase, TextField, Button, Collapse, Link } from "@material-ui/core";
 import ToggleButton from "@material-ui/lab/ToggleButton";
 import ToggleButtonGroup from '@material-ui/lab/ToggleButtonGroup';
 import MDEditor from '@uiw/react-md-editor';
@@ -14,6 +14,7 @@ import CountdownTimer from 'react-countdown';
 import './vote-card.css';
 import { getPreferences } from "../model/preferences";
 import Ticket from "./election/ticket";
+import CandidatePanel from "./election/candidate-panel";
 
 type Props = {
     voteAndBallots: VoteAndBallots;
@@ -262,21 +263,19 @@ function renderVoteOption(
             for (let i = ballotType.min; i <= ballotType.max; i++) {
                 buttons.push(<ToggleButton disabled={!allowBallotChanges} value={i}>{i}</ToggleButton>);
             }
-            return <Paper elevation={1} className="VotePanel">
-                <div className="VotePanelContents">
-                    {description}
-                    <StyledToggleButtonGroup
-                        value={ratingOrNull ? ratingOrNull.rating : null}
-                        exclusive
-                        onChange={(_event: React.MouseEvent<HTMLElement>, newValue: number | null) => {
-                            let oldVals = optionBallot.ratingPerOption.filter(val => val.optionId !== option.id);
-                            let newRatings = newValue === null ? optionBallot.ratingPerOption : [...oldVals, { optionId: option.id, rating: newValue }];
-                            changeBallot({ ratingPerOption: newRatings });
-                        }}>
-                        {buttons}
-                    </StyledToggleButtonGroup>
-                </div>
-            </Paper>;
+            return <CandidatePanel>
+                {description}
+                <StyledToggleButtonGroup
+                    value={ratingOrNull ? ratingOrNull.rating : null}
+                    exclusive
+                    onChange={(_event: React.MouseEvent<HTMLElement>, newValue: number | null) => {
+                        let oldVals = optionBallot.ratingPerOption.filter(val => val.optionId !== option.id);
+                        let newRatings = newValue === null ? optionBallot.ratingPerOption : [...oldVals, { optionId: option.id, rating: newValue }];
+                        changeBallot({ ratingPerOption: newRatings });
+                    }}>
+                    {buttons}
+                </StyledToggleButtonGroup>
+            </CandidatePanel>;
         case "first-past-the-post":
             let isSelected = ballot && (ballot as ChooseOneBallot).selectedOptionId === option.id;
             if (vote.winners.length > 0) {
@@ -290,20 +289,16 @@ function renderVoteOption(
                     `${Math.round(100 * votePercentage)}%`)
             }
 
-            let contents = <div className="VotePanelContents">
-                {description}
-            </div>;
-
             if (allowVoteChanges || !allowBallotChanges) {
-                return <Paper elevation={1} className={isSelected ? "VotePanel SelectedVotePanel" : "VotePanel"}>
-                    {contents}
-                </Paper>;
+                return <CandidatePanel isSelected={isSelected}>
+                    {description}
+                </CandidatePanel>;
             } else {
-                return <Paper elevation={1} className={isSelected ? "VotePanel SelectedVotePanel" : "VotePanel"}>
-                    <ButtonBase className="VotePanelButton" focusRipple onClick={() => changeBallot({ selectedOptionId: option.id })}>
-                        {contents}
+                return <CandidatePanel isSelected={isSelected}>
+                    <ButtonBase className="CandidatePanelButton" focusRipple onClick={() => changeBallot({ selectedOptionId: option.id })}>
+                        {description}
                     </ButtonBase>
-                </Paper>;
+                </CandidatePanel>;
             }
     }
 }
@@ -470,7 +465,7 @@ class VoteCard extends Component<Props, State> {
         }
 
         return <div className="VoteContainer">
-            <div className="VotePanelContents">
+            <div className="CandidatePanelContents">
                 {header}
             </div>
             {options}
