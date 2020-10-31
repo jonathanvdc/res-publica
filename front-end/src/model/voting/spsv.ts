@@ -4,7 +4,7 @@ import { RateOptionsBallot, RateOptionsBallotType, VoteAndBallots, VoteOption } 
 /**
  * A Kotze-Pereira ballot in a specific round.
  */
-type KotzePereiraBallot = {
+export type KotzePereiraBallot = {
     /**
      * The original ballot from which this KP ballot was derived.
      */
@@ -47,8 +47,21 @@ function getApprovedButUnelectedCandidates(ballot: KotzePereiraBallot, round: SP
  * Gets the weight of a KP ballot in a particular round.
  * @param ballot The ballot to examine.
  */
-function getBallotWeight(ballot: KotzePereiraBallot, round: SPSVRoundInProgress): number {
-    return 1 / getElectedCandidates(ballot, round).length;
+export function getBallotWeight(ballot: KotzePereiraBallot, round: SPSVRoundInProgress): number {
+    return 1 / (getElectedCandidates(ballot, round).length + 1);
+}
+
+/**
+ * Computes a candidate's total score at the start of a round.
+ * @param candidate A candidate.
+ * @param round An SPSV round.
+ */
+export function getCandidateScore(candidate: SPSVCandidate, round: SPSVRoundInProgress): number {
+    let result = 0;
+    for (let ballot of candidate.approvingBallots) {
+        result += getBallotWeight(ballot, round);
+    }
+    return result;
 }
 
 /**
@@ -138,7 +151,7 @@ function getElectedCandidatesAtEnd(round: SPSVRound): string[] {
  */
 function kotzePereira(ballot: RateOptionsBallot, type: RateOptionsBallotType): KotzePereiraBallot[] {
     let virtualBallots: KotzePereiraBallot[] = [];
-    for (let i = type.min; i <= type.max; i++) {
+    for (let i = type.min + 1; i <= type.max; i++) {
         virtualBallots.push({
             originalBallot: ballot,
             score: i,
