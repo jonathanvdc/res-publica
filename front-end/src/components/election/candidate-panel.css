@@ -11,3 +11,18 @@
 .CandidatePanelContents {
     margin: 1.5em;
 }
+
+.CandidateResultPanel {
+    display: flex;
+}
+
+.CandidateResultPanel .CandidateDescriptionPanel {
+    flex-grow: 1;
+}
+
+.CandidateResultPanel .CandidateOutcomePanel {
+    margin-top: 0.3em;
+    margin-right: 0.5em;
+    display: flex;
+    flex-direction: column;
+}

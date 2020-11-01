@@ -8,8 +8,6 @@ import ToggleButton from "@material-ui/lab/ToggleButton";
 import ToggleButtonGroup from '@material-ui/lab/ToggleButtonGroup';
 import MDEditor from '@uiw/react-md-editor';
 import { DateTimePicker } from '@material-ui/pickers'
-import DoneOutlineIcon from '@material-ui/icons/DoneOutline';
-import ExitIcon from '@material-ui/icons/ExitToApp';
 import CountdownTimer from 'react-countdown';
 import './vote-card.css';
 import { getPreferences } from "../model/preferences";
@@ -211,19 +209,6 @@ const StyledToggleButtonGroup = withStyles((theme) => ({
     }
   }))(ToggleButtonGroup);
 
-function renderVoteResult(description: JSX.Element[], isWinner: boolean, hasResigned: boolean, score: string): JSX.Element[] {
-    return [
-        <div className="VoteResultPanel">
-            <div className="VoteOutcomePanel">
-                <Typography variant="h4">{score}</Typography>
-                {isWinner && <DoneOutlineIcon style={{fontSize: 40}} />}
-                {hasResigned && <ExitIcon style={{fontSize: 40}} />}
-            </div>
-            <div className="VoteDescriptionPanel">{description}</div>
-        </div>
-    ];
-}
-
 type TalliedVote = {
     voteAndBallots: VoteAndBallots;
     winners: string[];
@@ -247,14 +232,21 @@ function renderVoteOption(
         changeOption,
         deleteOption);
 
+    let isWinner: boolean | undefined, hasResigned: boolean | undefined, score: string | undefined;
+
     switch (ballotType.tally) {
         case "spsv":
         case "star":
+
             if (vote.winners.length > 0) {
-                let isWinner = vote.winners.includes(option.id);
-                let hasResigned = !!vote.voteAndBallots.vote.resigned?.includes(option.id);
+                isWinner = vote.winners.includes(option.id);
+                hasResigned = !!vote.voteAndBallots.vote.resigned?.includes(option.id);
                 let rankingIndex = vote.ranking.indexOf(option.id);
-                description = renderVoteResult(description, isWinner, hasResigned, `#${rankingIndex + 1}`)
+                score = `#${rankingIndex + 1}`;
+            } else {
+                isWinner = undefined;
+                hasResigned = undefined;
+                score = undefined;
             }
 
             let optionBallot = ballot as RateOptionsBallot;
@@ -263,7 +255,7 @@ function renderVoteOption(
             for (let i = ballotType.min; i <= ballotType.max; i++) {
                 buttons.push(<ToggleButton disabled={!allowBallotChanges} value={i}>{i}</ToggleButton>);
             }
-            return <CandidatePanel>
+            return <CandidatePanel isWinner={isWinner} hasResigned={hasResigned} score={score}>
                 {description}
                 <StyledToggleButtonGroup
                     value={ratingOrNull ? ratingOrNull.rating : null}
@@ -278,28 +270,34 @@ function renderVoteOption(
             </CandidatePanel>;
         case "first-past-the-post":
             let isSelected = ballot && (ballot as ChooseOneBallot).selectedOptionId === option.id;
+
             if (vote.winners.length > 0) {
                 let ballots = vote.voteAndBallots.ballots;
                 let votePercentage = ballots.filter(x => (x as ChooseOneBallot).selectedOptionId === option.id).length / ballots.length;
-                console.log(vote.ranking);
-                description = renderVoteResult(
-                    description,
-                    vote.winners.includes(option.id),
-                    !!vote.voteAndBallots.vote.resigned?.includes(option.id),
-                    `${Math.round(100 * votePercentage)}%`)
+                isWinner = vote.winners.includes(option.id);
+                hasResigned = !!vote.voteAndBallots.vote.resigned?.includes(option.id);
+                score = `${Math.round(100 * votePercentage)}%`;
+            } else {
+                isWinner = undefined;
+                hasResigned = undefined;
+                score = undefined;
             }
 
-            if (allowVoteChanges || !allowBallotChanges) {
-                return <CandidatePanel isSelected={isSelected}>
-                    {description}
-                </CandidatePanel>;
-            } else {
-                return <CandidatePanel isSelected={isSelected}>
-                    <ButtonBase className="CandidatePanelButton" focusRipple onClick={() => changeBallot({ selectedOptionId: option.id })}>
+            if (!allowVoteChanges && allowBallotChanges) {
+                description = [
+                    <ButtonBase
+                        className="CandidatePanelButton"
+                        focusRipple
+                        onClick={() => changeBallot({ selectedOptionId: option.id })}>
+
                         {description}
                     </ButtonBase>
-                </CandidatePanel>;
+                ];
             }
+
+            return <CandidatePanel isSelected={isSelected} isWinner={isWinner} hasResigned={hasResigned} score={score}>
+                {description}
+            </CandidatePanel>;
     }
 }
 

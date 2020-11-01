@@ -226,9 +226,9 @@ class VotePage extends Component<Props, State> {
                 }} />
             {isActive(data.vote)
                 ? <div className="ProgressOrButton">{progressOrButton}</div>
-                : <Link to={`/vote/${data.vote.id}/ballots`}><Button style={{ margin: "0 1em 1em 1em" }} variant="contained">View Ballots</Button></Link>}
+                : <Button component={Link} to={`/vote/${data.vote.id}/ballots`} style={{ margin: "0 1em 1em 1em" }} variant="contained">View Ballots</Button>}
             {!isActive(data.vote) && tryGetTallyVisualizer(data) &&
-                <Link to={`/vote/${data.vote.id}/visualize`}><Button style={{ margin: "0 1em 1em 1em" }} variant="contained">Visualize</Button></Link>}
+                <Button component={Link} to={`/vote/${data.vote.id}/visualize`} style={{ margin: "0 1em 1em 1em" }} variant="contained">Visualize</Button>}
             {this.props.isAdmin && this.renderAdminZone(data)}
             {isActive(data.vote) && this.renderPartialBallotDialog(data)}
         </div>;
