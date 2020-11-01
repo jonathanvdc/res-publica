@@ -2,7 +2,6 @@ import React, { ReactNode } from "react";
 import { Typography } from "@material-ui/core";
 import { getBallotWeight, getCandidateScore, KotzePereiraBallot, SPSVCandidate, SPSVRound, tallySPSVWithRounds } from "./spsv";
 import { RateOptionsBallot, VoteAndBallots } from "./types";
-import Ticket from "../../components/election/ticket";
 import CandidatePanel from "../../components/election/candidate-panel";
 import BallotDots from "../../components/election/ballot-dots";
 import { sortBy } from "../util";
