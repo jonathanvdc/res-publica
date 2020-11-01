@@ -1,5 +1,9 @@
 # Res Publica (the SimDem election website)
 
+[SimDemocracy](https://www.reddit.com/r/SimDemocracy/) is an online community where citizens can participate in a simulated democracy, passing laws to change its nature. A key part of SimDemocracy is elections: We elect members of parliament and a president, and we also vote on referendums. Res Publica (this project) is SimDemocracy's election website. It supports the following scenarios:
+  * Registered voters can cast their ballots in elections and see past election results.
+  * Admins can set up elections, register voters and unregister voters.
+
 ## Build Instructions
 
 ### Dependencies
