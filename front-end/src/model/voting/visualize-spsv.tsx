@@ -54,7 +54,7 @@ function visualizeCandidate(candidateId: string, round: SPSVRound): JSX.Element 
         ballots.set(item.originalBallot, sortBy(elems, b => b.score, true));
     }
 
-    return <CandidatePanel>
+    return <CandidatePanel isWinner={candidateId === round.roundWinner}>
         <Typography variant="h4">{renderCandidateName(data)}</Typography>
         Score: {getCandidateScore(data, round)}
         <div>
