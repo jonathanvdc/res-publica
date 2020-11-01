@@ -22,7 +22,7 @@ class VisualizeTallyPage extends Component<Props, State> {
     }
 
     renderNavButtons() {
-        return <div style={{display: "flex", width: "100%", margin: "2em"}}>
+        return <div style={{display: "flex", width: "100%", padding: "2em"}}>
             {this.state.currentRound > 0 &&
                 <Button variant="contained" onClick={() => this.navigate(-1)}>Previous</Button>}
             <div style={{flexGrow: 1}} />
