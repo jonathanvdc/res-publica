@@ -41,7 +41,7 @@ class RateOptionsBallotSummary extends PureComponent<Props> {
 
     renderRating(optionId: string, rating: number, isWinner: boolean) {
         return <div>
-            {isWinner && <DoneOutlineIcon />} {this.renderCandidate(optionId)} - {generateDotsFromRating(rating)}
+            {isWinner && <DoneOutlineIcon fontSize="inherit" />} {this.renderCandidate(optionId)} - {generateDotsFromRating(rating)}
         </div>;
     }
 
