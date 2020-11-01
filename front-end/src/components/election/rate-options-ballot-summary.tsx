@@ -3,6 +3,7 @@ import React, { PureComponent, ReactNode } from "react";
 import { sortBy } from "../../model/util";
 import { RateOptionsBallot, RateOptionsBallotType, Vote } from "../../model/vote";
 import BallotDots from "./ballot-dots";
+import DoneOutlineIcon from '@material-ui/icons/DoneOutline';
 
 type Props = {
     /**
@@ -14,6 +15,11 @@ type Props = {
      * The vote to which the ballot belongs.
      */
     vote: Vote;
+
+    /**
+     * The IDs of all elected candidates on this ballot.
+     */
+    electedCandidates?: string[];
 };
 
 function generateDotsFromRating(rating: number): ReactNode {
@@ -33,9 +39,9 @@ class RateOptionsBallotSummary extends PureComponent<Props> {
         return option.name;
     }
 
-    renderRating(optionId: string, rating: number) {
+    renderRating(optionId: string, rating: number, isWinner: boolean) {
         return <div>
-            {this.renderCandidate(optionId)} - {generateDotsFromRating(rating)}
+            {isWinner && <DoneOutlineIcon />} {this.renderCandidate(optionId)} - {generateDotsFromRating(rating)}
         </div>;
     }
 
@@ -49,9 +55,15 @@ class RateOptionsBallotSummary extends PureComponent<Props> {
         // Sort ratings.
         ratings = sortBy(ratings, ({ optionId, rating }) => `${rating}-${optionId}`, true);
 
+        let electedIds = this.props.electedCandidates || [];
+
+        let elected = ratings.filter(x => electedIds.includes(x.optionId));
+        let unelected = ratings.filter(x => !electedIds.includes(x.optionId));
+
         return <div>
             <Typography>{this.props.ballot.id}</Typography>
-            {ratings.map(({ optionId, rating }) => this.renderRating(optionId, rating))}
+            {elected.map(({ optionId, rating }) => this.renderRating(optionId, rating, true))}
+            {unelected.map(({ optionId, rating }) => this.renderRating(optionId, rating, false))}
         </div>;
     }
 }

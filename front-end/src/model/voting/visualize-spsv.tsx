@@ -33,7 +33,7 @@ function renderRoundName(round: SPSVRound): ReactNode {
 function visualizeBallot(ballot: RateOptionsBallot, virtualBallots: KotzePereiraBallot[], round: SPSVRound): ReactNode {
     return <BallotDots
         dotWeights={virtualBallots.map(y => getBallotWeight(y, round))}
-        hoverCard={<RateOptionsBallotSummary ballot={ballot} vote={round.vote} />} />;
+        hoverCard={<RateOptionsBallotSummary ballot={ballot} vote={round.vote} electedCandidates={round.electedCandidates} />} />;
 }
 
 function visualizeCandidate(candidateId: string, round: SPSVRound): JSX.Element {
