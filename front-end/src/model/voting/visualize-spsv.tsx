@@ -37,6 +37,12 @@ function renderRoundName(round: SPSVRound): ReactNode {
     }
 }
 
+function visualizeBallot(ballot: RateOptionsBallot, virtualBallots: KotzePereiraBallot[], round: SPSVRound): ReactNode {
+    return <BallotDots
+        dotWeights={virtualBallots.map(y => getBallotWeight(y, round))}
+        hoverCard={ballot.id} />;
+}
+
 function visualizeCandidate(candidateId: string, round: SPSVRound): JSX.Element {
     let data = round.candidates.find(x => x.option.id === candidateId);
     if (!data) {
@@ -58,7 +64,7 @@ function visualizeCandidate(candidateId: string, round: SPSVRound): JSX.Element 
         <Typography variant="h4">{renderCandidateName(data)}</Typography>
         Score: {getCandidateScore(data, round)}
         <div>
-            {Array.of(...ballots.values()).map(x => <BallotDots dotWeights={x.map(y => getBallotWeight(y, round))} />)}
+            {Array.of(...ballots.entries()).map(([x, y]) => visualizeBallot(x, y, round))}
         </div>
     </CandidatePanel>;
 }
