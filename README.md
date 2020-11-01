@@ -14,7 +14,7 @@ To build Res Publica, you will need a recent version of `npm` (e.g., 6.14.4) and
 
 If you intend to host Res Publica at a non-root URL, go to the `front-end` directory. Change the `"homepage": "/"` field in `package.json` to the URL at which you mean to host the website. For instance, if you want to host at `/sdvote/` instead of at `/`, put `"homepage": "/sdvote/"`.
 
-### Configuring Res Publica
+### Configure Res Publica
 
 Navigate to the `back-end` directory. Create a file called `config.json` that contains your credentials for hosting the site. The contents of a `config.json` should look like the example below, with real web app credentials and bot credentials.
 
@@ -74,11 +74,11 @@ With the server configured, the only thing left for us to do is to appoint an ad
 }
 ```
 
-### Running the server
+### Run the server
 
 With the `config.json` in place, run the server like so:
 ```
 python3 ./server-manager.py config.json
 ```
 
-Congratulations! If all went well, you should now have your own instance of Res Publica.
+Congratulations! If all went well, you should now have your very own instance of Res Publica.
