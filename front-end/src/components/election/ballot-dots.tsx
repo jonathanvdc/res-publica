@@ -25,7 +25,7 @@ class BallotDots extends PureComponent<Props> {
                     width: "0.5em",
                     height: "0.5em",
                     borderRadius: "100%",
-                    background: `linear-gradient(to right, #159957 ${toPercentage(w - 0.01)}, transparent ${toPercentage(w + 0.01)})`}} />)}
+                    background: `linear-gradient(to right, #159957 ${toPercentage(w - 0.01)}, #1599571e ${toPercentage(w + 0.01)})`}} />)}
         </div>;
     }
 }
