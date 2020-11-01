@@ -2,15 +2,17 @@
 
 ## Build Instructions
 
-Make sure you have `npm` installed. Go to the `front-end` directory. Change the `"homepage": "/"` field in `package.json` to the URL at which you mean to host the website. For instance, if you want to host at `/sdvote/` instead of at `/`, put `"homepage": "/sdvote/"`.
+### Dependencies
 
+To build Res Publica, you will need a recent version of `npm` (e.g., 6.14.4) and a recent version of Python 3 (e.g., 3.8.5). Make sure you also have pip3. Res Publica's server is designed to run on Linux systems but may run on other operating systems too.
 
-Run the following command.
-```
-npm run-script build
-```
+### Change the homepage URL (Optional)
 
-Now navigate to the `back-end` directory. Create a file called `config.json` that contains your credentials for hosting the site. The contents of a `config.json` should look like this:
+If you intend to host Res Publica at a non-root URL, go to the `front-end` directory. Change the `"homepage": "/"` field in `package.json` to the URL at which you mean to host the website. For instance, if you want to host at `/sdvote/` instead of at `/`, put `"homepage": "/sdvote/"`.
+
+### Configuring Res Publica
+
+Navigate to the `back-end` directory. Create a file called `config.json` that contains your credentials for hosting the site. The contents of a `config.json` should look like the example below, with real web app credentials and bot credentials.
 
 ```json
 {
@@ -29,7 +31,7 @@ Now navigate to the `back-end` directory. Create a file called `config.json` tha
     },
     "host": {
         "debug": false,
-        "host": "0.0.0.0"
+        "port": 5000
     },
     "voter-requirements": [
         {
@@ -51,7 +53,28 @@ Now navigate to the `back-end` directory. Create a file called `config.json` tha
 }
 ```
 
+With the server configured, the only thing left for us to do is to appoint an admin (that's us!). Create a directory called `data/votes` and in that directory create a file called `device-index.json` containing the following text, where `your-reddit-account` is your Reddit account name. If your Reddit account is, e.g., u/spez, then the Reddit account name you should enter is just "spez".
+
+```json
+{
+    "devices": {},
+    "admins": [
+        "your-reddit-account"
+    ],
+    "developers": [
+        "your-reddit-account"
+    ],
+    "registered-voters": [
+        "your-reddit-account"
+    ]
+}
+```
+
+### Running the server
+
 With the `config.json` in place, run the server like so:
 ```
 python3 ./server-manager.py config.json
 ```
+
+Congratulations! If all went well, you should now have your own instance of Res Publica.
