@@ -1,5 +1,5 @@
 import { max, removeItem, sortBy } from "../util";
-import { RateOptionsBallot, RateOptionsBallotType, VoteAndBallots, VoteOption } from "./types";
+import { RateOptionsBallot, RateOptionsBallotType, Vote, VoteAndBallots, VoteOption } from "./types";
 
 /**
  * A Kotze-Pereira ballot in a specific round.
@@ -105,6 +105,11 @@ type SPSVRoundInProgress = {
     kind: RoundKind;
 
     /**
+     * The vote that led to this SPSV round.
+     */
+    vote: Vote;
+
+    /**
      * The set of all KP ballots for this round.
      */
     ballots: KotzePereiraBallot[];
@@ -204,6 +209,7 @@ function tallySPSVWithRoundsNoResignations(
         // Build a round in progress.
         let latestRound: SPSVRoundInProgress = {
             kind: createKind(elected.length),
+            vote: voteAndBallots.vote,
             ballots: virtualBallots,
             candidates: spsvCandidates,
             electedCandidates: [...elected]
