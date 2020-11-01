@@ -6,6 +6,8 @@ import Ticket from "../../components/election/ticket";
 import CandidatePanel from "../../components/election/candidate-panel";
 import BallotDots from "../../components/election/ballot-dots";
 import { sortBy } from "../util";
+import RateOptionsBallotSummary from "../../components/election/rate-options-ballot-summary";
+import { renderCandidateName } from "../../components/election/candidate-name";
 
 function idToCandidate(candidateId: string, round: SPSVRound): SPSVCandidate {
     let data = round.candidates.find(x => x.option.id === candidateId);
@@ -13,14 +15,6 @@ function idToCandidate(candidateId: string, round: SPSVRound): SPSVCandidate {
         throw new Error(`Cannot find candidate ${candidateId}.`);
     }
     return data;
-}
-
-function renderCandidateName(candidate: SPSVCandidate): ReactNode {
-    if (candidate.option.ticket) {
-        return <Ticket candidates={candidate.option.ticket} />;
-    } else {
-        return candidate.option.name;
-    }
 }
 
 /**
@@ -33,14 +27,14 @@ function renderRoundName(round: SPSVRound): ReactNode {
             return `Round ${round.kind.seatIndex + 1}`;
         case "replacement":
             let option = idToCandidate(round.kind.resignerId, round);
-            return <span>Replacement for {renderCandidateName(option)}</span>;
+            return <span>Replacement for {renderCandidateName(option.option)}</span>;
     }
 }
 
 function visualizeBallot(ballot: RateOptionsBallot, virtualBallots: KotzePereiraBallot[], round: SPSVRound): ReactNode {
     return <BallotDots
         dotWeights={virtualBallots.map(y => getBallotWeight(y, round))}
-        hoverCard={ballot.id} />;
+        hoverCard={<RateOptionsBallotSummary ballot={ballot} vote={round.vote} />} />;
 }
 
 function visualizeCandidate(candidateId: string, round: SPSVRound): JSX.Element {
@@ -61,7 +55,7 @@ function visualizeCandidate(candidateId: string, round: SPSVRound): JSX.Element 
     }
 
     return <CandidatePanel isWinner={candidateId === round.roundWinner}>
-        <Typography variant="h4">{renderCandidateName(data)}</Typography>
+        <Typography variant="h4">{renderCandidateName(data.option)}</Typography>
         Score: {getCandidateScore(data, round)}
         <div>
             {Array.of(...ballots.entries()).map(([x, y]) => visualizeBallot(x, y, round))}

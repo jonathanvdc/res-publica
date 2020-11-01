@@ -1,5 +1,5 @@
 import { Tooltip } from "@material-ui/core";
-import React, { Component, ReactNode } from "react"
+import React, { Component, ReactNode } from "react";
 
 type Props = {
     /**
@@ -45,7 +45,10 @@ class BallotDots extends Component<Props, State> {
                     width: "0.5em",
                     height: "0.5em",
                     borderRadius: "100%",
-                    background: `linear-gradient(to right, #159957 ${toPercentage(w - 0.01)}, #1599571e ${toPercentage(w + 0.01)})`}} />)}
+                    borderStyle: this.props.hoverCard ? "solid" : "none",
+                    borderColor: this.state.isCardOpen ? "#154399" : "transparent",
+                    borderWidth: this.props.hoverCard ? "2px" : "0",
+                    background: `linear-gradient(to right, #159957 ${toPercentage(w - 0.01)}, #1599571e ${toPercentage(w + 0.01)})`}}/>)}
         </div>;
         if (this.props.hoverCard) {
             return <Tooltip
