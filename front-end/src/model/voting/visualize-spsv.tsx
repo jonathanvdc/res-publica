@@ -56,7 +56,7 @@ function visualizeCandidate(candidateId: string, round: SPSVRound): JSX.Element 
     return <CandidatePanel isWinner={candidateId === round.roundWinner}>
         <Typography variant="h4">{renderCandidateName(data.option)}</Typography>
         Score: {getCandidateScore(data, round).toFixed(2)}
-        <div style={{display: "flex", flexWrap: "wrap"}}>
+        <div style={{display: "flex", flexWrap: "wrap", minWidth: "2em", width: "100%"}}>
             {Array.of(...ballots.entries()).map(([x, y]) => visualizeBallot(x, y, round))}
         </div>
     </CandidatePanel>;
