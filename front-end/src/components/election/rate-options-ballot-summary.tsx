@@ -36,7 +36,16 @@ function generateDotsFromRating(rating: number): ReactNode {
 class RateOptionsBallotSummary extends PureComponent<Props> {
     renderCandidate(optionId: string) {
         let option = this.props.vote.options.find(x => x.id === optionId)!;
-        return option.name;
+        if (option.ticket) {
+            let mainCandidate = option.ticket[0];
+            if (mainCandidate.affiliation) {
+                return `${mainCandidate.name} (${mainCandidate.affiliation})`;
+            } else {
+                return mainCandidate.name;
+            }
+        } else {
+            return option.name;
+        }
     }
 
     renderRating(optionId: string, rating: number, isWinner: boolean) {
