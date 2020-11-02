@@ -290,7 +290,7 @@ function renderVoteOption(
                         focusRipple
                         onClick={() => changeBallot({ selectedOptionId: option.id })}>
 
-                        {description}
+                        <div>{description}</div>
                     </ButtonBase>
                 ];
             }

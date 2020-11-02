@@ -46,7 +46,7 @@ class BallotDots extends Component<Props, State> {
                     height: "0.5em",
                     borderRadius: "100%",
                     borderStyle: this.props.hoverCard ? "solid" : "none",
-                    borderColor: this.state.isCardOpen ? "#154399" : "transparent",
+                    borderColor: this.state.isCardOpen ? "#154399" : "#159957",
                     borderWidth: this.props.hoverCard ? "2px" : "0",
                     background: `linear-gradient(to right, #159957 ${toPercentage(w - 0.01)}, #1599571e ${toPercentage(w + 0.01)})`}}/>)}
         </div>;
