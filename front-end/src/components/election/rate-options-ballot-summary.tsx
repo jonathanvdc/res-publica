@@ -17,6 +17,12 @@ type Props = {
     vote: Vote;
 
     /**
+     * An optional description that gets sandwiched between the
+     * ballot ID and the elected candidates.
+     */
+    description?: ReactNode;
+
+    /**
      * The IDs of all elected candidates on this ballot.
      */
     electedCandidates?: string[];
@@ -71,6 +77,11 @@ class RateOptionsBallotSummary extends PureComponent<Props> {
 
         return <div>
             <Typography>{this.props.ballot.id}</Typography>
+            <hr/>
+            {this.props.description && <React.Fragment>
+                {this.props.description}
+                <hr/>
+            </React.Fragment>}
             {elected.map(({ optionId, rating }) => this.renderRating(optionId, rating, true))}
             {unelected.map(({ optionId, rating }) => this.renderRating(optionId, rating, false))}
         </div>;

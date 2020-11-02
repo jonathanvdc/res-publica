@@ -31,9 +31,15 @@ function renderRoundName(round: SPSVRound): ReactNode {
 }
 
 function visualizeBallot(ballot: RateOptionsBallot, virtualBallots: KotzePereiraBallot[], round: SPSVRound): ReactNode {
+    let weights = virtualBallots.map(y => getBallotWeight(y, round));
+    let totalWeight = weights.reduce((previous, current) => previous + current, 0);
     return <BallotDots
-        dotWeights={virtualBallots.map(y => getBallotWeight(y, round))}
-        hoverCard={<RateOptionsBallotSummary ballot={ballot} vote={round.vote} electedCandidates={round.electedCandidates} />} />;
+        dotWeights={weights}
+        hoverCard={<RateOptionsBallotSummary
+            ballot={ballot}
+            vote={round.vote}
+            description={`Weighted score: ${totalWeight.toFixed(2)}`}
+            electedCandidates={round.electedCandidates} />} />;
 }
 
 function visualizeCandidate(candidateId: string, round: SPSVRound): JSX.Element {
