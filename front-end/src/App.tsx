@@ -395,6 +395,7 @@ class RegisteredVotersRoute extends FetchedStateComponent<{ match: any, history:
     let onAdd = data.optionalAPIs.includes(OptionalAPI.addRegisteredVoter) ? this.onAddVoter.bind(this) : undefined;
     let onRemove = data.optionalAPIs.includes(OptionalAPI.removeRegisteredVoter) ? this.onRemoveVoter.bind(this) : undefined;
     return <TitlePaper title="Registered Voters">
+      <Typography>There are currently {data.voters.length} registered voters.</Typography>
       <RegisteredVotersList registeredVoters={data.voters} addRegisteredVoter={onAdd} removeRegisteredVoter={onRemove} />
     </TitlePaper>;
   }
