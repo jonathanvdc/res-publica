@@ -168,6 +168,23 @@ function kotzePereira(ballot: RateOptionsBallot, type: RateOptionsBallotType): K
     return virtualBallots;
 }
 
+/**
+ * Computes candidate scores in a given round.
+ * @param round An SPSV round.
+ */
+export function getCandidateScores(round: SPSVRoundInProgress): Map<string, number> {
+    let candidateScores = new Map<string, number>();
+    for (let ballot of round.ballots) {
+        let notYetElected = getApprovedButUnelectedCandidates(ballot, round);
+        let weight = getBallotWeight(ballot, round);
+        for (let candidateId of notYetElected) {
+            let previousScore = candidateScores.get(candidateId) || 0;
+            candidateScores.set(candidateId, previousScore + weight);
+        }
+    }
+    return candidateScores;
+}
+
 function tallySPSVWithRoundsNoResignations(
     voteAndBallots: VoteAndBallots,
     seats?: number,
@@ -216,15 +233,7 @@ function tallySPSVWithRoundsNoResignations(
         };
 
         // Figure out which candidate gets the highest score during that round.
-        let candidateScores = new Map<string, number>();
-        for (let ballot of virtualBallots) {
-            let notYetElected = getApprovedButUnelectedCandidates(ballot, latestRound);
-            let weight = getBallotWeight(ballot, latestRound);
-            for (let candidateId of notYetElected) {
-                let previousScore = candidateScores.get(candidateId) || 0;
-                candidateScores.set(candidateId, previousScore + weight);
-            }
-        }
+        let candidateScores = getCandidateScores(latestRound);
         let unelectedCandidates = sortedCandidates.filter(x => !elected.includes(x));
         let bestCandidate = max(unelectedCandidates, x => candidateScores.get(x) || 0);
         removeItem(unelectedCandidates, bestCandidate);
