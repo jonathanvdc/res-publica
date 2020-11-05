@@ -1,5 +1,5 @@
 import React, { ReactNode } from "react";
-import { Table, TableBody, TableCell, TableHead, TableRow, Typography } from "@material-ui/core";
+import { Typography } from "@material-ui/core";
 import { getBallotWeight, getCandidateScore, getCandidateScores, KotzePereiraBallot, SPSVCandidate, SPSVRound, tallySPSVWithRounds } from "./spsv";
 import { RateOptionsBallot, VoteAndBallots } from "./types";
 import CandidatePanel from "../../components/election/candidate-panel";
@@ -7,8 +7,7 @@ import BallotDots from "../../components/election/ballot-dots";
 import { sortBy } from "../util";
 import RateOptionsBallotSummary from "../../components/election/rate-options-ballot-summary";
 import { renderCandidateName } from "../../components/election/candidate-name";
-import UpIcon from '@material-ui/icons/ExpandLess';
-import DownIcon from '@material-ui/icons/ExpandMore';
+import CandidateImpactTable, { CandidateImpact } from "../../components/election/candidate-impact-table";
 
 function idToCandidate(candidateId: string, round: SPSVRound): SPSVCandidate {
     let data = round.candidates.find(x => x.option.id === candidateId);
@@ -43,36 +42,6 @@ function visualizeBallot(ballot: RateOptionsBallot, virtualBallots: KotzePereira
             description={`Weighted score: ${totalWeight.toFixed(2)}`}
             electedCandidates={round.electedCandidates} />} />;
 }
-
-/**
- * The impact of a candidate's election on another candidate.
- */
-type CandidateImpact = {
-    /**
-     * The ID of the elected candidate.
-     */
-    electedCandidateId: string;
-
-    /**
-     * The other candidate's score before the candidate got elected.
-     */
-    scoreBefore: number;
-
-    /**
-     * The total score before the candidate got elected.
-     */
-    totalScoreBefore: number;
-
-    /**
-     * The other candidate's score after the candidate got elected.
-     */
-    scoreAfter: number;
-
-    /**
-     * The total score after the candidate got elected.
-     */
-    totalScoreAfter: number;
-};
 
 /**
  * Computes the effect of each previously-elected candidate on each currently-eligible
@@ -113,7 +82,7 @@ function computeCandidateImpacts(round: SPSVRound): Map<string, CandidateImpact[
         let impactList: CandidateImpact[] = [];
         for (let i = 0; i < v.length - 1; i++) {
             impactList.push({
-                electedCandidateId: round.electedCandidates[i],
+                electedCandidate: idToCandidate(round.electedCandidates[i], round).option,
                 scoreBefore: v[i],
                 scoreAfter: v[i + 1],
                 totalScoreBefore: totalScores[i],
@@ -124,60 +93,6 @@ function computeCandidateImpacts(round: SPSVRound): Map<string, CandidateImpact[
     }
 
     return impacts;
-}
-
-function renderPercentage(value: number, precision: number = 1): string {
-    return `${(value * 100).toFixed(precision)}%`;
-}
-
-function renderChange(impact: CandidateImpact) {
-    let diff = (impact.scoreAfter / impact.totalScoreAfter) / (impact.scoreBefore / impact.totalScoreBefore) - 1;
-    if (diff === 0) {
-        return renderPercentage(diff);
-    } else if (diff < 0) {
-        return <React.Fragment>
-            {renderPercentage(-diff)}
-            <DownIcon fontSize="inherit" htmlColor="#b71c1c" />
-        </React.Fragment>;
-    } else {
-        return <React.Fragment>
-            {renderPercentage(diff)}
-            <UpIcon fontSize="inherit" htmlColor="#1b5e20" />
-        </React.Fragment>;
-    }
-}
-
-function renderCandidateImpactTable(round: SPSVRound, impacts: CandidateImpact[]): JSX.Element {
-    return <Table style={{width: "auto"}}>
-        <TableHead>
-            <TableRow>
-                <TableCell>Elected Candidate</TableCell>
-                <TableCell align="right">Share of Total Score</TableCell>
-                <TableCell align="right">Change</TableCell>
-            </TableRow>
-        </TableHead>
-        <TableBody>
-            <TableRow key="pre-vote">
-                <TableCell component="th" scope="row" />
-                <TableCell align="right">
-                    {renderPercentage(impacts[0].scoreBefore / impacts[0].totalScoreBefore)}
-                </TableCell>
-                <TableCell align="right" />
-            </TableRow>
-            {impacts.map((impact, i) =>
-                <TableRow key={impact.electedCandidateId}>
-                    <TableCell component="th" scope="row">
-                        {renderCandidateName(idToCandidate(impact.electedCandidateId, round).option)}
-                    </TableCell>
-                    <TableCell align="right">
-                        {renderPercentage(impact.scoreAfter / impact.totalScoreAfter)}
-                    </TableCell>
-                    <TableCell align="right">
-                        {renderChange(impact)}
-                    </TableCell>
-                </TableRow>)}
-        </TableBody>
-    </Table>;
 }
 
 function visualizeCandidate(candidateId: string, round: SPSVRound, impacts: CandidateImpact[]): JSX.Element {
@@ -210,7 +125,7 @@ function visualizeCandidate(candidateId: string, round: SPSVRound, impacts: Cand
                 <hr/>
                 <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center"}}>
                     <Typography variant="caption">Explore how previous candidates affected the score.</Typography>
-                    {renderCandidateImpactTable(round, impacts)}
+                    <CandidateImpactTable impacts={impacts} />
                 </div>
             </React.Fragment>}
     </CandidatePanel>;
