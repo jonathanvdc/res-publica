@@ -7,6 +7,8 @@ import BallotDots from "../../components/election/ballot-dots";
 import { sortBy } from "../util";
 import RateOptionsBallotSummary from "../../components/election/rate-options-ballot-summary";
 import { renderCandidateName } from "../../components/election/candidate-name";
+import UpIcon from '@material-ui/icons/ExpandLess';
+import DownIcon from '@material-ui/icons/ExpandMore';
 
 function idToCandidate(candidateId: string, round: SPSVRound): SPSVCandidate {
     let data = round.candidates.find(x => x.option.id === candidateId);
@@ -128,6 +130,23 @@ function renderPercentage(value: number, precision: number = 1): string {
     return `${(value * 100).toFixed(precision)}%`;
 }
 
+function renderChange(impact: CandidateImpact) {
+    let diff = (impact.scoreAfter / impact.totalScoreAfter) / (impact.scoreBefore / impact.totalScoreBefore) - 1;
+    if (diff === 0) {
+        return renderPercentage(diff);
+    } else if (diff < 0) {
+        return <React.Fragment>
+            {renderPercentage(-diff)}
+            <DownIcon fontSize="inherit" htmlColor="#b71c1c" />
+        </React.Fragment>;
+    } else {
+        return <React.Fragment>
+            {renderPercentage(diff)}
+            <UpIcon fontSize="inherit" htmlColor="#1b5e20" />
+        </React.Fragment>;
+    }
+}
+
 function renderCandidateImpactTable(round: SPSVRound, impacts: CandidateImpact[]): JSX.Element {
     return <Table style={{width: "auto"}}>
         <TableHead>
@@ -154,7 +173,7 @@ function renderCandidateImpactTable(round: SPSVRound, impacts: CandidateImpact[]
                         {renderPercentage(impact.scoreAfter / impact.totalScoreAfter)}
                     </TableCell>
                     <TableCell align="right">
-                        {renderPercentage(impact.scoreAfter / impact.totalScoreAfter - impact.scoreBefore / impact.totalScoreBefore)}
+                        {renderChange(impact)}
                     </TableCell>
                 </TableRow>)}
         </TableBody>
