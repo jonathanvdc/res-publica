@@ -8,6 +8,7 @@ import { sortBy } from "../util";
 import RateOptionsBallotSummary from "../../components/election/rate-options-ballot-summary";
 import { renderCandidateName } from "../../components/election/candidate-name";
 import CandidateImpactTable, { CandidateImpact } from "../../components/election/candidate-impact-table";
+import BallotDotsPanel from "../../components/election/ballot-dots-panel";
 
 function idToCandidate(candidateId: string, round: SPSVRound): SPSVCandidate {
     let data = round.candidates.find(x => x.option.id === candidateId);
@@ -115,11 +116,9 @@ function visualizeCandidate(candidateId: string, round: SPSVRound, impacts: Cand
     return <CandidatePanel isWinner={candidateId === round.roundWinner}>
         <Typography variant="h4">{renderCandidateName(data.option)}</Typography>
         Score: {getCandidateScore(data, round).toFixed(2)}
-        <div style={{display: "flex", flexDirection: "row" }}>
-            <div style={{display: "flex", flexWrap: "wrap", flexBasis: "min-content", flexGrow: 1, alignItems: "center", justifyContent: "center"}}>
-                {Array.of(...ballots.entries()).map(([x, y]) => visualizeBallot(x, y, round))}
-            </div>
-        </div>
+        <BallotDotsPanel>
+            {Array.of(...ballots.entries()).map(([x, y]) => visualizeBallot(x, y, round))}
+        </BallotDotsPanel>
         {impacts.length > 0 &&
             <React.Fragment>
                 <hr/>
