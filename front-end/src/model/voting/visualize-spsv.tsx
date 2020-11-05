@@ -200,8 +200,10 @@ function visualizeCandidate(candidateId: string, round: SPSVRound, impacts: Cand
     return <CandidatePanel isWinner={candidateId === round.roundWinner}>
         <Typography variant="h4">{renderCandidateName(data.option)}</Typography>
         Score: {getCandidateScore(data, round).toFixed(2)}
-        <div style={{display: "flex", flexWrap: "wrap", minWidth: "2em", width: "100%", alignItems: "center", justifyContent: "center"}}>
-            {Array.of(...ballots.entries()).map(([x, y]) => visualizeBallot(x, y, round))}
+        <div style={{display: "flex", flexDirection: "row" }}>
+            <div style={{display: "flex", flexWrap: "wrap", flexBasis: "min-content", flexGrow: 1, alignItems: "center", justifyContent: "center"}}>
+                {Array.of(...ballots.entries()).map(([x, y]) => visualizeBallot(x, y, round))}
+            </div>
         </div>
         {impacts.length > 0 &&
             <React.Fragment>
