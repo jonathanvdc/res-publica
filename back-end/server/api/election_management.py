@@ -31,6 +31,17 @@ def create_election_management_blueprint(device_index: DeviceIndex, vote_index: 
         vote_id = get_json_arg(request, 'voteId')
         return jsonify(vote_index.cancel_vote(vote_id))
 
+    @bp.route('/add-vote-option', methods=['POST'])
+    def add_vote_option():
+        """Adds a candidate to the ballot for an election."""
+        device = authenticate(request, device_index, True)
+        if not device:
+            abort(403)
+
+        vote_id = get_json_arg(request, 'voteId')
+        candidate = get_json_arg(request, 'option')
+        return jsonify(vote_index.add_option(vote_id, candidate, device))
+
     @bp.route('/resign', methods=['POST'])
     def process_resignation():
         """Marks a candidate as having resigned from their seat."""
