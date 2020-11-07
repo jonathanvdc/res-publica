@@ -5,7 +5,7 @@ import { VoteAndBallots, Ballot, Vote, isActive, isCompletableBallot, completeBa
 import VoteCard from "../vote-card";
 import DropDownButton from "../drop-down-button";
 import "./vote-page.css";
-import { DangerButton, DangerButtonWithForm } from "../danger-button";
+import { DangerButton } from "../danger-button";
 import { CheckFab } from "../check-fab";
 import AddCandidateButton from "../add-candidate-button";
 
