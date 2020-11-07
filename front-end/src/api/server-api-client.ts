@@ -1,5 +1,5 @@
 import { Authenticator } from "./auth";
-import { VoteAndBallots, Ballot, Vote, FinishedBallot } from "../model/vote";
+import { VoteAndBallots, Ballot, Vote, FinishedBallot, VoteOption } from "../model/vote";
 import { APIClient, ElectionManagementClient, OptionalAPIClient, OptionalAPI, postJSON } from "./api-client";
 import { RedditAuthenticator } from "./reddit-auth";
 
@@ -85,6 +85,14 @@ class ServerElectionManagementClient implements ElectionManagementClient {
             deviceId: this.auth.deviceId,
             url,
             discernCandidates
+        });
+    }
+
+    addVoteOption(voteId: string, option: VoteOption): Promise<Vote | { error: string }> {
+        return postJSON('/api/election-management/add-vote-option', {
+            deviceId: this.auth.deviceId,
+            voteId,
+            option
         });
     }
 

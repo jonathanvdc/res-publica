@@ -1,6 +1,6 @@
 import React, { Suspense, Component } from 'react';
 import './App.css';
-import { VoteAndBallots, Vote, Ballot, isActive, tryGetTallyVisualizer } from './model/vote';
+import { VoteAndBallots, Vote, Ballot, isActive, tryGetTallyVisualizer, VoteOption } from './model/vote';
 import { Route, BrowserRouter, Prompt } from 'react-router-dom';
 import { createMuiTheme, MuiThemeProvider } from '@material-ui/core/styles';
 import { green } from '@material-ui/core/colors';
@@ -225,6 +225,17 @@ class VoteRoute extends FetchedStateComponent<{ match: any, history: any, isAdmi
     }
   }
 
+  async onAddOption(voteId: string, option: VoteOption) {
+    let vote = await apiClient.electionManagement.addVoteOption(voteId, option);
+    console.log(vote);
+    if ('error' in vote) {
+      this.setState({ hasConnected: true, error: vote.error });
+    } else {
+      let oldVote = this.state.data?.vote;
+      this.setState({ ...this.state, data: { ...this.state.data, vote: { ...oldVote!, vote } } });
+    }
+  }
+
   renderState(data: VoteRouteState): JSX.Element {
     if (!data.vote && !data.ballotCast) {
       return <div>
@@ -244,7 +255,8 @@ class VoteRoute extends FetchedStateComponent<{ match: any, history: any, isAdmi
           isAdmin={this.props.isAdmin}
           onCastBallot={this.onCastBallot.bind(this)}
           onCancelVote={() => this.onCancelVote(data.vote!.vote.id)}
-          onResign={optionId => this.onResign(data.vote!.vote.id, optionId)} />
+          onResign={optionId => this.onResign(data.vote!.vote.id, optionId)}
+          onAddOption={option => this.onAddOption(data.vote!.vote.id, option)} />
       </React.Fragment>;
     } else {
       return <VoteConfirmationPage ballotId={data.ballotId!} />;
