@@ -50,6 +50,7 @@ class AddCandidateButton extends PureComponent<AddCandidateButtonProps> {
                             margin="dense"
                             label="Description"
                             fullWidth
+                            multiline
                             value={state.description}
                             onChange={event => onUpdate({ ...state, description: event.target.value })}
                         />
