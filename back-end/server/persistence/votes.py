@@ -108,6 +108,9 @@ class VoteIndex(object):
                     'rating': vote['type']['min']
                 })
 
+        # Write the updated vote to disk.
+        self.write_vote(voteAndBallots)
+
         # Transmit the new vote.
         return self.prepare_for_transmission(voteAndBallots, device)['vote']
 
