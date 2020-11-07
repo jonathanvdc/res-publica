@@ -1,5 +1,5 @@
 import { Authenticator } from "./auth";
-import { VoteAndBallots, Ballot, Vote, FinishedBallot } from "../model/vote";
+import { VoteAndBallots, Ballot, Vote, FinishedBallot, VoteOption } from "../model/vote";
 import { NetworkError } from "../model/exceptions";
 
 /**
@@ -134,6 +134,13 @@ export interface ElectionManagementClient {
      * @param optionId The candidate that will resign, as an option ID.
      */
     resign(voteId: string, optionId: string): Promise<Vote | { error: string }>;
+
+    /**
+     * Adds an option to a vote.
+     * @param voteId The vote to update.
+     * @param option The option to add to the vote's ballots.
+     */
+    addVoteOption(voteId: string, option: VoteOption): Promise<Vote | { error: string }>;
 }
 
 async function requestJSON(method: string, url: string, data: any) {

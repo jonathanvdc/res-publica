@@ -1,12 +1,13 @@
 import React, { Component } from "react";
 import { Button, CircularProgress, Paper, Typography, DialogTitle, Dialog, DialogContent, DialogContentText, DialogActions } from "@material-ui/core";
 import { Link } from "react-router-dom";
-import { VoteAndBallots, Ballot, Vote, isActive, isCompletableBallot, completeBallot, isCompleteBallot, findIncompleteOptions, tally, tryGetTallyVisualizer } from "../../model/vote";
+import { VoteAndBallots, Ballot, Vote, isActive, isCompletableBallot, completeBallot, isCompleteBallot, findIncompleteOptions, tally, tryGetTallyVisualizer, VoteOption } from "../../model/vote";
 import VoteCard from "../vote-card";
 import DropDownButton from "../drop-down-button";
 import "./vote-page.css";
-import { DangerButton } from "../danger-button";
+import { DangerButton, DangerButtonWithForm } from "../danger-button";
 import { CheckFab } from "../check-fab";
+import AddCandidateButton from "../add-candidate-button";
 
 type Props = {
     voteAndBallots: VoteAndBallots;
@@ -19,6 +20,7 @@ type Props = {
      * A callback for when a winner resigns from their seat.
      */
     onResign?: (optionId: string) => void;
+    onAddOption?: (option: VoteOption) => void;
 };
 
 type State = {
@@ -30,6 +32,7 @@ type AdminZoneProps = {
     data: VoteAndBallots;
     onCancelVote?: () => void;
     onResign?: (optionId: string) => void;
+    onAddOption?: (option: VoteOption) => void;
 };
 
 type AdminZoneState = {
@@ -74,6 +77,7 @@ class AdminZone extends Component<AdminZoneProps, AdminZoneState> {
         let onResign = this.props.onResign;
         let canResign = !isActive(data.vote) && onResign &&
             data.vote.options.length - (data.vote.resigned?.length || 0) > 0;
+        let canAddOption = !isActive(data.vote) && onResign;
 
         if (!canCancelVote && !canResign) {
             return undefined;
@@ -95,6 +99,18 @@ class AdminZone extends Component<AdminZoneProps, AdminZoneState> {
                             </span>,
                             () => onResign!(optionId))}
                 />}
+            {canAddOption &&
+                <AddCandidateButton onAddCandidate={data => {
+                    this.props.onAddOption!({
+                        id: data.name.toLowerCase(),
+                        name: data.name,
+                        description: data.description,
+                        ticket: [{
+                            name: data.name,
+                            affiliation: data.affiliation
+                        }]
+                    })
+                }}>Add Candidate</AddCandidateButton>}
             {canCancelVote &&
                 <DangerButton
                     variant="contained"
@@ -197,7 +213,7 @@ class VotePage extends Component<Props, State> {
     }
 
     renderAdminZone(data: VoteAndBallots) {
-        return <AdminZone data={data} onCancelVote={this.props.onCancelVote} onResign={this.props.onResign} />;
+        return <AdminZone data={data} onCancelVote={this.props.onCancelVote} onResign={this.props.onResign} onAddOption={this.props.onAddOption} />;
     }
 
     render() {
