@@ -86,6 +86,31 @@ class VoteIndex(object):
         self.write_vote(vote)
         return ballot
 
+    def add_option(self, vote_id: VoteId, option, device: RegisteredDevice) -> Vote:
+        """Adds a vote option to a vote that may already be active."""
+        self.heartbeat()
+
+        voteAndBallots = self.votes[vote_id]
+        vote = voteAndBallots['vote']
+        if not is_vote_active(voteAndBallots):
+            return { 'error': 'Vote already closed. Sorry!' }
+        elif any(opt['id'] == option['id'] for opt in vote['options']):
+            return { 'error': f'A vote option with ID {option["id"]} already exists.' }
+
+        vote['options'].append(option)
+
+        if 'min' in vote['type']:
+            # Fix all ballots by autofilling them with a rating of zero
+            # for the new candidate.
+            for ballot in voteAndBallots['ballots']:
+                ballot['ratingPerOption'].append({
+                    'optionId': option['id'],
+                    'rating': vote['type']['min']
+                })
+
+        # Transmit the new vote.
+        return self.prepare_for_transmission(voteAndBallots, device)['vote']
+
     def mark_resignation(self, vote_id: VoteId, optionId: OptionId, device: RegisteredDevice) -> Vote:
         """Indicates that a candidate has resigned from their seat."""
         self.heartbeat()
