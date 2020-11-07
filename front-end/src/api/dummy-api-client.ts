@@ -1,7 +1,7 @@
 import { Authenticator, makeid } from "./auth";
 import { DummyAuthenticator } from "./dummy-auth";
 import { APIClient, ElectionManagementClient, OptionalAPIClient, OptionalAPI } from "./api-client";
-import { Vote, VoteAndBallots, Ballot, isActive, FinishedBallot } from "../model/vote";
+import { Vote, VoteAndBallots, Ballot, isActive, FinishedBallot, VoteOption } from "../model/vote";
 
 /**
  * An API client that fakes all interactions with the server.
@@ -142,6 +142,11 @@ class DummyElectionManagementClient implements ElectionManagementClient {
     }
 
     resign(voteId: string, optionId: string): Promise<Vote | { error: string }> {
+        // TODO: implement this
+        throw new Error("Method not implemented.");
+    }
+
+    addVoteOption(voteId: string, option: VoteOption): Promise<Vote | { error: string }> {
         // TODO: implement this
         throw new Error("Method not implemented.");
     }

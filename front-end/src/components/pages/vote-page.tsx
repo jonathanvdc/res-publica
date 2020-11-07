@@ -77,7 +77,7 @@ class AdminZone extends Component<AdminZoneProps, AdminZoneState> {
         let onResign = this.props.onResign;
         let canResign = !isActive(data.vote) && onResign &&
             data.vote.options.length - (data.vote.resigned?.length || 0) > 0;
-        let canAddOption = !isActive(data.vote) && onResign;
+        let canAddOption = isActive(data.vote) && onResign;
 
         if (!canCancelVote && !canResign) {
             return undefined;
