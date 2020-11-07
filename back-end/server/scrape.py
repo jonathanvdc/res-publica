@@ -39,7 +39,7 @@ def split_on_one_of(value: str, separators: List[str], maxsplit=None) -> str:
     return [value]
 
 def parse_candidate(candidate_name: str, affiliation_separators: List[str]):
-    without_prefix = strip_reddit_prefix(candidate_name.strip())
+    without_prefix = strip_reddit_prefix(candidate_name.strip().strip(''.join(affiliation_separators)))
     split = split_on_one_of(without_prefix, affiliation_separators, 1)
     if len(split) == 1:
         return { "name": without_prefix.strip() }
