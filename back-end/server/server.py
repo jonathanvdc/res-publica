@@ -160,6 +160,10 @@ def create_app(config, bottle_path, data_path='data', static_folder=DEFAULT_STAT
             send_to_log(f'Failed to log into reddit with error: {e}')
             raise
 
+        # Don't allow suspended accounts to sign in.
+        if redditor.is_suspended:
+            return redirect(f'auth-failed?error=account-suspended')
+
         # Check that the user meetings the eligibility requirements.
         if not device_index.is_eligible(redditor):
             data = {
