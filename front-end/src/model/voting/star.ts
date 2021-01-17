@@ -102,11 +102,17 @@ export function tallySTAR(voteAndBallots: VoteAndBallots, seats?: number): strin
 
     let rng = createRng(voteAndBallots.vote);
 
+    let candidates = voteAndBallots.vote.options;
+    let resignations = voteAndBallots.vote.resigned || [];
+
     let winners: string[] = [];
     let ballotType = voteAndBallots.vote.type as RateOptionsBallotType;
-    seats = Math.min(seats || ballotType.positions, voteAndBallots.vote.options.length);
+    seats = Math.min(seats || ballotType.positions, candidates.length - resignations.length);
     while (winners.length < seats) {
-        let eligible = voteAndBallots.vote.options.map(x => x.id).filter(x => !winners.includes(x));
+        let eligible = candidates
+            .map(x => x.id)
+            .filter(x => !winners.includes(x) && !resignations.includes(x));
+
         if (eligible.length === 1) {
             winners.push(eligible[0]);
             break;
