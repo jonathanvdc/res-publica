@@ -1,4 +1,4 @@
-import { VoteAndBallots, VoteOption, tally } from "./vote";
+import { VoteAndBallots, VoteOption, tally, tallyOrder } from "../vote";
 
 function generateVoteFromBallots(ballots: number[][], tally: "star" | "spsv", seats: number): VoteAndBallots {
     let options: VoteOption[] = [];
@@ -78,4 +78,39 @@ test('STAR breaks runoff tie', () => {
     ], 'star', 1);
 
     expect(tally(vote)).toEqual(['option-3']);
+});
+
+test('STAR generates sensible replacements', () => {
+    let vote = generateVoteFromBallots([
+        [1, 0, 2, 5],
+    ], 'star', 1);
+
+    let [winner] = tally(vote);
+    expect(winner).toEqual('option-3');
+    let [replacement] = tally({ ...vote, vote: { ...vote.vote, resigned: [winner] } });
+    expect(replacement).toEqual('option-2');
+});
+
+
+test('STAR generates consistent replacements', () => {
+    let vote = generateVoteFromBallots([
+        [0, 0, 2, 2],
+        [0, 0, 2, 2],
+        [0, 5, 2, 4],
+        [0, 4, 2, 4],
+        [0, 5, 1, 4],
+        [0, 3, 1, 5],
+        [0, 3, 1, 5],
+        [0, 3, 1, 5],
+        [0, 3, 1, 5],
+    ], 'star', 1);
+
+    let order = tallyOrder(vote);
+    let resigned = [];
+
+    for (let expectedWinner of order) {
+        let [winner] = tally({ ...vote, vote: { ...vote.vote, resigned } });
+        expect(winner).toEqual(expectedWinner);
+        resigned.push(winner);
+    }
 });
