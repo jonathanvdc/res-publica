@@ -19,10 +19,6 @@ type State = {
 abstract class ElectionCard<TProps extends Props, TState extends State>
     extends Component<TProps, TState> {
 
-    constructor(props: TProps) {
-        super(props);
-    }
-
     /**
      * Builds an initial state.
      */
