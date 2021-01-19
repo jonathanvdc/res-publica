@@ -38,11 +38,6 @@ type State = {
      * Tells if descriptions should be collapsed by default.
      */
     collapseDescriptionsByDefault: boolean;
-
-    /**
-     * The user's ballot.
-     */
-    ballot: Ballot | undefined;
 };
 
 type TimeLeft = {
@@ -106,15 +101,6 @@ const StyledToggleButtonGroup = withStyles((theme) => ({
     }
   }))(ToggleButtonGroup);
 
-function createEmptyBallot(type: BallotType): Ballot | undefined {
-    switch (getBallotKind(type)) {
-        case "choose-one":
-            return undefined;
-        case "rate-options":
-            return { ratingPerOption: [] };
-    }
-}
-
 /**
  * A widget that allows users to inspect and interact with an active election.
  */
@@ -129,8 +115,7 @@ class ActiveElectionCard extends ElectionCard<Props, State> {
         return {
             ...super.buildInitialState(),
             collapseDescriptionsByDefault: getPreferences().collapseDescriptionsByDefault,
-            areDescriptionsCollapsible: getBallotKind(this.props.voteAndBallots.vote.type) === 'rate-options',
-            ballot: this.props.voteAndBallots.ownBallot || createEmptyBallot(this.props.voteAndBallots.vote.type)
+            areDescriptionsCollapsible: getBallotKind(this.props.voteAndBallots.vote.type) === 'rate-options'
         };
     }
 
@@ -188,7 +173,7 @@ class ActiveElectionCard extends ElectionCard<Props, State> {
             case 'rate-options':
             {
                 let ballotType = vote.type as RateOptionsBallotType;
-                let optionBallot = this.props.voteAndBallots.ownBallot as RateOptionsBallot;
+                let optionBallot = (this.props.voteAndBallots.ownBallot || { ratingPerOption: [] }) as RateOptionsBallot;
                 let ratingOrNull = optionBallot.ratingPerOption.find(val => val.optionId === option.id);
                 let buttons = [];
                 for (let i = ballotType.min; i <= ballotType.max; i++) {
