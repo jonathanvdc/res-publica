@@ -12,7 +12,7 @@ export type UserPreferences = {
  * The default user preferences.
  */
 const defaultPreferences: UserPreferences = {
-    collapseDescriptionsByDefault: false
+    collapseDescriptionsByDefault: true
 };
 
 const userPrefsKey = "userPreferences";
