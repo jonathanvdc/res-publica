@@ -4,10 +4,11 @@ import PlusIcon from '@material-ui/icons/Add';
 import { Button, Theme, withStyles, TextField, CircularProgress } from "@material-ui/core";
 import { green } from "@material-ui/core/colors";
 import { Vote, BallotType } from "../../model/vote";
-import VoteCard from "../vote-card";
 import ToggleButtonGroup from "@material-ui/lab/ToggleButtonGroup";
 import ToggleButton from "@material-ui/lab/ToggleButton";
 import { changeLuminance } from "../../model/util";
+import ActiveElectionCard from "../election/cards/active-election-card";
+import DraftElectionCard from "../election/cards/draft-election-card";
 
 type Props = {
     hasSubmittedVote: boolean;
@@ -29,7 +30,7 @@ const CheckButton = withStyles((theme: Theme) => ({
     },
 }))(Button);
 
-const PlusButton = withStyles((theme: Theme) => ({
+const PlusButton = withStyles(() => ({
     root: {
         borderRadius: "100%",
         padding: "1em",
@@ -154,11 +155,11 @@ class MakeVotePage extends PureComponent<Props> {
                     ? <PositionsTextField disabled={this.props.hasSubmittedVote} label="Number of Seats" value={ballotType.positions} type="number" onChange={this.onChangePositions.bind(this)} />
                     : []}
             </div>
-            <VoteCard
-                allowVoteChanges={!this.props.hasSubmittedVote}
-                allowBallotChanges={false}
-                voteAndBallots={{ vote: this.props.draft, ballots: [] }}
-                onVoteChanged={this.updateDraft.bind(this)} />
+            {this.props.hasSubmittedVote
+                ? <ActiveElectionCard voteAndBallots={{ vote: this.props.draft, ballots: [] }} />
+                : <DraftElectionCard
+                    voteAndBallots={{ vote: this.props.draft, ballots: [] }}
+                    onElectionChanged={this.updateDraft.bind(this)} />}
             {this.props.hasSubmittedVote ? [
                 <CircularProgress />
             ] : [

@@ -2,12 +2,13 @@ import React, { Component } from "react";
 import { Button, CircularProgress, Paper, Typography, DialogTitle, Dialog, DialogContent, DialogContentText, DialogActions } from "@material-ui/core";
 import { Link } from "react-router-dom";
 import { VoteAndBallots, Ballot, Vote, isActive, isCompletableBallot, completeBallot, isCompleteBallot, findIncompleteOptions, tally, tryGetTallyVisualizer, VoteOption } from "../../model/vote";
-import VoteCard from "../vote-card";
 import DropDownButton from "../drop-down-button";
 import "./vote-page.css";
 import { DangerButton } from "../danger-button";
 import { CheckFab } from "../check-fab";
 import AddCandidateButton from "../add-candidate-button";
+import ActiveElectionCard from "../election/cards/active-election-card";
+import HistoricalElectionCard from "../election/cards/historical-election-card";
 
 type Props = {
     voteAndBallots: VoteAndBallots;
@@ -230,16 +231,17 @@ class VotePage extends Component<Props, State> {
             progressOrButton = <CheckFab disabled={!canCast} aria-label="submit vote" className="SubmitVoteFab" onClick={this.castBallot.bind(this)} />;
         }
         return <div className="VotePagePanel">
-            <VoteCard
-                voteAndBallots={data}
-                allowBallotChanges={allowChanges}
-                onBallotChanged={newBallot => {
-                    if (isActive(data.vote)) {
-                        this.setState({ ...this.state, ballot: newBallot });
-                    } else {
-                        this.setState({ ...this.state });
-                    }
-                }} />
+            {allowChanges
+                ? <ActiveElectionCard
+                    voteAndBallots={data}
+                    onBallotChanged={newBallot => {
+                        if (isActive(data.vote)) {
+                            this.setState({ ...this.state, ballot: newBallot });
+                        } else {
+                            this.setState({ ...this.state });
+                        }
+                    }} />
+                : <HistoricalElectionCard voteAndBallots={data} />}
             {isActive(data.vote)
                 ? <div className="ProgressOrButton">{progressOrButton}</div>
                 : <Button component={Link} to={`/vote/${data.vote.id}/ballots`} style={{ margin: "0 1em 1em 1em" }} variant="contained">View Ballots</Button>}

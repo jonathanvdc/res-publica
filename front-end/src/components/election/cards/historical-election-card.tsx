@@ -59,10 +59,14 @@ class HistoricalElectionCard extends ElectionCard<Props, State> {
     }
 
     renderScore(option: VoteOption): React.ReactNode {
+        let ballots = this.props.voteAndBallots.ballots;
+        if (ballots.length === 0) {
+            return undefined;
+        }
+
         let vote = this.props.voteAndBallots.vote;
         switch (vote.type.tally) {
             case "first-past-the-post":
-                let ballots = this.props.voteAndBallots.ballots;
                 let votePercentage = ballots.filter(x => (x as ChooseOneBallot).selectedOptionId === option.id).length / ballots.length;
                 return `${Math.round(100 * votePercentage)}%`;
             case "spsv":
