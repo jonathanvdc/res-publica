@@ -23,7 +23,7 @@ type Props = {
     /**
      * Represents a candidate's score.
      */
-    score?: string;
+    score?: React.ReactNode;
 };
 
 /**
