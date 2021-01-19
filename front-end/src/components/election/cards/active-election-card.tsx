@@ -3,7 +3,7 @@ import { ButtonBase, Typography, withStyles } from "@material-ui/core";
 import { ToggleButton, ToggleButtonGroup } from "@material-ui/lab";
 import CountdownTimer from 'react-countdown';
 import { getPreferences } from "../../../model/preferences";
-import { Ballot, BallotType, getBallotKind, RateOptionsBallot, RateOptionsBallotType, VoteAndBallots, VoteOption } from "../../../model/vote";
+import { Ballot, getBallotKind, RateOptionsBallot, RateOptionsBallotType, VoteAndBallots, VoteOption } from "../../../model/vote";
 import { renderCollapsibleMarkdown } from "../../widgets/collapsible-markdown";
 import { renderCandidateName } from "../candidate-name";
 import CandidatePanel from "../candidate-panel";
