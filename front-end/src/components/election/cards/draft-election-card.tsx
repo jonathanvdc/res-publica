@@ -1,5 +1,5 @@
 import React from "react";
-import { Button, TextField, Typography, withStyles } from "@material-ui/core";
+import { Button, Paper, TextField, Typography, withStyles } from "@material-ui/core";
 import { DateTimePicker } from "@material-ui/pickers";
 import DeleteIcon from '@material-ui/icons/Delete';
 import { Vote, VoteAndBallots, VoteOption } from "../../../model/vote";
@@ -58,9 +58,9 @@ class DraftElectionCard extends ElectionCard<Props, State> {
 
     createHeader(): React.ReactNode {
         let vote = this.props.voteAndBallots.vote;
-        return <React.Fragment>
+        return <Paper style={{padding: "1em"}}>
             <TitleTextField label="Vote title" value={vote.name} onChange={val =>
-                this.props.onElectionChanged({ ...vote, name: val.target.value })} />;
+                this.props.onElectionChanged({ ...vote, name: val.target.value })} />
             <DateTimePicker
                 value={new Date(vote.deadline * 1000).toISOString()}
                 label="Ballot boxes close:" onChange={date => {
@@ -74,7 +74,7 @@ class DraftElectionCard extends ElectionCard<Props, State> {
                 value={vote.description}
                 previewOptions={{escapeHtml: false, unwrapDisallowed: true}}
                 onChange={val => this.props.onElectionChanged({ ...vote, description: val || "" })} />
-        </React.Fragment>;
+        </Paper>;
     }
 
     orderCandidates(election: VoteAndBallots): string[] {
