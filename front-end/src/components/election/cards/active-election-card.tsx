@@ -3,7 +3,7 @@ import { ButtonBase, Typography, withStyles } from "@material-ui/core";
 import { ToggleButton, ToggleButtonGroup } from "@material-ui/lab";
 import CountdownTimer from 'react-countdown';
 import { getPreferences } from "../../../model/preferences";
-import { Ballot, getBallotKind, RateOptionsBallot, RateOptionsBallotType, VoteAndBallots, VoteOption } from "../../../model/vote";
+import { Ballot, ChooseOneBallot, getBallotKind, RateOptionsBallot, RateOptionsBallotType, VoteAndBallots, VoteOption } from "../../../model/vote";
 import { renderCollapsibleMarkdown } from "../../widgets/collapsible-markdown";
 import { renderCandidateName } from "../candidate-name";
 import CandidatePanel from "../candidate-panel";
@@ -137,7 +137,13 @@ class ActiveElectionCard extends ElectionCard<Props, State> {
     }
 
     renderOption(option: VoteOption): React.ReactNode {
-        return <CandidatePanel>
+        let isSelected: boolean = false;
+        if (getBallotKind(this.props.voteAndBallots.vote.type) === 'choose-one') {
+            let selectedId = (this.props.voteAndBallots.ownBallot as ChooseOneBallot | undefined)?.selectedOptionId;
+            isSelected = !!selectedId && selectedId === option.id;
+        }
+
+        return <CandidatePanel isSelected={isSelected}>
             {this.addOptionControls(
                 option,
                 <React.Fragment>
