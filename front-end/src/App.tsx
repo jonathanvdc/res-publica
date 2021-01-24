@@ -1,6 +1,6 @@
 import React, { Suspense, Component } from 'react';
 import './App.css';
-import { VoteAndBallots, Vote, Ballot, isActive, tryGetTallyVisualizer, VoteOption } from './model/vote';
+import { VoteAndBallots, Vote, Ballot, isActive, tryGetTallyVisualizer, VoteOption, getBallotKind } from './model/vote';
 import { Route, BrowserRouter, Prompt } from 'react-router-dom';
 import { createMuiTheme, MuiThemeProvider } from '@material-ui/core/styles';
 import { green } from '@material-ui/core/colors';
@@ -310,6 +310,8 @@ class EditVoteRoute extends FetchedStateComponent<{ match: any, history: any }, 
         allowAddOptions={isActive(data.draftVote)}
         allowRemoveOptions={isActive(data.draftVote)}
         allowChangeEnd={isActive(data.draftVote)}
+        allowedTallyingAlgorithms={
+          getBallotKind(data.draftVote.type) === "choose-one" ? ["first-past-the-post"] : ["star", "spsv"]}
         onMakeVote={this.onSubmitEdits.bind(this)}
         onUpdateDraft={this.onUpdateDraft.bind(this)} />
     }
