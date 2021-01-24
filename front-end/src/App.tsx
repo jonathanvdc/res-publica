@@ -118,6 +118,7 @@ class App extends FetchedStateComponent<{}, AppState> {
                 <Route exact path="/vote/:voteId" component={(props: any) => <VoteRoute isAdmin={isAdmin(state.authLevel)} {...props} />} />
                 <Route exact path="/vote/:voteId/ballots" component={VoteBallotsRoute} />
                 <Route exact path="/vote/:voteId/visualize" component={VoteVisualizationRoute} />
+                {isAdmin(state.authLevel) && <Route exact path="/vote/:voteId/edit" component={EditVoteRoute} />}
                 {isAdmin(state.authLevel) && <Route exact path="/admin/make-vote" component={MakeVoteRoute} />}
                 {state.optionalAPIs && state.optionalAPIs.includes(OptionalAPI.registeredVoters) &&
                   <Route exact path="/registered-voters" component={RegisteredVotersRoute} />}
@@ -260,6 +261,57 @@ class VoteRoute extends FetchedStateComponent<{ match: any, history: any, isAdmi
       </React.Fragment>;
     } else {
       return <VoteConfirmationPage ballotId={data.ballotId!} />;
+    }
+  }
+}
+
+class EditVoteRoute extends FetchedStateComponent<{ match: any, history: any }, MakeVoteRouteState> {
+  async fetchState(): Promise<MakeVoteRouteState> {
+    let data = await apiClient.getVote(this.props.match.params.voteId);
+    return { phase: "editing", draftVote: data?.vote };
+  }
+
+  async onSubmitEdits(proposal: Vote) {
+    this.setState({ ...this.state, data: { ...this.state.data, phase: "submitted" } });
+    try {
+      let vote = await apiClient.electionManagement.editVote(proposal);
+      if ("error" in vote) {
+        this.setState({ ...this.state, error: vote.error });
+      } else {
+        this.setState({ ...this.state, data: { ...this.state.data, phase: "submitted", createdVote: vote } });
+      }
+    } catch (ex) {
+      this.setState({ ...this.state, error: ex });
+    }
+  }
+
+  onUpdateDraft(draftVote: Vote) {
+    let oldId = this.state.data?.draftVote?.id;
+    if (oldId) {
+      draftVote = { ...draftVote, id: oldId };
+    }
+    this.setState({ ...this.state, data: { phase: "editing", draftVote } });
+  }
+
+  renderState(data: MakeVoteRouteState): JSX.Element {
+    if (!data.draftVote || data.phase === "scraping-cfc") {
+      return <div>
+        <h1>Error 404</h1>
+        Vote with ID '{this.props.match.params.voteId}' not found.
+      </div>;
+    }
+
+    if (data.createdVote) {
+      return <MakeVoteConfirmationPage voteId={data.createdVote.id} />;
+    } else {
+      return <MakeVotePage
+        draft={data.draftVote}
+        hasSubmittedVote={data.phase === "submitted"}
+        allowAddOptions={isActive(data.draftVote)}
+        allowRemoveOptions={isActive(data.draftVote)}
+        allowChangeEnd={isActive(data.draftVote)}
+        onMakeVote={this.onSubmitEdits.bind(this)}
+        onUpdateDraft={this.onUpdateDraft.bind(this)} />
     }
   }
 }

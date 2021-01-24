@@ -141,6 +141,12 @@ export interface ElectionManagementClient {
      * @param option The option to add to the vote's ballots.
      */
     addVoteOption(voteId: string, option: VoteOption): Promise<Vote | { error: string }>;
+
+    /**
+     * Edits an existing vote.
+     * @param vote The edited vote, which must have the same ID as the vote to edit.
+     */
+    editVote(vote: Vote): Promise<Vote | { error: string }>;
 }
 
 async function requestJSON(method: string, url: string, data: any) {

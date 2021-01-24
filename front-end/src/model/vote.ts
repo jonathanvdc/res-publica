@@ -7,7 +7,7 @@ import { visuallyTallySPSV } from "./voting/visualize-spsv";
 export type {
     Candidate, VoteOption, ChooseOneBallotType, RateOptionsBallotType,
     BallotType, Vote, ChooseOneBallot, RateOptionsBallot, Ballot,
-    FinishedBallot, VoteAndBallots, TallyVisualizer
+    FinishedBallot, VoteAndBallots, TallyVisualizer, TallyingAlgorithm
 } from "./voting/types";
 export {
     getBallotKind, isActive, findIncompleteOptions, isCompleteBallot,

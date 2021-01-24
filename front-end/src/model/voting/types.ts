@@ -50,6 +50,13 @@ export type RateOptionsBallotType = {
     max: number;
 };
 
+/**
+ * Enumerates vote tallying algorithms.
+ */
+export type TallyingAlgorithm =
+    "first-past-the-post"
+    | "spsv" | "star";
+
 export type BallotType = ChooseOneBallotType | RateOptionsBallotType;
 
 export function getBallotKind(ballotType: BallotType): "choose-one" | "rate-options" {
