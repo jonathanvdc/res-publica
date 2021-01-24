@@ -96,6 +96,13 @@ class ServerElectionManagementClient implements ElectionManagementClient {
         });
     }
 
+    editVote(vote: Vote): Promise<Vote | { error: string }> {
+        return postJSON('/api/election-management/edit-vote', {
+            deviceId: this.auth.deviceId,
+            vote
+        });
+    }
+
     resign(voteId: string, optionId: string): Promise<Vote | { error: string }> {
         return postJSON('/api/election-management/resign', {
             deviceId: this.auth.deviceId,

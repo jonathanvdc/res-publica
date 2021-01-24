@@ -112,6 +112,7 @@ class AdminZone extends Component<AdminZoneProps, AdminZoneState> {
                         }]
                     })
                 }}>Add Candidate</AddCandidateButton>}
+            <Button component={Link} to={`/vote/${data.vote.id}/edit`} variant="contained">Edit Vote</Button>
             {canCancelVote &&
                 <DangerButton
                     variant="contained"

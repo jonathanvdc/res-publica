@@ -150,6 +150,11 @@ class DummyElectionManagementClient implements ElectionManagementClient {
         // TODO: implement this
         throw new Error("Method not implemented.");
     }
+
+    editVote(vote: Vote): Promise<Vote | { error: string; }> {
+        // TODO: implement this
+        throw new Error("Method not implemented.");
+    }
 }
 
 

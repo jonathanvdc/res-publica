@@ -3,7 +3,7 @@ import CheckIcon from '@material-ui/icons/Check';
 import PlusIcon from '@material-ui/icons/Add';
 import { Button, Theme, withStyles, TextField, CircularProgress } from "@material-ui/core";
 import { green } from "@material-ui/core/colors";
-import { Vote, BallotType } from "../../model/vote";
+import { Vote, BallotType, TallyingAlgorithm } from "../../model/vote";
 import ToggleButtonGroup from "@material-ui/lab/ToggleButtonGroup";
 import ToggleButton from "@material-ui/lab/ToggleButton";
 import { changeLuminance } from "../../model/util";
@@ -13,6 +13,29 @@ import DraftElectionCard from "../election/cards/draft-election-card";
 type Props = {
     hasSubmittedVote: boolean;
     draft: Vote;
+
+    /**
+     * Tells if options may be added to the ballot.
+     * Defaults to true.
+     */
+    allowAddOptions?: boolean;
+
+    /**
+     * Tells if options may be removed from the ballot.
+     * Defaults to true.
+     */
+    allowRemoveOptions?: boolean;
+
+    /**
+     * Tells if the end of the election may be changed.
+     */
+    allowChangeEnd?: boolean;
+
+    /**
+     * An optional list of allowed tallying algorithms.
+     */
+    allowedTallyingAlgorithms?: TallyingAlgorithm[];
+
     onUpdateDraft?: (draft: Vote) => void;
     onMakeVote?: (vote: Vote) => void;
 };
@@ -139,6 +162,14 @@ class MakeVotePage extends PureComponent<Props> {
         }
     }
 
+    isAllowedAlgorithm(algorithm: TallyingAlgorithm): boolean {
+        if (this.props.allowedTallyingAlgorithms) {
+            return this.props.allowedTallyingAlgorithms.includes(algorithm);
+        } else {
+            return true;
+        }
+    }
+
     render() {
         let ballotType = this.props.draft.type;
         return <div>
@@ -147,9 +178,12 @@ class MakeVotePage extends PureComponent<Props> {
                     value={ballotType.tally}
                     exclusive
                     onChange={this.onChangeTallyType.bind(this)}>
-                    <TallyButton disabled={this.props.hasSubmittedVote} value="first-past-the-post">FPTP</TallyButton>
-                    <TallyButton disabled={this.props.hasSubmittedVote} value="star">STAR</TallyButton>
-                    <TallyButton disabled={this.props.hasSubmittedVote} value="spsv">SPSV</TallyButton>
+                    {this.isAllowedAlgorithm("first-past-the-post") &&
+                        <TallyButton disabled={this.props.hasSubmittedVote} value="first-past-the-post">FPTP</TallyButton>}
+                    {this.isAllowedAlgorithm("star") &&
+                        <TallyButton disabled={this.props.hasSubmittedVote} value="star">STAR</TallyButton>}
+                    {this.isAllowedAlgorithm("spsv") &&
+                        <TallyButton disabled={this.props.hasSubmittedVote} value="spsv">SPSV</TallyButton>}
                 </ToggleButtonGroup>
                 {ballotType.tally === "spsv"
                     ? <PositionsTextField disabled={this.props.hasSubmittedVote} label="Number of Seats" value={ballotType.positions} type="number" onChange={this.onChangePositions.bind(this)} />
@@ -159,17 +193,20 @@ class MakeVotePage extends PureComponent<Props> {
                 ? <ActiveElectionCard voteAndBallots={{ vote: this.props.draft, ballots: [] }} />
                 : <DraftElectionCard
                     voteAndBallots={{ vote: this.props.draft, ballots: [] }}
-                    onElectionChanged={this.updateDraft.bind(this)} />}
-            {this.props.hasSubmittedVote ? [
+                    onElectionChanged={this.updateDraft.bind(this)}
+                    allowRemoveOptions={this.props.allowRemoveOptions}
+                    allowChangeEnd={this.props.allowChangeEnd} />}
+            {this.props.hasSubmittedVote ?
                 <CircularProgress />
-            ] : [
-                <PlusButton variant="contained" className="AddVoteOptionButton" onClick={this.addVoteOption.bind(this)} >
-                    <PlusIcon fontSize="large" />
-                </PlusButton>,
-                <CheckButton variant="contained" className="MakeVoteButton" onClick={this.onMakeVote.bind(this)} >
+            : <React.Fragment>
+                {(this.props.allowAddOptions ?? true) &&
+                    <PlusButton variant="contained" className="AddVoteOptionButton" onClick={this.addVoteOption.bind(this)}>
+                        <PlusIcon fontSize="large" />
+                    </PlusButton>}
+                <CheckButton variant="contained" className="MakeVoteButton" onClick={this.onMakeVote.bind(this)}>
                     <CheckIcon fontSize="large" />
                 </CheckButton>
-            ]}
+            </React.Fragment>}
         </div>;
     }
 }

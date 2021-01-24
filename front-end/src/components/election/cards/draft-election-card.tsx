@@ -15,6 +15,17 @@ type Props = {
      * A callback for when the user modifies the election.
      */
     onElectionChanged: (newElection: Vote) => void;
+
+    /**
+     * An optional argument that tells if options may be removed.
+     * Defaults to true.
+     */
+    allowRemoveOptions?: boolean;
+
+    /**
+     * Tells if the election's end date may be adjusted.
+     */
+    allowChangeEnd?: boolean;
 };
 
 type State = {
@@ -61,14 +72,15 @@ class DraftElectionCard extends ElectionCard<Props, State> {
         return <Paper style={{padding: "1em"}}>
             <TitleTextField label="Vote title" value={vote.name} onChange={val =>
                 this.props.onElectionChanged({ ...vote, name: val.target.value })} />
-            <DateTimePicker
-                value={new Date(vote.deadline * 1000).toISOString()}
-                label="Ballot boxes close:" onChange={date => {
-                    if (date) {
-                        this.props.onElectionChanged({ ...vote, deadline: date.unix() });
-                    }
-                }}
-                style={{margin: "1em"}} />
+            {(this.props.allowChangeEnd ?? true) &&
+                <DateTimePicker
+                    value={new Date(vote.deadline * 1000).toISOString()}
+                    label="Ballot boxes close:" onChange={date => {
+                        if (date) {
+                            this.props.onElectionChanged({ ...vote, deadline: date.unix() });
+                        }
+                    }}
+                    style={{margin: "1em"}} />}
             <MDEditor
                 className="VoteDescription"
                 value={vote.description}
@@ -119,7 +131,9 @@ class DraftElectionCard extends ElectionCard<Props, State> {
         return <CandidatePanel>
             <div className="EditableVoteOptionHeader">
                 {title}
-                {<Button onClick={() => this.onOptionDeleted(option)} className="DeleteVoteOptionButton"><DeleteIcon/></Button>}
+                {(this.props.allowRemoveOptions ?? true) &&
+                    <Button onClick={() => this.onOptionDeleted(option)} className="DeleteVoteOptionButton"><DeleteIcon/></Button>
+                }
             </div>
             <MDEditor
                 className="VoteOptionDescription"

@@ -22,6 +22,16 @@ def is_vote_active(vote: VoteAndBallots) -> bool:
     return vote['vote']['deadline'] > time.time()
 
 
+def get_ballot_kind(ballot_type: Any) -> str:
+    tally = ballot_type['tally']
+    if tally == 'first-past-the-post':
+        return 'choose-one'
+    elif tally == 'spsv' or tally == 'star':
+        return 'rate-options'
+    else:
+        raise Exception(f'Unknown tallying algorithm {tally}.')
+
+
 class VoteIndex(object):
     """Keeps track of votes."""
     def __init__(self, index_path: str, votes: Dict[VoteId, VoteAndBallots], vote_secrets: Dict[VoteId, str]):
@@ -107,6 +117,60 @@ class VoteIndex(object):
                     'optionId': option['id'],
                     'rating': vote['type']['min']
                 })
+
+        # Write the updated vote to disk.
+        self.write_vote(voteAndBallots)
+
+        # Transmit the new vote.
+        return self.prepare_for_transmission(voteAndBallots, device)['vote']
+
+    def edit_vote(self, vote: Vote, device: RegisteredDevice) -> Vote:
+        """Edits a vote. The ballot type must not change."""
+        self.heartbeat()
+
+        voteAndBallots = self.votes[vote['id']]
+        old_vote = voteAndBallots['vote']
+
+        old_option_ids = [opt['id'] for opt in old_vote['options']]
+        new_option_ids = [opt['id'] for opt in vote['options']]
+
+        if old_option_ids != new_option_ids:
+            return { 'error': 'Candidates cannot be added or removed after the election has ended.' }
+        elif get_ballot_kind(old_vote['type']) != get_ballot_kind(vote['type']):
+            return {
+                'error': f'Cannot change ballots of type {get_ballot_kind(old_vote["type"])} '
+                         f'to type {get_ballot_kind(vote["type"])}.'
+            }
+
+        # Update the vote.
+        voteAndBallots['vote'] = vote
+
+        # Add/remove candidates from ballots.
+        added_candidates = set(new_option_ids).difference(old_option_ids)
+        removed_candidates = set(old_option_ids).difference(new_option_ids)
+
+        new_ballots = []
+        for ballot in voteAndBallots['ballots']:
+            if 'ratingPerOption' in ballot:
+                # Remove deleted candidates.
+                ratings = [r for r in ballot['ratingPerOption'] if r['optionId'] not in removed_candidates]
+
+                # Add new candidates by giving them the minimal score.
+                for candidate_id in added_candidates:
+                    ratings.append({
+                        'optionId': candidate_id,
+                        'rating': vote['type']['min']
+                    })
+
+                # Update ballot.
+                ballot['ratingPerOption'] = ratings
+                new_ballots.append(ballot)
+            elif 'selectedOptionId' in ballot and ballot['selectedOptionId'] in removed_candidates:
+                # Drop ballots that voted only for a removed candidate.
+                pass
+            else:
+                new_ballots.append(ballot)
+
 
         # Write the updated vote to disk.
         self.write_vote(voteAndBallots)
