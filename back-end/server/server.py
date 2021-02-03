@@ -5,6 +5,7 @@ import json
 import praw
 import prawcore.exceptions
 import subprocess
+import time
 from pathlib import Path
 from typing import List
 from collections import defaultdict
@@ -174,7 +175,10 @@ def create_app(config, bottle_path, data_path='data', static_folder=DEFAULT_STAT
             return redirect(f'auth-failed?{url_encode(data)}')
 
         # Associate the device ID with the Redditor's username.
-        device_index.register(device_id, redditor.name)
+        if "login_expiry" in config:
+            device_index.register(device_id, redditor.name, time.monotonic() + config["login_expiry"])
+        else:
+            device_index.register(device_id, redditor.name)
 
         # The user has been authenticated. Time to redirect.
         return redirect(return_url)
