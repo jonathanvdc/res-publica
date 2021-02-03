@@ -76,6 +76,12 @@ class App extends FetchedStateComponent<{}, AppState> {
     this.refetchInitialState();
   }
 
+  async onUnregisterUser() {
+    await authenticator.unregisterUser();
+    this.setState({ hasConnected: false });
+    this.refetchInitialState();
+  }
+
   renderState(state: AppState): JSX.Element {
     if (state.authLevel === AuthenticationLevel.Unauthenticated) {
       let parsedUrl = new URL(window.location.href);
@@ -108,6 +114,7 @@ class App extends FetchedStateComponent<{}, AppState> {
           <MuiThemeProvider theme={theme}>
             <SiteAppBar
               onLogOut={this.onLogOut.bind(this)}
+              onUnregisterUser={this.onUnregisterUser.bind(this)}
               userId={state.userId}
               isAdmin={isAdmin(state.authLevel)}
               optionalAPIs={state.optionalAPIs} />

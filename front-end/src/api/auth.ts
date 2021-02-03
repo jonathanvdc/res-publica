@@ -43,6 +43,11 @@ export interface Authenticator {
      * Logs the user out, deleting their credentials.
      */
     logOut(): void;
+
+    /**
+     * Unregisters the user, deleting their account.
+     */
+    unregisterUser(): Promise<void>;
 }
 
 export function makeid(length: number): string {

@@ -31,6 +31,10 @@ export class DummyAuthenticator implements Authenticator {
         // Logging out isn't really a thing here. Do nothing?
     }
 
+    async unregisterUser(): Promise<void> {
+        // Unregistering out isn't really a thing here. Do nothing?
+    }
+
     async getUserId(): Promise<string> {
         return 'donald-duck';
     }
