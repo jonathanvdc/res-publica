@@ -90,4 +90,10 @@ def create_core_blueprint(device_index: DeviceIndex, vote_index: VoteIndex):
         device = authenticate(request, device_index)
         return jsonify(device.user_id)
 
+    @bp.route('/unregister-user', methods=['POST'])
+    def unregister_user():
+        device = authenticate(request, device_index)
+        device_index.unregister_user(device.user_id)
+        return jsonify({})
+
     return bp

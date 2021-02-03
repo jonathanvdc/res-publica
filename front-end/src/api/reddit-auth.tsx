@@ -40,6 +40,16 @@ export class RedditAuthenticator implements Authenticator {
         this.deviceIdVal = refreshDeviceId();
     }
 
+    async unregisterUser(): Promise<void> {
+        // To unregister a user we need to send the server an account deletion request.
+        await postJSON('/api/core/unregister-user', {
+            deviceId: this.deviceId
+        });
+
+        // We should also delete our device ID.
+        this.logOut();
+    }
+
     getUserId(): Promise<string> {
         return postJSON('/api/core/user-id', {
             deviceId: this.deviceId
