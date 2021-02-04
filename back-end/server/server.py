@@ -176,7 +176,7 @@ def create_app(config, bottle_path, data_path='data', static_folder=DEFAULT_STAT
 
         # Associate the device ID with the Redditor's username.
         if "login_expiry" in config:
-            device_index.register(device_id, redditor.name, time.monotonic() + config["login_expiry"])
+            device_index.register(device_id, redditor.name, config["login_expiry"])
         else:
             device_index.register(device_id, redditor.name)
 
