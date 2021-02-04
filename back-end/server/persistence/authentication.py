@@ -69,7 +69,7 @@ class DeviceIndex(object):
         """Adds a new device to this device index."""
         self.unregister(device_id, persist_changes=False)
 
-        device = RegisteredDevice(device_id, user_id, expiry)
+        device = RegisteredDevice(device_id, user_id, time.monotonic() + expiry)
         self.devices[device_id] = device
         self.users_to_devices[user_id].add(device)
         self.register_user(user_id, persist_changes=False)
