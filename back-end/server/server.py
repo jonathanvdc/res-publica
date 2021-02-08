@@ -5,6 +5,7 @@ import json
 import praw
 import prawcore.exceptions
 import subprocess
+import time
 from pathlib import Path
 from typing import List
 from collections import defaultdict
@@ -120,11 +121,12 @@ def create_app(config, bottle_path, data_path='data', static_folder=DEFAULT_STAT
             abort(403)
 
         # Ask the manager to upgrade and restart us after we shut down.
-        write_json({ 'action': 'restart' }, bottle_path)
 
         func = request.environ.get('werkzeug.server.shutdown')
         if func is None:
             raise RuntimeError('Not running with the Werkzeug Server')
+
+        write_json({ 'action': 'restart' }, bottle_path)
 
         func()
         return jsonify({})
@@ -173,7 +175,10 @@ def create_app(config, bottle_path, data_path='data', static_folder=DEFAULT_STAT
             return redirect(f'auth-failed?{url_encode(data)}')
 
         # Associate the device ID with the Redditor's username.
-        device_index.register(device_id, redditor.name)
+        if "login_expiry" in config:
+            device_index.register(device_id, redditor.name, config["login_expiry"])
+        else:
+            device_index.register(device_id, redditor.name)
 
         # The user has been authenticated. Time to redirect.
         return redirect(return_url)
