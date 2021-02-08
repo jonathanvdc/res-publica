@@ -3,3 +3,4 @@ config.json
 
 # Ignore VS Code config.
 .vscode/
+/.vs
