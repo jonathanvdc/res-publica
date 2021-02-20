@@ -103,7 +103,7 @@ def scrape_cfc(reddit: Reddit, url: str, discern_candidates: bool = False) -> Vo
         option = parse_cfc(
             top_level_comment.body,
             discern_candidates=discern_candidates)
-        if option is None:
+        if option is None or any(opt['id'] == option['id'] for opt in options):
             continue
 
         options.append(option)
