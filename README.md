@@ -53,7 +53,8 @@ Navigate to the `back-end` directory. Create a file called `config.json` that co
         "authenticated": ["registered-voters"],
         "authenticated-admin": ["registered-voters", "add-registered-voter", "remove-registered-voter"],
         "authenticated-developer": ["registered-voters", "add-registered-voter", "remove-registered-voter", "upgrade-server"]
-    }
+    },
+    "login_expiry": 2592000
 }
 ```
 

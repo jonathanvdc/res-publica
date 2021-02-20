@@ -13,7 +13,7 @@ UserId = str
 VoterRequirement = Any
 
 
-# Allow devices to stay registered for thirty days until they expire.
+# Allow devices to stay registered for thirty days until they expire. This is kept to provide backward compatibility with older configs, so the server does not bug out after an upgrade.
 SECONDS_UNTIL_EXPIRY = 60 * 60 * 24 * 30
 
 OPERATORS = {
@@ -65,11 +65,11 @@ class DeviceIndex(object):
             for user_id in set(data.user_id for data in devices.values())
         })
 
-    def register(self, device_id: DeviceId, user_id: UserId) -> RegisteredDevice:
+    def register(self, device_id: DeviceId, user_id: UserId, expiry: float = SECONDS_UNTIL_EXPIRY) -> RegisteredDevice:
         """Adds a new device to this device index."""
         self.unregister(device_id, persist_changes=False)
 
-        device = RegisteredDevice(device_id, user_id, time.monotonic() + SECONDS_UNTIL_EXPIRY)
+        device = RegisteredDevice(device_id, user_id, time.monotonic() + expiry)
         self.devices[device_id] = device
         self.users_to_devices[user_id].add(device)
         self.register_user(user_id, persist_changes=False)
