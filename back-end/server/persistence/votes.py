@@ -134,7 +134,7 @@ class VoteIndex(object):
         old_option_ids = [opt['id'] for opt in old_vote['options']]
         new_option_ids = [opt['id'] for opt in vote['options']]
 
-        if old_option_ids != new_option_ids:
+        if old_option_ids != new_option_ids and old_vote['deadline'] > time.time():
             return { 'error': 'Candidates cannot be added or removed after the election has ended.' }
         elif get_ballot_kind(old_vote['type']) != get_ballot_kind(vote['type']):
             return {
