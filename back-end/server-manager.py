@@ -6,7 +6,7 @@
 import os
 import sys
 import subprocess
-import time
+import socket
 from pathlib import Path
 from datetime import datetime, timezone
 from server.persistence.helpers import read_json, write_json
@@ -18,13 +18,16 @@ def run_and_monitor(args, log_file_prefix='server'):
     log = open(f'logs/{log_file_prefix}-{time_string}.log', 'a')
     return subprocess.check_call(args, stdout=log, stderr=log, stdin=subprocess.DEVNULL)
 
+def is_port_in_use(hostname, port):
+    """Checks if a port is in use."""
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+        return s.connect_ex((hostname, port)) == 0
+
 def main(config_path):
     back_end_path = os.path.realpath(os.path.join(os.path.realpath(__file__), '..'))
 
     # Because on Windows machines python is usually installed as 'python' but UNIX rather uses 'python3' and 'python' refers to py2
-    if os.name == 'nt':
-        python = 'python'
-    elif os.name == 'posix':
+    if os.name == 'posix':
         python = 'python3'
     else:
         python = 'python'
@@ -33,27 +36,30 @@ def main(config_path):
     while restart:
         restart = False
 
-        # Create a lock file and start the provisional server.
-        if not os.path.isfile("server.lock"):
-            open("server.lock","x")
-            provisional_server = os.path.realpath(os.path.join(os.path.realpath(__file__), '..', 'provisional-server.py'))
-            prov_server_proc = subprocess.Popen([python, provisional_server])
-        else:
-            raise RuntimeError("There should be no running server, but a server.lock file exists.")
+        config = read_json(config_path)
+        host_config = config.get('host', {})
+        hostname, port = host_config.get('host', 'localhost'), host_config.get('port')
 
-        # Upgrade the server.
-        print(' >>> Upgrading server')
-        upgrade_script = os.path.realpath(os.path.join(os.path.realpath(__file__), '..', 'upgrade.py'))
-        run_and_monitor([python, upgrade_script], log_file_prefix='upgrade')
+        if port and is_port_in_use(hostname, port):
+            print(f' >>> Port {hostname}:{port} already in use! Aborting!')
+            break
 
-        # Stop the provisional server (forcefully terminate if it doesn't stop after 10 seconds). Then delete the server lock.
-        prov_server_proc.kill()
+        # Run the provisional server while we upgrade the production server.
+        provisional_server = os.path.realpath(os.path.join(os.path.realpath(__file__), '..', 'provisional-server.py'))
+        prov_server_proc = subprocess.Popen([python, provisional_server, os.path.realpath(config_path)])
         try:
-            prov_server_proc.wait(timeout=10)
-        except subprocess.TimeoutExpired:
+            # Upgrade the server.
+            print(' >>> Upgrading server')
+            upgrade_script = os.path.realpath(os.path.join(os.path.realpath(__file__), '..', 'upgrade.py'))
+            run_and_monitor([python, upgrade_script], log_file_prefix='upgrade')
+
+        finally:
+            # Stop the provisional server.
             prov_server_proc.terminate()
-            
-        os.remove("server.lock")
+            try:
+                prov_server_proc.wait(timeout=10)
+            except subprocess.TimeoutExpired:
+                prov_server_proc.kill()
 
         # Clear message-in-a-bottle file.
         bottle_path = 'logs/bottle.log'
