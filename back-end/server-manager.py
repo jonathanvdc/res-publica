@@ -6,6 +6,7 @@
 import os
 import sys
 import subprocess
+import time
 from pathlib import Path
 from datetime import datetime, timezone
 from server.persistence.helpers import read_json, write_json
@@ -20,14 +21,39 @@ def run_and_monitor(args, log_file_prefix='server'):
 def main(config_path):
     back_end_path = os.path.realpath(os.path.join(os.path.realpath(__file__), '..'))
 
+    # Because on Windows machines python is usually installed as 'python' but UNIX rather uses 'python3' and 'python' refers to py2
+    if os.name == 'nt':
+        python = 'python'
+    elif os.name == 'posix':
+        python = 'python3'
+    else:
+        python = 'python'
+    
     restart = True
     while restart:
         restart = False
 
+        # Create a lock file and start the provisional server.
+        if not os.path.isfile("server.lock"):
+            open("server.lock","x")
+            provisional_server = os.path.realpath(os.path.join(os.path.realpath(__file__), '..', 'provisional-server.py'))
+            prov_server_proc = subprocess.Popen([python, provisional_server])
+        else:
+            raise RuntimeError("There should be no running server, but a server.lock file exists.")
+
         # Upgrade the server.
         print(' >>> Upgrading server')
         upgrade_script = os.path.realpath(os.path.join(os.path.realpath(__file__), '..', 'upgrade.py'))
-        run_and_monitor(['python3', upgrade_script], log_file_prefix='upgrade')
+        run_and_monitor([python, upgrade_script], log_file_prefix='upgrade')
+
+        # Stop the provisional server (forcefully terminate if it doesn't stop after 10 seconds). Then delete the server lock.
+        prov_server_proc.kill()
+        try:
+            prov_server_proc.wait(timeout=10)
+        except subprocess.TimeoutExpired:
+            prov_server_proc.terminate()
+            
+        os.remove("server.lock")
 
         # Clear message-in-a-bottle file.
         bottle_path = 'logs/bottle.log'
@@ -37,7 +63,7 @@ def main(config_path):
         print(' >>> Starting server')
         try:
             run_and_monitor([
-                'python3',
+                python,
                 os.path.join(back_end_path, 'start-server.py'),
                 os.path.realpath(config_path),
                 bottle_path
