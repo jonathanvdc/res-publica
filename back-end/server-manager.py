@@ -56,6 +56,10 @@ def main(config_path):
         finally:
             # Stop the provisional server.
             prov_server_proc.terminate()
+            try:
+                prov_server_proc.wait(timeout=10)
+            except subprocess.TimeoutExpired:
+                prov_server_proc.kill()
 
         # Clear message-in-a-bottle file.
         bottle_path = 'logs/bottle.log'
