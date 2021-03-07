@@ -54,7 +54,7 @@ def main(config_path):
             run_and_monitor([python, upgrade_script], log_file_prefix='upgrade')
 
         finally:
-            # Stop the provisional server.
+            # Stop the provisional server, even if upgrading failed for some reason.
             prov_server_proc.terminate()
             try:
                 prov_server_proc.wait(timeout=10)
