@@ -11,6 +11,7 @@ def main():
     # Compute paths.
     parent_path = os.path.realpath(os.path.join(os.path.realpath(__file__), '..'))
     front_end_path = os.path.realpath(os.path.join(parent_path, '..', 'front-end'))
+    print(front_end_path)
 
     # Run a git pull.
     subprocess.check_call(['git', 'pull'], cwd=parent_path)
