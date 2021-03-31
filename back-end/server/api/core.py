@@ -10,6 +10,8 @@ def authenticate(req, device_index, require_admin=False) -> RegisteredDevice:
     device_id = req.args.get('deviceId')
     if device_id is None:
         json_data = req.json
+        if not json_data:
+            return None
         device_id = json_data.get('deviceId')
 
     device = device_index.devices.get(device_id)
