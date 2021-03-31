@@ -55,6 +55,10 @@ def create_core_blueprint(device_index: DeviceIndex, vote_index: VoteIndex):
     @bp.route('/all-votes', methods=['POST'])
     def get_all_votes():
         """Gets all votes."""
+        device = authenticate(request, device_index)
+        if not device:
+            abort(403)
+            
         return jsonify([vote['vote'] for vote in vote_index.votes.values()])
 
     @bp.route('/vote', methods=['POST'])
@@ -88,11 +92,17 @@ def create_core_blueprint(device_index: DeviceIndex, vote_index: VoteIndex):
     @bp.route('/user-id', methods=['POST'])
     def get_user_id():
         device = authenticate(request, device_index)
+        if not device:
+            abort(403)
+            
         return jsonify(device.user_id)
 
     @bp.route('/unregister-user', methods=['POST'])
     def unregister_user():
         device = authenticate(request, device_index)
+        if not device:
+            abort(403)
+            
         device_index.unregister_user(device.user_id)
         return jsonify({})
 
