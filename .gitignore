@@ -4,3 +4,8 @@ config.json
 # Ignore VS Code config.
 .vscode/
 /.vs
+.ionide/
+
+# Ignore dotnet cruft.
+bin/
+obj/
