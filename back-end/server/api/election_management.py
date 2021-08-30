@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-"""Implements the core APIs, which handle authentication and basic functionality that all citizens can access."""
+"""Implements the admin APIs, which handle votes and other election related things."""
 import logging
 
 from flask import Blueprint, abort, jsonify, request
