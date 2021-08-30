@@ -12,7 +12,7 @@ def main(config_path):
 
     @app.route('/')
     @app.route('/<path:path>')
-    def root():
+    def root(path):
         response = make_response(f"You tried to access the site, but the server is not ready yet. Try again later.")
         response.status_code = 503
 
