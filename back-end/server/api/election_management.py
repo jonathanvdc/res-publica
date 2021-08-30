@@ -3,9 +3,11 @@
 """Implements the core APIs, which handle authentication and basic functionality that all citizens can access."""
 
 from flask import Blueprint, abort, jsonify, request
-from ..persistence.authentication import DeviceIndex, RegisteredDevice
-from ..persistence.votes import VoteIndex
+
 from .core import get_json_arg, authenticate
+from ..persistence.authentication import DeviceIndex
+from ..persistence.votes import VoteIndex
+
 
 def create_election_management_blueprint(device_index: DeviceIndex, vote_index: VoteIndex):
     """Creates a blueprint for the election management API."""
