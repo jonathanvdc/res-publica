@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import json
+import logging
 import os
 from pathlib import Path
 from typing import List
@@ -28,7 +29,10 @@ def create_app(config, bottle_path, data_path='data', static_folder=DEFAULT_STAT
     """Creates the server as a Flask app."""
 
     app = Flask(__name__, static_folder=static_folder)
-    app.log = config.get('flask-logs')
+    log_status = config.get('flask-logs')
+    app.logger.disabled = not log_status
+    log = logging.getLogger('werkzeug')
+    log.disabled = not log_status
 
     Path(data_path).mkdir(parents=True, exist_ok=True)
     device_index = read_or_create_device_index(
