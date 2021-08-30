@@ -164,7 +164,7 @@ def create_app(config, bottle_path, data_path='data', static_folder=DEFAULT_STAT
 
             redditor = reddit.user.me()
         except prawcore.exceptions.OAuthException as e:
-            send_to_log(f'Failed to log into reddit with error: {e}')
+            send_to_log(f'Failed to log into reddit with error: {e}', name="server")
             raise
 
         # Don't allow suspended accounts to sign in.
