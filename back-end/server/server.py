@@ -28,6 +28,7 @@ def create_app(config, bottle_path, data_path='data', static_folder=DEFAULT_STAT
     """Creates the server as a Flask app."""
 
     app = Flask(__name__, static_folder=static_folder)
+    app.log = config.get('flask-logs')
 
     Path(data_path).mkdir(parents=True, exist_ok=True)
     device_index = read_or_create_device_index(

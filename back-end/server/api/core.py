@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 """Implements the core APIs, which handle authentication and basic functionality that all citizens can access."""
+import logging
 
 from flask import Blueprint, abort, jsonify, request
 from ..persistence.authentication import DeviceIndex, RegisteredDevice
@@ -113,3 +114,6 @@ def create_core_blueprint(device_index: DeviceIndex, vote_index: VoteIndex):
         return jsonify({})
 
     return bp
+
+
+logging.getLogger('core').addHandler(logging.NullHandler())
