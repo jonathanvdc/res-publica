@@ -75,6 +75,9 @@ def create_election_management_blueprint(device_index: DeviceIndex, vote_index: 
         option_id = get_json_arg(request, 'optionId')
         result = vote_index.mark_resignation(vote_id, option_id, device)
         logging.info(f'{device.user_id} has marked resignation for {option_id} in the vote with the id {vote_id}.')
-        return jsonify()
+        return jsonify(result)
 
     return bp
+
+
+logging.getLogger('election_management').addHandler(logging.NullHandler())
