@@ -15,16 +15,16 @@ def main():
     print(front_end_path)
 
     # Run a git pull.
-    subprocess.check_call(['git', 'pull'], cwd=parent_path)
+    subprocess.check_call(['git', 'pull'], cwd=parent_path, shell=True)
 
     # Install npm packages.
-    subprocess.check_call(['npm', 'install'], cwd=front_end_path)
+    subprocess.check_call(['npm', 'install'], cwd=front_end_path, shell=True)
 
     # Build the front-end.
-    subprocess.check_call(['npm', 'run-script', 'build'], cwd=front_end_path)
+    subprocess.check_call(['npm', 'run-script', 'build'], cwd=front_end_path, shell=True)
 
     # Install Python packages.
-    subprocess.check_call(['pip3', 'install', '-r', 'requirements.txt'], cwd=parent_path)
+    subprocess.check_call(['pip3', 'install', '-r', 'requirements.txt'], cwd=parent_path, shell=True)
 
 
 if __name__ == "__main__":
