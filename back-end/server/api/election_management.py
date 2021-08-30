@@ -24,7 +24,11 @@ def create_election_management_blueprint(device_index: DeviceIndex, vote_index: 
 
         proposal = get_json_arg(request, 'proposal')
         result = vote_index.create_vote(proposal)
-        send_to_log(f'{device.user_id} has created a new vote with the id {result["id"]}.', name='election-management')
+        send_to_log(
+            f'{device.user_id} has created a new vote with the id {result["id"]}.',
+            name='election-management',
+            level="INFO"
+        )
         return jsonify(result)
 
     @bp.route('/cancel-vote', methods=['POST'])
@@ -37,7 +41,11 @@ def create_election_management_blueprint(device_index: DeviceIndex, vote_index: 
         vote_id = get_json_arg(request, 'voteId')
         result = vote_index.cancel_vote(vote_id)
         if result:
-            send_to_log(f'{device.user_id} has cancelled a vote with the id {vote_id}.', name='election-management')
+            send_to_log(
+                f'{device.user_id} has cancelled a vote with the id {vote_id}.',
+                name='election-management',
+                level="INFO"
+            )
         return jsonify(result)
 
     @bp.route('/edit-vote', methods=['POST'])
@@ -49,7 +57,11 @@ def create_election_management_blueprint(device_index: DeviceIndex, vote_index: 
 
         vote = get_json_arg(request, 'vote')
         result = vote_index.edit_vote(vote, device)
-        send_to_log(f'{device.user_id} has edited the vote with the id {vote["id"]}.', name='election-management')
+        send_to_log(
+            f'{device.user_id} has edited the vote with the id {vote["id"]}.',
+            name='election-management',
+            level="INFO"
+        )
         return jsonify(result)
 
     @bp.route('/add-vote-option', methods=['POST'])
@@ -63,8 +75,9 @@ def create_election_management_blueprint(device_index: DeviceIndex, vote_index: 
         candidate = get_json_arg(request, 'option')
         result = vote_index.add_option(vote_id, candidate, device)
         send_to_log(
-            f'{device.user_id} has retroactively added {candidate} to the vote with the id {vote_id}.',
-            name='election-management'
+            f'{device.user_id} has retroactively added {candidate["name"]} to the vote with the id {vote_id}.',
+            name='election-management',
+            level="INFO"
         )
         return jsonify(result)
 
@@ -80,7 +93,8 @@ def create_election_management_blueprint(device_index: DeviceIndex, vote_index: 
         result = vote_index.mark_resignation(vote_id, option_id, device)
         send_to_log(
             f'{device.user_id} has marked resignation for {option_id} in the vote with the id {vote_id}.',
-            name='election-management'
+            name='election-management',
+            level="INFO"
         )
         return jsonify(result)
 

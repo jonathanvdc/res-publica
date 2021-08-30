@@ -16,4 +16,4 @@ def write_json(data, path):
 def send_to_log(string, name, level='ERROR'):
     now = datetime.now()
     asctime = now.strftime('%d.%m.%Y %H:%M:%S %Z')
-    print(f"{name}|{level}|{asctime}\t\t{string}")
+    print(f"{name} | {level} | {asctime}\t\t{string}")
