@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 
 """Implements the admin APIs, which handle votes and other election related things."""
-import logging
 
 from flask import Blueprint, abort, jsonify, request
 
