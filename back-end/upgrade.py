@@ -7,7 +7,7 @@ import subprocess
 
 
 def main():
-    """The script's entry point. Takes a path to the config file."""
+    """The script's entry point."""
 
     # Compute paths.
     parent_path = os.path.realpath(os.path.join(os.path.realpath(__file__), '..'))
