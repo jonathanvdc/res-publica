@@ -77,7 +77,7 @@ class VoteIndex(object):
         try:
             return self.prepare_for_transmission(self.votes[vote_id], device)
         except KeyError:
-            send_to_log(f'Attempted to get nonexistent vote {vote_id}')
+            send_to_log(f'Attempted to get nonexistent vote {vote_id}', name='votes')
             raise
 
     def cast_ballot(self, vote_id: VoteId, ballot: Ballot, device: RegisteredDevice) -> Ballot:

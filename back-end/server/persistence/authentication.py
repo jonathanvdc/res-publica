@@ -94,7 +94,7 @@ class DeviceIndex(object):
             try:
                 del self.devices[device.device_id]
             except KeyError:
-                send_to_log(f'Attempted to delete nonexistent device {device.device_id}')
+                send_to_log(f'Attempted to delete nonexistent device {device.device_id}', 'authentication')
                 raise
 
         del self.users_to_devices[user_id]

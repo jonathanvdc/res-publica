@@ -84,7 +84,7 @@ def scrape_cfc(reddit: Reddit, url: str, discern_candidates: bool = False) -> Vo
     try:
         post = reddit.submission(url=url)
     except praw.exceptions.InvalidURL:
-        send_to_log('Invalid URL passed to scrape_cfc!')
+        send_to_log('Invalid URL passed to scrape_cfc!', name='scrape')
         raise
 
     # Parse the title.
