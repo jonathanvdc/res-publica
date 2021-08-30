@@ -6,12 +6,13 @@ import sys
 from flask import Flask, make_response
 from server.persistence.helpers import read_json
 
+
 def main(config_path):
     app = Flask(__name__)
 
     @app.route('/')
     @app.route('/<path:path>')
-    def root(path = ''):
+    def root():
         response = make_response(f"You tried to access a site, but the server is not ready yet. Try again later.")
         response.status_code = 503
 
@@ -19,6 +20,7 @@ def main(config_path):
 
     config = read_json(config_path)
     app.run(**config.get('host', {}))
+
 
 if __name__ == '__main__':
     main(sys.argv[1])

@@ -6,6 +6,7 @@ from flask import Blueprint, abort, jsonify, request
 from ..persistence.authentication import DeviceIndex, RegisteredDevice
 from ..persistence.votes import VoteIndex
 
+
 def authenticate(req, device_index, require_admin=False) -> RegisteredDevice:
     device_id = req.args.get('deviceId')
     if device_id is None:
@@ -17,12 +18,13 @@ def authenticate(req, device_index, require_admin=False) -> RegisteredDevice:
     device = device_index.devices.get(device_id)
 
     if require_admin and device is not None \
-        and device.user_id not in device_index.admins \
-        and device.user_id not in device_index.developers:
+            and device.user_id not in device_index.admins \
+            and device.user_id not in device_index.developers:
 
         return None
     else:
         return device
+
 
 def get_auth_level(req, device_index):
     device = authenticate(req, device_index)
@@ -35,11 +37,13 @@ def get_auth_level(req, device_index):
     else:
         return 'authenticated'
 
+
 def get_json_arg(req, key: str):
     try:
         return req.json[key]
     except KeyError:
         abort(400)
+
 
 def create_core_blueprint(device_index: DeviceIndex, vote_index: VoteIndex):
     """Creates a blueprint for the core API."""
@@ -60,7 +64,7 @@ def create_core_blueprint(device_index: DeviceIndex, vote_index: VoteIndex):
         device = authenticate(request, device_index)
         if not device:
             abort(403)
-            
+
         return jsonify([vote['vote'] for vote in vote_index.votes.values()])
 
     @bp.route('/vote', methods=['POST'])
@@ -84,8 +88,8 @@ def create_core_blueprint(device_index: DeviceIndex, vote_index: VoteIndex):
             abort(403)
 
         ballot = get_json_arg(request, 'ballot')
-        voteId = get_json_arg(request, 'voteId')
-        return jsonify(vote_index.cast_ballot(voteId, ballot, device))
+        vote_id = get_json_arg(request, 'voteId')
+        return jsonify(vote_index.cast_ballot(vote_id, ballot, device))
 
     @bp.route('/is-authenticated', methods=['POST'])
     def check_is_authenticated():
@@ -96,7 +100,7 @@ def create_core_blueprint(device_index: DeviceIndex, vote_index: VoteIndex):
         device = authenticate(request, device_index)
         if not device:
             abort(403)
-            
+
         return jsonify(device.user_id)
 
     @bp.route('/unregister-user', methods=['POST'])
@@ -104,7 +108,7 @@ def create_core_blueprint(device_index: DeviceIndex, vote_index: VoteIndex):
         device = authenticate(request, device_index)
         if not device:
             abort(403)
-            
+
         device_index.unregister_user(device.user_id)
         return jsonify({})
 

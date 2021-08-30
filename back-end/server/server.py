@@ -1,28 +1,28 @@
 #!/usr/bin/env python3
 
-import os
 import json
-import praw
-import prawcore.exceptions
-import subprocess
-import time
+import os
 from pathlib import Path
 from typing import List
-from collections import defaultdict
+
+import praw
+import prawcore.exceptions
 from flask import Flask, request, redirect, send_from_directory, jsonify, abort
 from werkzeug.exceptions import NotFound
 from werkzeug.urls import url_encode
+
 from .api.core import create_core_blueprint, get_auth_level
 from .api.election_management import create_election_management_blueprint
 from .persistence.authentication import read_or_create_device_index, RegisteredDevice
-from .persistence.votes import read_or_create_vote_index
 from .persistence.helpers import write_json, send_to_log
+from .persistence.votes import read_or_create_vote_index
 from .scrape import scrape_cfc
 
 DEFAULT_STATIC_FOLDER = os.path.join(
     os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__)))),
     'front-end',
     'build')
+
 
 def create_app(config, bottle_path, data_path='data', static_folder=DEFAULT_STATIC_FOLDER):
     """Creates the server as a Flask app."""
@@ -126,7 +126,7 @@ def create_app(config, bottle_path, data_path='data', static_folder=DEFAULT_STAT
         if func is None:
             raise RuntimeError('Not running with the Werkzeug Server')
 
-        write_json({ 'action': 'restart' }, bottle_path)
+        write_json({'action': 'restart'}, bottle_path)
 
         func()
         return jsonify({})

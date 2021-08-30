@@ -6,6 +6,7 @@ import tempfile
 import pytest
 from ..server import create_app
 
+
 @pytest.fixture
 def client():
     test_config = {
@@ -26,21 +27,25 @@ def client():
         # Who cares.
         pass
 
+
 def test_main_page(client):
     """Tests that the server will serve the main page."""
 
     rv = client.get('/')
     assert rv.data.startswith(b'<!doctype html>')
 
+
 def test_empty_vote_list(client):
     """Tests that the server can return an empty list of votes."""
     rv = client.post('/api/core/all-votes')
     assert len(rv.json) == 0
 
+
 def test_get_client_id(client):
     """Tests that the server can return an empty list of votes."""
     rv = client.get('/api/core/client-id')
     assert rv.json == 'test'
+
 
 def test_not_initially_authenticated(client):
     """Tests that the server can return an empty list of votes."""
