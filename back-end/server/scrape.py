@@ -12,9 +12,9 @@ from markdown import markdown
 from typing import Any, List, Union
 from .persistence.helpers import read_json, send_to_log
 
-
 Vote = Any
 VoteOption = Any
+
 
 def markdown_to_plain_text(markdown_text: str) -> str:
     # Base on Jason Coon's answer to Krish's StackOverflow
@@ -23,6 +23,7 @@ def markdown_to_plain_text(markdown_text: str) -> str:
     html = markdown(markdown_text)
     return ''.join(BeautifulSoup(html, features='html.parser').findAll(text=True))
 
+
 def strip_reddit_prefix(username: str) -> str:
     username = username.lstrip('/')
     if username.lower().startswith('u/'):
@@ -30,7 +31,8 @@ def strip_reddit_prefix(username: str) -> str:
 
     return username
 
-def split_on_one_of(value: str, separators: List[str], maxsplit=None) -> str:
+
+def split_on_one_of(value: str, separators: List[str], maxsplit=None) -> list[str]:
     for sep in separators:
         split = value.split(sep, maxsplit=maxsplit)
         if len(split) > 1:
@@ -38,14 +40,16 @@ def split_on_one_of(value: str, separators: List[str], maxsplit=None) -> str:
 
     return [value]
 
+
 def parse_candidate(candidate_name: str, affiliation_separators: List[str]):
     without_prefix = strip_reddit_prefix(candidate_name.strip().strip(' ' + ''.join(affiliation_separators)))
     split = split_on_one_of(without_prefix, affiliation_separators, 1)
     if len(split) == 1:
-        return { "name": without_prefix.strip() }
+        return {"name": without_prefix.strip()}
     else:
         username, party = split
-        return { "name": username.strip(), "affiliation": party.strip() }
+        return {"name": username.strip(), "affiliation": party.strip()}
+
 
 def parse_cfc(body: str, discern_candidates: bool = False) -> Union[VoteOption, None]:
     """Parses a CFC."""
@@ -80,7 +84,7 @@ def scrape_cfc(reddit: Reddit, url: str, discern_candidates: bool = False) -> Vo
     try:
         post = reddit.submission(url=url)
     except praw.exceptions.InvalidURL:
-        send_to_log('Invalid URL passed to scrape_cfc!')
+        send_to_log('Invalid URL passed to scrape_cfc!', name='scrape')
         raise
 
     # Parse the title.

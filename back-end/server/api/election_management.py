@@ -1,11 +1,14 @@
 #!/usr/bin/env python3
 
-"""Implements the core APIs, which handle authentication and basic functionality that all citizens can access."""
+"""Implements the admin APIs, which handle votes and other election related things."""
 
 from flask import Blueprint, abort, jsonify, request
-from ..persistence.authentication import DeviceIndex, RegisteredDevice
-from ..persistence.votes import VoteIndex
+
 from .core import get_json_arg, authenticate
+from ..persistence.authentication import DeviceIndex
+from ..persistence.votes import VoteIndex
+from ..persistence.helpers import send_to_log
+
 
 def create_election_management_blueprint(device_index: DeviceIndex, vote_index: VoteIndex):
     """Creates a blueprint for the election management API."""
@@ -19,7 +22,13 @@ def create_election_management_blueprint(device_index: DeviceIndex, vote_index: 
             abort(403)
 
         proposal = get_json_arg(request, 'proposal')
-        return jsonify(vote_index.create_vote(proposal))
+        result = vote_index.create_vote(proposal)
+        send_to_log(
+            f'{device.user_id} has created a new vote with the id {result["id"]}.',
+            name='election-management',
+            level="INFO"
+        )
+        return jsonify(result)
 
     @bp.route('/cancel-vote', methods=['POST'])
     def cancel_vote():
@@ -29,7 +38,14 @@ def create_election_management_blueprint(device_index: DeviceIndex, vote_index: 
             abort(403)
 
         vote_id = get_json_arg(request, 'voteId')
-        return jsonify(vote_index.cancel_vote(vote_id))
+        result = vote_index.cancel_vote(vote_id)
+        if result:
+            send_to_log(
+                f'{device.user_id} has cancelled a vote with the id {vote_id}.',
+                name='election-management',
+                level="INFO"
+            )
+        return jsonify(result)
 
     @bp.route('/edit-vote', methods=['POST'])
     def edit_vote():
@@ -39,7 +55,13 @@ def create_election_management_blueprint(device_index: DeviceIndex, vote_index: 
             abort(403)
 
         vote = get_json_arg(request, 'vote')
-        return jsonify(vote_index.edit_vote(vote, device))
+        result = vote_index.edit_vote(vote, device)
+        send_to_log(
+            f'{device.user_id} has edited the vote with the id {vote["id"]}.',
+            name='election-management',
+            level="INFO"
+        )
+        return jsonify(result)
 
     @bp.route('/add-vote-option', methods=['POST'])
     def add_vote_option():
@@ -50,7 +72,13 @@ def create_election_management_blueprint(device_index: DeviceIndex, vote_index: 
 
         vote_id = get_json_arg(request, 'voteId')
         candidate = get_json_arg(request, 'option')
-        return jsonify(vote_index.add_option(vote_id, candidate, device))
+        result = vote_index.add_option(vote_id, candidate, device)
+        send_to_log(
+            f'{device.user_id} has retroactively added {candidate["name"]} to the vote with the id {vote_id}.',
+            name='election-management',
+            level="INFO"
+        )
+        return jsonify(result)
 
     @bp.route('/resign', methods=['POST'])
     def process_resignation():
@@ -61,6 +89,12 @@ def create_election_management_blueprint(device_index: DeviceIndex, vote_index: 
 
         vote_id = get_json_arg(request, 'voteId')
         option_id = get_json_arg(request, 'optionId')
-        return jsonify(vote_index.mark_resignation(vote_id, option_id, device))
+        result = vote_index.mark_resignation(vote_id, option_id, device)
+        send_to_log(
+            f'{device.user_id} has marked resignation for {option_id} in the vote with the id {vote_id}.',
+            name='election-management',
+            level="INFO"
+        )
+        return jsonify(result)
 
     return bp

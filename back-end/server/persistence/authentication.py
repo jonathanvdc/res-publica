@@ -7,13 +7,12 @@ from pathlib import Path
 from typing import Dict, Set, List, Any
 from .helpers import read_json, write_json, send_to_log
 
-
 DeviceId = str
 UserId = str
 VoterRequirement = Any
 
-
-# Allow devices to stay registered for thirty days until they expire. This is kept to provide backward compatibility with older configs, so the server does not bug out after an upgrade.
+# Allow devices to stay registered for thirty days until they expire.
+# This is kept to provide backward compatibility with older configs, so the server does not bug out after an upgrade.
 SECONDS_UNTIL_EXPIRY = 60 * 60 * 24 * 30
 
 OPERATORS = {
@@ -30,8 +29,10 @@ OPERANDS = {
     'redditor.total_karma': lambda redditor: redditor.link_karma + redditor.comment_karma
 }
 
+
 class RegisteredDevice(object):
     """A class that represents a device ID registered with a particular user."""
+
     def __init__(self, device_id: DeviceId, user_id: UserId, expiry: float):
         self.device_id = device_id
         self.user_id = user_id
@@ -44,14 +45,15 @@ class RegisteredDevice(object):
 
 class DeviceIndex(object):
     """An index that keeps track of all registered devices."""
+
     def __init__(
-        self,
-        devices: Dict[DeviceId, RegisteredDevice],
-        admins: Set[UserId],
-        developers: Set[UserId],
-        registered_voters: Set[UserId],
-        voter_requirements: List[VoterRequirement],
-        persistence_path: str):
+            self,
+            devices: Dict[DeviceId, RegisteredDevice],
+            admins: Set[UserId],
+            developers: Set[UserId],
+            registered_voters: Set[UserId],
+            voter_requirements: List[VoterRequirement],
+            persistence_path: str):
 
         self.persistence_path = persistence_path
         self.devices = devices
@@ -78,21 +80,21 @@ class DeviceIndex(object):
 
         return device
 
-    def register_user(self, user_id: UserId, persist_changes: bool=True):
+    def register_user(self, user_id: UserId, persist_changes: bool = True):
         """Adds a new user to the device index, but does not add an associated device."""
         self.registered_voters.add(user_id)
 
         if persist_changes:
             write_device_index(self, self.persistence_path)
 
-    def unregister_user(self, user_id: UserId, persist_changes: bool=True):
+    def unregister_user(self, user_id: UserId, persist_changes: bool = True):
         """Removes a user from the device index. Removes any associated devices."""
         self.registered_voters.remove(user_id)
         for device in self.users_to_devices[user_id]:
             try:
                 del self.devices[device.device_id]
             except KeyError:
-                send_to_log(f'Attempted to delete nonexistent device {device.device_id}')
+                send_to_log(f'Attempted to delete nonexistent device {device.device_id}', 'authentication')
                 raise
 
         del self.users_to_devices[user_id]
@@ -100,8 +102,9 @@ class DeviceIndex(object):
         if persist_changes:
             write_device_index(self, self.persistence_path)
 
-    def check_requirements(self, redditor) -> bool:
+    def check_requirements(self, redditor) -> list:
         """Tests if a Redditor is eligible to vote."""
+
         def parse_operand(operand):
             if isinstance(operand, str):
                 return OPERANDS[operand](redditor)

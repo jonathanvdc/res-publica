@@ -1,22 +1,22 @@
 #!/usr/bin/env python3
 
-import os
 import json
-import praw
-import prawcore.exceptions
-import subprocess
-import time
+import logging
+import os
 from pathlib import Path
 from typing import List
-from collections import defaultdict
+
+import praw
+import prawcore.exceptions
 from flask import Flask, request, redirect, send_from_directory, jsonify, abort
 from werkzeug.exceptions import NotFound
 from werkzeug.urls import url_encode
+
 from .api.core import create_core_blueprint, get_auth_level
 from .api.election_management import create_election_management_blueprint
 from .persistence.authentication import read_or_create_device_index, RegisteredDevice
-from .persistence.votes import read_or_create_vote_index
 from .persistence.helpers import write_json, send_to_log
+from .persistence.votes import read_or_create_vote_index
 from .scrape import scrape_cfc
 
 DEFAULT_STATIC_FOLDER = os.path.join(
@@ -24,10 +24,15 @@ DEFAULT_STATIC_FOLDER = os.path.join(
     'front-end',
     'build')
 
+
 def create_app(config, bottle_path, data_path='data', static_folder=DEFAULT_STATIC_FOLDER):
     """Creates the server as a Flask app."""
 
     app = Flask(__name__, static_folder=static_folder)
+    log_status = config.get('flask-logs')
+    app.logger.disabled = not log_status
+    log = logging.getLogger('werkzeug')
+    log.disabled = not log_status
 
     Path(data_path).mkdir(parents=True, exist_ok=True)
     device_index = read_or_create_device_index(
@@ -126,7 +131,7 @@ def create_app(config, bottle_path, data_path='data', static_folder=DEFAULT_STAT
         if func is None:
             raise RuntimeError('Not running with the Werkzeug Server')
 
-        write_json({ 'action': 'restart' }, bottle_path)
+        write_json({'action': 'restart'}, bottle_path)
 
         func()
         return jsonify({})
@@ -159,7 +164,7 @@ def create_app(config, bottle_path, data_path='data', static_folder=DEFAULT_STAT
 
             redditor = reddit.user.me()
         except prawcore.exceptions.OAuthException as e:
-            send_to_log(f'Failed to log into reddit with error: {e}')
+            send_to_log(f'Failed to log into reddit with error: {e}', name="server")
             raise
 
         # Don't allow suspended accounts to sign in.
