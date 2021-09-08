@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-
 import sys
 from server.server import create_app
 from server.persistence.helpers import read_json

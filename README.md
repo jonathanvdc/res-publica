@@ -54,7 +54,8 @@ Navigate to the `back-end` directory. Create a file called `config.json` that co
         "authenticated-admin": ["registered-voters", "add-registered-voter", "remove-registered-voter"],
         "authenticated-developer": ["registered-voters", "add-registered-voter", "remove-registered-voter", "upgrade-server"]
     },
-    "login_expiry": 2592000
+    "login_expiry": 2592000,
+    "flask-logs": false
 }
 ```
 

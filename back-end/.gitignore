@@ -2,11 +2,12 @@
 __pycache__/
 .pytest_cache
 
+# Ignore config (a second time, just for safety)
+config.json
+
 # Never commit server data.
 data/
 
 # Ignore log files.
 *.log
-
-# Ignore session locks
-*.lock
+logs/

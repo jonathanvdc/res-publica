@@ -11,6 +11,7 @@ from pathlib import Path
 from datetime import datetime, timezone
 from server.persistence.helpers import read_json, write_json
 
+
 def run_and_monitor(args, log_file_prefix='server'):
     """Runs a program to completion and sends its output to a log."""
     time_string = datetime.now(timezone.utc).strftime('%Y%m%d%H%M')
@@ -18,20 +19,23 @@ def run_and_monitor(args, log_file_prefix='server'):
     log = open(f'logs/{log_file_prefix}-{time_string}.log', 'a')
     return subprocess.check_call(args, stdout=log, stderr=log, stdin=subprocess.DEVNULL)
 
+
 def is_port_in_use(hostname, port):
     """Checks if a port is in use."""
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         return s.connect_ex((hostname, port)) == 0
 
+
 def main(config_path):
     back_end_path = os.path.realpath(os.path.join(os.path.realpath(__file__), '..'))
 
-    # Because on Windows machines python is usually installed as 'python' but UNIX rather uses 'python3' and 'python' refers to py2
+    # Because on Windows machines python is usually installed as 'python'
+    # but UNIX rather uses 'python3' and 'python' refers to py2
     if os.name == 'posix':
         python = 'python3'
     else:
         python = 'python'
-    
+
     restart = True
     while restart:
         restart = False
@@ -85,6 +89,7 @@ def main(config_path):
             print(' >>> Restart requested')
         else:
             print(' >>> Goodbye!')
+
 
 if __name__ == "__main__":
     main(sys.argv[1])

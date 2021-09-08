@@ -9,7 +9,6 @@ from typing import Any, Dict, List
 from .helpers import read_json, write_json, send_to_log
 from .authentication import RegisteredDevice
 
-
 VoteId = str
 OptionId = str
 BallotId = str
@@ -34,6 +33,7 @@ def get_ballot_kind(ballot_type: Any) -> str:
 
 class VoteIndex(object):
     """Keeps track of votes."""
+
     def __init__(self, index_path: str, votes: Dict[VoteId, VoteAndBallots], vote_secrets: Dict[VoteId, str]):
         self.index_path = index_path
         self.votes = votes
@@ -77,7 +77,7 @@ class VoteIndex(object):
         try:
             return self.prepare_for_transmission(self.votes[vote_id], device)
         except KeyError:
-            send_to_log(f'Attempted to get nonexistent vote {vote_id}')
+            send_to_log(f'Attempted to get nonexistent vote {vote_id}', name='votes')
             raise
 
     def cast_ballot(self, vote_id: VoteId, ballot: Ballot, device: RegisteredDevice) -> Ballot:
@@ -86,7 +86,7 @@ class VoteIndex(object):
 
         vote = self.votes[vote_id]
         if not is_vote_active(vote):
-            return { 'error': 'Vote already closed. Sorry!' }
+            return {'error': 'Vote already closed. Sorry!'}
 
         ballot_id = self.get_ballot_id(vote_id, device)
         vote['ballots'] = [ballot for ballot in vote['ballots'] if ballot['id'] != ballot_id]
@@ -100,42 +100,42 @@ class VoteIndex(object):
         """Adds a vote option to a vote that may already be active."""
         self.heartbeat()
 
-        voteAndBallots = self.votes[vote_id]
-        vote = voteAndBallots['vote']
-        if not is_vote_active(voteAndBallots):
-            return { 'error': 'Vote already closed. Sorry!' }
+        vote_and_ballots = self.votes[vote_id]
+        vote = vote_and_ballots['vote']
+        if not is_vote_active(vote_and_ballots):
+            return {'error': 'Vote already closed. Sorry!'}
         elif any(opt['id'] == option['id'] for opt in vote['options']):
-            return { 'error': f'A vote option with ID {option["id"]} already exists.' }
+            return {'error': f'A vote option with ID {option["id"]} already exists.'}
 
         vote['options'].append(option)
 
         if 'min' in vote['type']:
             # Fix all ballots by autofilling them with a rating of zero
             # for the new candidate.
-            for ballot in voteAndBallots['ballots']:
+            for ballot in vote_and_ballots['ballots']:
                 ballot['ratingPerOption'].append({
                     'optionId': option['id'],
                     'rating': vote['type']['min']
                 })
 
         # Write the updated vote to disk.
-        self.write_vote(voteAndBallots)
+        self.write_vote(vote_and_ballots)
 
         # Transmit the new vote.
-        return self.prepare_for_transmission(voteAndBallots, device)['vote']
+        return self.prepare_for_transmission(vote_and_ballots, device)['vote']
 
     def edit_vote(self, vote: Vote, device: RegisteredDevice) -> Vote:
         """Edits a vote. The ballot type must not change."""
         self.heartbeat()
 
-        voteAndBallots = self.votes[vote['id']]
-        old_vote = voteAndBallots['vote']
+        vote_and_ballots = self.votes[vote['id']]
+        old_vote = vote_and_ballots['vote']
 
         old_option_ids = [opt['id'] for opt in old_vote['options']]
         new_option_ids = [opt['id'] for opt in vote['options']]
 
         if old_option_ids != new_option_ids and old_vote['deadline'] < time.time():
-            return { 'error': 'Candidates cannot be added or removed after the election has ended.' }
+            return {'error': 'Candidates cannot be added or removed after the election has ended.'}
         elif get_ballot_kind(old_vote['type']) != get_ballot_kind(vote['type']):
             return {
                 'error': f'Cannot change ballots of type {get_ballot_kind(old_vote["type"])} '
@@ -143,14 +143,14 @@ class VoteIndex(object):
             }
 
         # Update the vote.
-        voteAndBallots['vote'] = vote
+        vote_and_ballots['vote'] = vote
 
         # Add/remove candidates from ballots.
         added_candidates = set(new_option_ids).difference(old_option_ids)
         removed_candidates = set(old_option_ids).difference(new_option_ids)
 
         new_ballots = []
-        for ballot in voteAndBallots['ballots']:
+        for ballot in vote_and_ballots['ballots']:
             if 'ratingPerOption' in ballot:
                 # Remove deleted candidates.
                 ratings = [r for r in ballot['ratingPerOption'] if r['optionId'] not in removed_candidates]
@@ -171,27 +171,26 @@ class VoteIndex(object):
             else:
                 new_ballots.append(ballot)
 
-
         # Write the updated vote to disk.
-        self.write_vote(voteAndBallots)
+        self.write_vote(vote_and_ballots)
 
         # Transmit the new vote.
-        return self.prepare_for_transmission(voteAndBallots, device)['vote']
+        return self.prepare_for_transmission(vote_and_ballots, device)['vote']
 
-    def mark_resignation(self, vote_id: VoteId, optionId: OptionId, device: RegisteredDevice) -> Vote:
+    def mark_resignation(self, vote_id: VoteId, option_id: OptionId, device: RegisteredDevice) -> Vote:
         """Indicates that a candidate has resigned from their seat."""
         self.heartbeat()
 
         vote = self.votes[vote_id]
         if is_vote_active(vote):
-            return { 'error': 'Vote not closed yet.' }
+            return {'error': 'Vote not closed yet.'}
 
         resignations = vote['vote'].get('resigned', [])
-        if optionId in resignations:
-            return { 'error': 'Candidate has already resigned.' }
+        if option_id in resignations:
+            return {'error': 'Candidate has already resigned.'}
 
         # Make the candidate resign.
-        resignations.append(optionId)
+        resignations.append(option_id)
         vote['vote']['resigned'] = resignations
         self.write_vote(vote)
 
@@ -254,7 +253,7 @@ class VoteIndex(object):
 
         new_vote['id'] = new_id
 
-        self.votes[new_id] = { 'vote': new_vote, 'ballots': [] }
+        self.votes[new_id] = {'vote': new_vote, 'ballots': []}
 
         # Generate a secret.
         secret_hash = SHA3_256.new(new_id.encode('utf-8'))
