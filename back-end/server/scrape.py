@@ -32,7 +32,7 @@ def strip_reddit_prefix(username: str) -> str:
     return username
 
 
-def split_on_one_of(value: str, separators: List[str], maxsplit=None) -> list[str]:
+def split_on_one_of(value: str, separators: List[str], maxsplit=None) -> List[str]:
     for sep in separators:
         split = value.split(sep, maxsplit=maxsplit)
         if len(split) > 1:
