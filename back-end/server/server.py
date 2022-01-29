@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import json
+import base64
 import logging
 import os
 from pathlib import Path
@@ -152,10 +153,13 @@ def create_app(config, bottle_path, data_path='data', static_folder=DEFAULT_STAT
         state = request.args.get('state')
         if not state:
             return redirect(f'auth-failed?error=no-state')
-        elif ';' not in state:
+
+        decoded_state = json.loads(base64.b64decode(state))
+        if len(decoded_state) != 2:
             return redirect(f'auth-failed?error=malformed-state')
 
-        device_id, return_url = state.split(';', maxsplit=2)
+        device_info, return_url = decoded_state
+        device_id = device_info['deviceId']
 
         # Log in with Reddit.
         try:
@@ -181,9 +185,9 @@ def create_app(config, bottle_path, data_path='data', static_folder=DEFAULT_STAT
 
         # Associate the device ID with the Redditor's username.
         if "login_expiry" in config:
-            device_index.register(device_id, redditor.name, config["login_expiry"])
+            device_index.register(device_id, redditor.name, device_info, config["login_expiry"])
         else:
-            device_index.register(device_id, redditor.name)
+            device_index.register(device_id, redditor.name, device_info)
 
         # The user has been authenticated. Time to redirect.
         return redirect(return_url)

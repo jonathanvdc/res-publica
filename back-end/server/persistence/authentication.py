@@ -9,6 +9,7 @@ from .helpers import read_json, write_json, send_to_log
 
 DeviceId = str
 UserId = str
+DeviceInfo = Any
 VoterRequirement = Any
 
 # Allow devices to stay registered for thirty days until they expire.
@@ -33,8 +34,9 @@ OPERANDS = {
 class RegisteredDevice(object):
     """A class that represents a device ID registered with a particular user."""
 
-    def __init__(self, device_id: DeviceId, user_id: UserId, expiry: float):
+    def __init__(self, device_id: DeviceId, device_info: DeviceInfo, user_id: UserId, expiry: float):
         self.device_id = device_id
+        self.device_info = device_info
         self.user_id = user_id
         self.expiry = expiry
 
@@ -67,11 +69,11 @@ class DeviceIndex(object):
             for user_id in set(data.user_id for data in devices.values())
         })
 
-    def register(self, device_id: DeviceId, user_id: UserId, expiry: float = SECONDS_UNTIL_EXPIRY) -> RegisteredDevice:
+    def register(self, device_id: DeviceId, user_id: UserId, device_info: DeviceInfo, expiry: float = SECONDS_UNTIL_EXPIRY) -> RegisteredDevice:
         """Adds a new device to this device index."""
         self.unregister(device_id, persist_changes=False)
 
-        device = RegisteredDevice(device_id, user_id, time.monotonic() + expiry)
+        device = RegisteredDevice(device_id, device_info, user_id, time.monotonic() + expiry)
         self.devices[device_id] = device
         self.users_to_devices[user_id].add(device)
         self.register_user(user_id, persist_changes=False)
@@ -139,7 +141,7 @@ def read_device_index(path: str, voter_requirements: List[VoterRequirement]) -> 
     """Reads the device index from a file."""
     data = read_json(path)
     devices = {
-        device_id: RegisteredDevice(device_id, info['user'], info['expiry'])
+        device_id: RegisteredDevice(device_id, info.get('info'), info['user'], info['expiry'])
         for device_id, info in data['devices'].items()
     }
     return DeviceIndex(
@@ -165,7 +167,8 @@ def write_device_index(index: DeviceIndex, path: str):
     data = {
         device_id: {
             'user': device.user_id,
-            'expiry': device.expiry
+            'expiry': device.expiry,
+            'info': device.device_info
         }
         for device_id, device in index.devices.items()
     }

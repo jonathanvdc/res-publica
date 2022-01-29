@@ -20,6 +20,13 @@ export function isAdmin(auth: AuthenticationLevel): boolean {
     }
 }
 
+export type DeviceDescription = {
+    visitorId: string;
+    confidence: {
+        score: number
+    }
+};
+
 /**
  * An interface for objects that handle user authentication.
  */
@@ -31,8 +38,9 @@ export interface Authenticator {
 
     /**
      * Creates an authentication page.
+     * @param deviceDescription A description of the device that requests the authentication.
      */
-    createAuthenticationPage(): Promise<JSX.Element>;
+    createAuthenticationPage(deviceDescription: DeviceDescription): Promise<JSX.Element>;
 
     /**
      * Gets the user's identifier (if they are authenticated).
@@ -63,6 +71,7 @@ export function makeid(length: number): string {
 }
 
 const deviceIdKey = "deviceId";
+const persistentDeviceIdKey = "persistentDeviceId";
 
 /**
  * Gets a unique identifier for this device.
@@ -74,6 +83,18 @@ export function getDeviceId(): string {
     } else {
         return refreshDeviceId();
     }
+}
+
+/**
+ * Gets a unique identifier for this device.
+ */
+export function getPersistentDeviceId(): string {
+    let val = localStorage.getItem(persistentDeviceIdKey);
+    if (!val) {
+        val = makeid(30);
+        localStorage.setItem(persistentDeviceIdKey, val);
+    }
+    return val;
 }
 
 /**
