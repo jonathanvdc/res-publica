@@ -139,11 +139,18 @@ class DeviceIndex(object):
 
 def read_device_index(path: str, voter_requirements: List[VoterRequirement]) -> DeviceIndex:
     """Reads the device index from a file."""
+
+    # Read devices from JSON.
     data = read_json(path)
     devices = {
         device_id: RegisteredDevice(device_id, info.get('info'), info['user'], info['expiry'])
         for device_id, info in data['devices'].items()
     }
+
+    # Discard devices that are no longer valid.
+    devices = { device_id: device for device_id, device in devices.items() if device.is_alive() }
+
+    # Assemble the device index.
     return DeviceIndex(
         devices,
         set(data.get('admins', [])),
