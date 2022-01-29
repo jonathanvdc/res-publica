@@ -7,7 +7,7 @@ from Crypto.Hash import SHA3_256
 from pathlib import Path
 from typing import Any, Dict, List
 from .helpers import read_json, write_json, send_to_log
-from .authentication import RegisteredDevice
+from .authentication import DeviceIndex, RegisteredDevice
 
 VoteId = str
 OptionId = str
@@ -34,8 +34,14 @@ def get_ballot_kind(ballot_type: Any) -> str:
 class VoteIndex(object):
     """Keeps track of votes."""
 
-    def __init__(self, index_path: str, votes: Dict[VoteId, VoteAndBallots], vote_secrets: Dict[VoteId, str]):
+    def __init__(self,
+                 index_path: str,
+                 devices: DeviceIndex,
+                 votes: Dict[VoteId, VoteAndBallots],
+                 vote_secrets: Dict[VoteId, str]):
+
         self.index_path = index_path
+        self.devices = devices
         self.votes = votes
         self.vote_secrets = vote_secrets
         self.last_heartbeat = time.monotonic()
@@ -297,18 +303,18 @@ def vote_id_to_path(index_path: str, vote_id: VoteId) -> str:
     return os.path.join(os.path.dirname(index_path), 'votes', vote_id) + '.json'
 
 
-def read_or_create_vote_index(path: str) -> VoteIndex:
+def read_or_create_vote_index(path: str, devices: DeviceIndex) -> VoteIndex:
     """Reads a vote index from a file; creates a blank vote index if
        the file does not exist."""
     try:
         vote_secrets = read_json(path)
     except FileNotFoundError:
         Path(path).parent.mkdir(parents=True, exist_ok=True)
-        return VoteIndex(path, {}, {})
+        return VoteIndex(path, devices, {}, {})
 
     votes = {
         vote_id: read_json(vote_id_to_path(path, vote_id))
         for vote_id in vote_secrets.keys()
     }
 
-    return VoteIndex(path, votes, vote_secrets)
+    return VoteIndex(path, devices, votes, vote_secrets)

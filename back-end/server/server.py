@@ -39,7 +39,7 @@ def create_app(config, bottle_path, data_path='data', static_folder=DEFAULT_STAT
     device_index = read_or_create_device_index(
         os.path.join(data_path, 'device-index.json'),
         config.get('voter-requirements', []))
-    vote_index = read_or_create_vote_index(os.path.join(data_path, 'vote-index.json'))
+    vote_index = read_or_create_vote_index(os.path.join(data_path, 'vote-index.json'), device_index)
 
     def authenticate(req, require_admin=False) -> RegisteredDevice:
         device_id = req.args.get('deviceId')
