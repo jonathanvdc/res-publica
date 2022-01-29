@@ -4,7 +4,7 @@ import time
 from datetime import date
 from collections import defaultdict
 from pathlib import Path
-from typing import Dict, Set, List, Any
+from typing import Dict, Set, List, Option, Any
 from .helpers import read_json, write_json, send_to_log
 
 DeviceId = str
@@ -39,6 +39,22 @@ class RegisteredDevice(object):
         self.device_info = device_info
         self.user_id = user_id
         self.expiry = expiry
+
+    def persistent_id(self) -> Option[str]:
+        """"Gets this device's persistent ID."""
+        return self.device_info.get('persistentId')
+
+    def description(self) -> Option[Any]:
+        """Gets this device's description."""
+        return self.device_info.get('description')
+
+    def visitor_id(self) -> Option[str]:
+        """Gets this device's visitor ID."""
+        description = self.description()
+        if description:
+            return description['visitorId']
+        else:
+            return None
 
     def is_alive(self) -> bool:
         """Tests if this registered device has not yet expired."""
