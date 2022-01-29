@@ -4,7 +4,7 @@ import time
 from datetime import date
 from collections import defaultdict
 from pathlib import Path
-from typing import Dict, Set, List, Option, Any
+from typing import Dict, Set, List, Optional, Any
 from .helpers import read_json, write_json, send_to_log
 
 DeviceId = str
@@ -40,15 +40,15 @@ class RegisteredDevice(object):
         self.user_id = user_id
         self.expiry = expiry
 
-    def persistent_id(self) -> Option[str]:
-        """"Gets this device's persistent ID."""
+    def persistent_id(self) -> Optional[str]:
+        """Gets this device's persistent ID."""
         return self.device_info.get('persistentId')
 
-    def description(self) -> Option[Any]:
+    def description(self) -> Optional[Any]:
         """Gets this device's description."""
         return self.device_info.get('description')
 
-    def visitor_id(self) -> Option[str]:
+    def visitor_id(self) -> Optional[str]:
         """Gets this device's visitor ID."""
         description = self.description()
         if description:
@@ -59,6 +59,15 @@ class RegisteredDevice(object):
     def is_alive(self) -> bool:
         """Tests if this registered device has not yet expired."""
         return self.expiry <= time.monotonic()
+
+    def to_json(self) -> Any:
+        """Creates a JSON representation of this device ID."""
+        return {
+            'id': self.device_id,
+            'user': self.user_id,
+            'expiry': self.expiry,
+            'info': self.device_info
+        }
 
 
 class DeviceIndex(object):
@@ -188,11 +197,7 @@ def read_or_create_device_index(path: str, voter_requirements: List[VoterRequire
 def write_device_index(index: DeviceIndex, path: str):
     """Writes the device index to a file."""
     data = {
-        device_id: {
-            'user': device.user_id,
-            'expiry': device.expiry,
-            'info': device.device_info
-        }
+        device_id: device.to_json()
         for device_id, device in index.devices.items()
     }
     to_write = {

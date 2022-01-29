@@ -5,9 +5,9 @@ import time
 import os
 from Crypto.Hash import SHA3_256
 from pathlib import Path
-from typing import Any, Dict, List
+from typing import Any, DefaultDict, Dict, List, Union, Optional
 from .helpers import read_json, write_json, send_to_log
-from .authentication import DeviceIndex, RegisteredDevice
+from .authentication import DeviceIndex, RegisteredDevice, UserId
 
 VoteId = str
 OptionId = str
@@ -15,6 +15,7 @@ BallotId = str
 Vote = Any
 VoteAndBallots = Any
 Ballot = Any
+SuspiciousBallotReport = Any
 
 
 def is_vote_active(vote: VoteAndBallots) -> bool:
@@ -31,6 +32,10 @@ def get_ballot_kind(ballot_type: Any) -> str:
         raise Exception(f'Unknown tallying algorithm {tally}.')
 
 
+def get_suspicious_ballots_path(index_path: str) -> str:
+    return Path(index_path).parent.joinpath('suspicious-ballots.json')
+
+
 class VoteIndex(object):
     """Keeps track of votes."""
 
@@ -38,13 +43,19 @@ class VoteIndex(object):
                  index_path: str,
                  devices: DeviceIndex,
                  votes: Dict[VoteId, VoteAndBallots],
-                 vote_secrets: Dict[VoteId, str]):
+                 vote_secrets: Dict[VoteId, str],
+                 suspicious_ballots: Dict[VoteId, List[SuspiciousBallotReport]]):
 
         self.index_path = index_path
         self.devices = devices
         self.votes = votes
         self.vote_secrets = vote_secrets
+        self.suspicious_ballots = suspicious_ballots
         self.last_heartbeat = time.monotonic()
+
+        # The ballot ID cache remembers ballot IDs.
+        self.ballot_id_cache = DefaultDict(dict)
+        self.ballot_to_voter_cache = DefaultDict(dict)
 
     def heartbeat(self):
         """Allows the vote index to perform cleanup. In practice, this means that vote secrets
@@ -60,6 +71,12 @@ class VoteIndex(object):
             if not is_vote_active(vote) and self.vote_secrets[name]
         }
         if closed_votes:
+            # Clear caches.
+            for vote_id in closed_votes:
+                self.ballot_id_cache[vote_id].clear()
+                self.ballot_to_voter_cache[vote_id].clear()
+
+            # Delete vote secrets.
             self.vote_secrets = {
                 k: '' if k in closed_votes else v
                 for k, v in self.vote_secrets.items()
@@ -98,9 +115,70 @@ class VoteIndex(object):
         vote['ballots'] = [ballot for ballot in vote['ballots'] if ballot['id'] != ballot_id]
         ballot['id'] = ballot_id
         ballot['timestamp'] = time.time()
+
+        self.check_if_suspicious(vote_id, ballot, device)
+
         vote['ballots'].append(ballot)
         self.write_vote(vote)
+
         return ballot
+
+    def check_if_suspicious(self, vote_id: VoteId, ballot: Ballot, device: RegisteredDevice):
+        """Checks if `ballot` looks suspicious. Suspicion is cast when another voter seems to have
+           cast a ballot already from the same device."""
+        vote = self.votes[vote_id]
+
+        persistent_id = device.persistent_id()
+        visitor_id = device.visitor_id()
+
+        # Iterate through all other ballots and check if they seem to be originating from the same
+        # source.
+        for other_ballot in vote['ballots']:
+            if other_ballot['id'] == ballot['id']:
+                continue
+
+            voter_id = self.find_voter(vote_id, other_ballot)
+            if voter_id == None:
+                continue
+
+            for other_device in self.devices.users_to_devices.get(voter_id, []):
+                if other_device.persistent_id() == persistent_id or other_device.visitor_id() == visitor_id:
+                    self.log_suspicious_ballot(vote_id, ballot, other_ballot, device, other_device)
+                    return
+
+    def log_suspicious_ballot(
+        self,
+        vote_id: VoteId,
+        first_ballot: Ballot,
+        second_ballot: Ballot,
+        first_device: RegisteredDevice,
+        second_device: RegisteredDevice):
+        """Logs the arrival of a suspicious ballot."""
+
+        report = {
+            'firstBallot': first_ballot,
+            'secondBallot': second_ballot,
+            'firstDevice': first_device.to_json(),
+            'secondDevice': second_device.to_json()
+        }
+
+        self.suspicious_ballots.setdefault(vote_id, []).append(report)
+        self.write_suspicious_ballots()
+
+    def find_voter(self, vote_id: VoteId, ballot: Ballot) -> Optional[str]:
+        """Finds the user that cast `ballot`."""
+        ballot_id = ballot['id']
+        memoized_result = self.ballot_to_voter_cache[vote_id].get(ballot_id)
+        if memoized_result:
+            return memoized_result
+
+        for user_id in self.devices.users_to_devices.keys():
+            ballot_id = self.get_ballot_id(vote_id, user_id)
+            if ballot_id == ballot_id:
+                self.ballot_to_voter_cache[vote_id][ballot_id] = user_id
+                return user_id
+
+        return None
 
     def add_option(self, vote_id: VoteId, option, device: RegisteredDevice) -> Vote:
         """Adds a vote option to a vote that may already be active."""
@@ -221,15 +299,23 @@ class VoteIndex(object):
         else:
             return vote
 
-    def get_ballot_id(self, vote_id: VoteId, device: RegisteredDevice) -> BallotId:
+    def get_ballot_id(self, vote_id: VoteId, user: Union[RegisteredDevice, UserId]) -> BallotId:
         """Gets a user's ballot ID for a particular vote."""
         self.heartbeat()
         if not self.vote_secrets.get(vote_id):
             raise ValueError(f'Vote with ID {vote_id} either does not exist or is no longer active.')
 
-        hash_obj = SHA3_256.new(device.user_id.encode('utf-8'))
-        hash_obj.update(self.vote_secrets[vote_id].encode('utf-8'))
-        return hash_obj.hexdigest()
+        if isinstance(user, RegisteredDevice):
+            user = user.user_id
+
+        result = self.ballot_id_cache[vote_id].get(user)
+        if not result:
+            hash_obj = SHA3_256.new(user.encode('utf-8'))
+            hash_obj.update(self.vote_secrets[vote_id].encode('utf-8'))
+            result = hash_obj.hexdigest()
+            self.ballot_id_cache[vote_id][user] = result
+
+        return result
 
     def create_vote(self, proposal: Vote) -> Vote:
         """Creates a new vote based on a proposal."""
@@ -289,6 +375,10 @@ class VoteIndex(object):
         """Writes the index itself to disk."""
         write_json(self.vote_secrets, self.index_path)
 
+    def write_suspicious_ballots(self):
+        """Writes suspicious ballot reports to disk."""
+        write_json(self.suspicious_ballots, get_suspicious_ballots_path(self.index_path))
+
     def write_vote(self, vote: VoteAndBallots):
         """Writes a vote to disk."""
         vote_id = vote['vote']['id']
@@ -310,11 +400,16 @@ def read_or_create_vote_index(path: str, devices: DeviceIndex) -> VoteIndex:
         vote_secrets = read_json(path)
     except FileNotFoundError:
         Path(path).parent.mkdir(parents=True, exist_ok=True)
-        return VoteIndex(path, devices, {}, {})
+        return VoteIndex(path, devices, {}, {}, {})
 
     votes = {
         vote_id: read_json(vote_id_to_path(path, vote_id))
         for vote_id in vote_secrets.keys()
     }
 
-    return VoteIndex(path, devices, votes, vote_secrets)
+    try:
+        suspicious_ballots = read_json(get_suspicious_ballots_path(path))
+    except FileNotFoundError:
+        suspicious_ballots = {}
+
+    return VoteIndex(path, devices, votes, vote_secrets, suspicious_ballots)

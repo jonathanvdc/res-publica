@@ -21,7 +21,7 @@ const userPrefsKey = "userPreferences";
  * Gets the user preferences for this device.
  */
 export function getPreferences(): UserPreferences {
-    let val = localStorage.getItem(userPrefsKey);
+    let val = window.localStorage.getItem(userPrefsKey);
     if (val) {
         return { ...defaultPreferences, ...JSON.parse(val) };
     } else {
@@ -35,5 +35,5 @@ export function getPreferences(): UserPreferences {
  * @param preferences The user's preferences for this device.
  */
 export function setPreferences(preferences: UserPreferences): void {
-    localStorage.setItem(userPrefsKey, JSON.stringify(preferences));
+    window.localStorage.setItem(userPrefsKey, JSON.stringify(preferences));
 }

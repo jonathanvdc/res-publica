@@ -77,7 +77,7 @@ const persistentDeviceIdKey = "persistentDeviceId";
  * Gets a unique identifier for this device.
  */
 export function getDeviceId(): string {
-    let val = localStorage.getItem(deviceIdKey);
+    let val = window.localStorage.getItem(deviceIdKey);
     if (val) {
         return val;
     } else {
@@ -89,10 +89,10 @@ export function getDeviceId(): string {
  * Gets a unique identifier for this device.
  */
 export function getPersistentDeviceId(): string {
-    let val = localStorage.getItem(persistentDeviceIdKey);
+    let val = window.localStorage.getItem(persistentDeviceIdKey);
     if (!val) {
         val = makeid(30);
-        localStorage.setItem(persistentDeviceIdKey, val);
+        window.localStorage.setItem(persistentDeviceIdKey, val);
     }
     return val;
 }
@@ -102,6 +102,6 @@ export function getPersistentDeviceId(): string {
  */
 export function refreshDeviceId(): string {
     let val = makeid(30);
-    localStorage.setItem(deviceIdKey, val);
+    window.localStorage.setItem(deviceIdKey, val);
     return val;
 }
