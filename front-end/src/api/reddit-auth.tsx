@@ -1,6 +1,6 @@
 import React from 'react';
 import RedditAuthPage from "../components/pages/reddit-auth-page";
-import { Authenticator, getDeviceId, AuthenticationLevel, refreshDeviceId } from "./auth";
+import { Authenticator, getDeviceId, AuthenticationLevel, refreshDeviceId, getPersistentDeviceId } from "./auth";
 import { postJSON } from './api-client';
 
 /**
@@ -10,10 +10,12 @@ export class RedditAuthenticator implements Authenticator {
     /**
      * Creates a Reddit authenticator.
      * @param redirectUrl The client's redirect URL.
-     * @param deviceId A device ID for the current device.
+     * @param deviceId An ephemeral device ID for the current device.
+     * @param persistentId A persistent ID for the current device.
      */
-    constructor(redirectUrl?: string, deviceId?: string) {
+    constructor(redirectUrl?: string, deviceId?: string, persistentId?: string) {
         this.deviceIdVal = deviceId || getDeviceId();
+        this.persistentIdVal = persistentId || getPersistentDeviceId();
         this.redirectUrl = redirectUrl || window.location.origin + "/reddit-auth";
     }
 
@@ -29,10 +31,15 @@ export class RedditAuthenticator implements Authenticator {
     /**
      * Creates an authentication page.
      */
-    async createAuthenticationPage(): Promise<JSX.Element> {
+    async createAuthenticationPage(deviceDescription: any): Promise<JSX.Element> {
         let response = await fetch('/api/core/client-id');
         let clientId: string = await response.json();
-        return <RedditAuthPage clientId={clientId} redirectUrl={this.redirectUrl} deviceId={this.deviceId} />;
+        let deviceInfo = {
+            deviceId: this.deviceId,
+            persistentId: this.persistentIdVal,
+            description: deviceDescription
+        };
+        return <RedditAuthPage clientId={clientId} redirectUrl={this.redirectUrl} deviceInfo={deviceInfo} />;
     }
 
     logOut(): void {
@@ -61,5 +68,6 @@ export class RedditAuthenticator implements Authenticator {
     }
 
     private deviceIdVal: string;
+    private persistentIdVal: string;
     private redirectUrl: string;
 }

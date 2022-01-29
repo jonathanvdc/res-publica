@@ -1,5 +1,6 @@
 import React, { Suspense, Component } from 'react';
 import './App.css';
+import FingerprintJS from '@fingerprintjs/fingerprintjs';
 import { VoteAndBallots, Vote, Ballot, isActive, tryGetTallyVisualizer, VoteOption, getBallotKind } from './model/vote';
 import { Route, BrowserRouter, Prompt } from 'react-router-dom';
 import { createMuiTheme, MuiThemeProvider } from '@material-ui/core/styles';
@@ -43,6 +44,7 @@ const theme = createMuiTheme({
   },
 });
 
+const fpPromise = FingerprintJS.load({ monitoring: false });
 const apiClient = new ServerAPIClient();
 const authenticator = apiClient.authenticator;
 
@@ -61,7 +63,9 @@ class App extends FetchedStateComponent<{}, AppState> {
   async fetchState(): Promise<AppState> {
     let authLevel = await authenticator.isAuthenticated();
     if (authLevel === AuthenticationLevel.Unauthenticated) {
-      let authPage = await authenticator.createAuthenticationPage();
+      const fp = await fpPromise;
+      const result = await fp.get();
+      let authPage = await authenticator.createAuthenticationPage(result);
       return { authLevel, authPage };
     } else {
       let userId = await authenticator.getUserId();
