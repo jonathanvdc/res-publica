@@ -59,7 +59,7 @@ Navigate to the `back-end` directory. Create a file called `config.json` that co
 }
 ```
 
-With the server configured, the only thing left for us to do is to appoint an admin (that's us!). Create a directory called `data/votes` and in that directory create a file called `device-index.json` containing the following text, where `your-reddit-account` is your Reddit account name. If your Reddit account is, e.g., u/spez, then the Reddit account name you should enter is just "spez".
+With the server configured, the only thing left for us to do is to appoint an admin (that's us!). Create a directory called `data` and in that directory create a file called `device-index.json` containing the following text, where `your-reddit-account` is your Reddit account name. If your Reddit account is, e.g., u/spez, then the Reddit account name you should enter is just "spez".
 
 ```json
 {
