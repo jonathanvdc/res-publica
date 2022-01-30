@@ -58,7 +58,7 @@ class RegisteredDevice(object):
 
     def is_alive(self) -> bool:
         """Tests if this registered device has not yet expired."""
-        return self.expiry <= time.monotonic()
+        return self.expiry >= time.monotonic()
 
     def to_json(self) -> Any:
         """Creates a JSON representation of this device ID."""
