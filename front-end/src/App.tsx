@@ -29,6 +29,7 @@ import TitlePaper from './components/title-paper';
 import { currentSeasons, getSeasonalPropertyValue } from './model/season';
 import ServerManagementPage from './components/pages/server-management-page';
 import VisualizeTallyPage from './components/pages/visualize-tally-page';
+import { SuspiciousBallot } from './model/voting/types';
 
 const theme = createMuiTheme({
   palette: {
@@ -202,12 +203,15 @@ type VoteRouteState = {
   vote?: VoteAndBallots;
   ballotCast?: boolean;
   ballotId?: string;
+  suspiciousBallots?: SuspiciousBallot[];
 };
 
 class VoteRoute extends FetchedStateComponent<{ match: any, history: any, isAdmin: boolean }, VoteRouteState> {
   async fetchState(): Promise<VoteRouteState> {
-    let data = await apiClient.getVote(this.props.match.params.voteId);
-    return { vote: data, ballotCast: false };
+    let voteId = this.props.match.params.voteId;
+    let data = await apiClient.getVote(voteId);
+    let suspiciousBallots = this.props.isAdmin ? await apiClient.electionManagement.getSuspiciousBallots(voteId) : [];
+    return { vote: data, ballotCast: false, suspiciousBallots };
   }
 
   async onCastBallot(vote: Vote, ballot: Ballot) {
@@ -263,6 +267,7 @@ class VoteRoute extends FetchedStateComponent<{ match: any, history: any, isAdmi
           message="You haven't cast your ballot yet. Are you sure you want to leave?" />
         <VotePage
           voteAndBallots={data.vote}
+          suspiciousBallots={data.suspiciousBallots}
           ballotCast={data.ballotCast}
           isAdmin={this.props.isAdmin}
           onCastBallot={this.onCastBallot.bind(this)}

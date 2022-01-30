@@ -1,7 +1,7 @@
 import React, { PureComponent } from "react";
 import { Typography, Button } from "@material-ui/core";
 import { isMobile } from 'react-device-detect';
-import { DeviceDescription } from "../../api/auth";
+import { DeviceDescription } from "../../model/voting/types";
 import Anchor from '@material-ui/core/Link';
 import './reddit-auth-page.css';
 

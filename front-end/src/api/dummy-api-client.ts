@@ -2,6 +2,7 @@ import { Authenticator, makeid } from "./auth";
 import { DummyAuthenticator } from "./dummy-auth";
 import { APIClient, ElectionManagementClient, OptionalAPIClient, OptionalAPI } from "./api-client";
 import { Vote, VoteAndBallots, Ballot, isActive, FinishedBallot, VoteOption } from "../model/vote";
+import { SuspiciousBallot } from "../model/voting/types";
 
 /**
  * An API client that fakes all interactions with the server.
@@ -115,6 +116,10 @@ export class DummyAPIClient implements APIClient, OptionalAPIClient {
 
 class DummyElectionManagementClient implements ElectionManagementClient {
     constructor(private activeVotes: VoteAndBallots[]) {
+    }
+
+    async getSuspiciousBallots(voteId: string): Promise<SuspiciousBallot[]> {
+        return [];
     }
 
     async cancelVote(voteId: string): Promise<boolean> {

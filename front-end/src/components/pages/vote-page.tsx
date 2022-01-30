@@ -1,4 +1,4 @@
-import React, { Component } from "react";
+import React, { Component, PureComponent } from "react";
 import { Button, CircularProgress, Paper, Typography, DialogTitle, Dialog, DialogContent, DialogContentText, DialogActions } from "@material-ui/core";
 import { Link } from "react-router-dom";
 import { VoteAndBallots, Ballot, Vote, isActive, isCompletableBallot, completeBallot, isCompleteBallot, findIncompleteOptions, tally, tryGetTallyVisualizer, VoteOption } from "../../model/vote";
@@ -6,12 +6,15 @@ import DropDownButton from "../drop-down-button";
 import "./vote-page.css";
 import { DangerButton } from "../danger-button";
 import { CheckFab } from "../check-fab";
+import WarningIcon from "@material-ui/icons/Warning";
 import AddCandidateButton from "../add-candidate-button";
 import ActiveElectionCard from "../election/cards/active-election-card";
 import HistoricalElectionCard from "../election/cards/historical-election-card";
+import { SuspiciousBallot } from "../../model/voting/types";
 
 type Props = {
     voteAndBallots: VoteAndBallots;
+    suspiciousBallots?: SuspiciousBallot[];
     ballotCast?: boolean;
     onCastBallot?: (vote: Vote, ballot: Ballot) => void;
     isAdmin?: boolean;
@@ -145,6 +148,32 @@ class AdminZone extends Component<AdminZoneProps, AdminZoneState> {
     }
 }
 
+class SuspiciousBallotsPanel extends PureComponent<{ voteId: String, suspiciousBallots: SuspiciousBallot[] }> {
+    onDownload() {
+        let blob = new Blob([JSON.stringify(this.props.suspiciousBallots, undefined, 4)], {type: "application/json;charset=utf-8"});
+        saveAs(blob, `${this.props.voteId}-suspicious-ballots.json`);
+    }
+
+    text() { 
+        let count = this.props.suspiciousBallots.length;
+        if (count == 1) {
+            return "A suspicious ballot was detected.";
+        } else {
+            return `${count} suspicious ballots were detected.`;
+        }
+    }
+
+    render() {
+        return <Paper style={{ margin: "2em", padding: "1em", display: "flex", alignItems: "center",  }}>
+            <WarningIcon fontSize="large" style={{ margin: "0 1em" }} />
+            {this.text()}
+            <Button style={{ margin: "0 1em" }} color="primary" onClick={this.onDownload.bind(this)}>
+                Download Report
+            </Button>
+        </Paper>;
+    }
+}
+
 /**
  * A page that allows users to inspect and interact with a vote.
  */
@@ -232,6 +261,9 @@ class VotePage extends Component<Props, State> {
             progressOrButton = <CheckFab disabled={!canCast} aria-label="submit vote" className="SubmitVoteFab" onClick={this.castBallot.bind(this)} />;
         }
         return <div className="VotePagePanel">
+            {this.props.suspiciousBallots
+                && this.props.suspiciousBallots.length > 0
+                && <SuspiciousBallotsPanel voteId={this.props.voteAndBallots.vote.id} suspiciousBallots={this.props.suspiciousBallots} />}
             {allowChanges
                 ? <ActiveElectionCard
                     voteAndBallots={data}
