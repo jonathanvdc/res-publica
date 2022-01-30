@@ -17,6 +17,9 @@ def main():
     front_end_path = os.path.realpath(os.path.join(parent_path, '..', 'front-end'))
     print(front_end_path)
 
+    # Nuke the NPM package lock. It could cause trouble if we don't nuke it.
+    subprocess.check_call(['git', 'checkout', '--', 'package-lock.json'], cwd=front_end_path, shell=IS_WINDOWS)
+
     # Run a git pull.
     subprocess.check_call(['git', 'pull'], cwd=parent_path, shell=IS_WINDOWS)
 
