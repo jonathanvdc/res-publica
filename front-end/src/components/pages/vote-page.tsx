@@ -156,7 +156,7 @@ class SuspiciousBallotsPanel extends PureComponent<{ voteId: String, suspiciousB
 
     text() { 
         let count = this.props.suspiciousBallots.length;
-        if (count == 1) {
+        if (count === 1) {
             return "A suspicious ballot was detected.";
         } else {
             return `${count} suspicious ballots were detected.`;
