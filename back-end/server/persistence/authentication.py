@@ -87,7 +87,7 @@ class DeviceIndex(object):
         self.admins = admins
         self.developers = developers
         self.registered_voters = registered_voters
-        self.voter_requirements = voter_requirements
+        self.voter_requirements = voter_requirements    
         self.users_to_devices = defaultdict(set)
         self.users_to_devices.update({
             user_id: set(device for device in devices.values() if device.user_id == user_id)

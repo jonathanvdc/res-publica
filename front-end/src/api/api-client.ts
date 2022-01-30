@@ -1,6 +1,7 @@
 import { Authenticator } from "./auth";
 import { VoteAndBallots, Ballot, Vote, FinishedBallot, VoteOption } from "../model/vote";
 import { NetworkError } from "../model/exceptions";
+import { SuspiciousBallot } from "../model/voting/types";
 
 /**
  * A client that allows the application to interact with the server's API.
@@ -111,6 +112,12 @@ export interface ElectionManagementClient {
      * @param discernCandidates Tells if the scraper should try to discern individual candidates.
      */
     scrapeCfc(url: string, discernCandidates: boolean): Promise<Vote>;
+
+    /**
+     * Gets the list of all suspicious ballots detected in a given election.
+     * @param voteId The unique ID of the vote to check for suspicious ballots.
+     */
+    getSuspiciousBallots(voteId: string): Promise<SuspiciousBallot[]>;
 
     /**
      * Creates a vote by sending in a vote proposal. The server

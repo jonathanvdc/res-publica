@@ -1,3 +1,5 @@
+import { DeviceDescription } from "../model/voting/types";
+
 export enum AuthenticationLevel {
     Unauthenticated = "unauthenticated",
     Authenticated = "authenticated",
@@ -19,13 +21,6 @@ export function isAdmin(auth: AuthenticationLevel): boolean {
             return false;
     }
 }
-
-export type DeviceDescription = {
-    visitorId: string;
-    confidence: {
-        score: number
-    }
-};
 
 /**
  * An interface for objects that handle user authentication.

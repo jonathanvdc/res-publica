@@ -2,6 +2,7 @@ import { Authenticator } from "./auth";
 import { VoteAndBallots, Ballot, Vote, FinishedBallot, VoteOption } from "../model/vote";
 import { APIClient, ElectionManagementClient, OptionalAPIClient, OptionalAPI, postJSON } from "./api-client";
 import { RedditAuthenticator } from "./reddit-auth";
+import { SuspiciousBallot } from "../model/voting/types";
 
 /**
  * A client implementation that communicates with the server's API.
@@ -71,6 +72,13 @@ export class ServerAPIClient implements APIClient {
 class ServerElectionManagementClient implements ElectionManagementClient {
     constructor(private readonly auth: RedditAuthenticator) {
 
+    }
+
+    getSuspiciousBallots(voteId: string): Promise<SuspiciousBallot[]> {
+        return postJSON('/api/election-management/suspicious-ballots', {
+            deviceId: this.auth.deviceId,
+            voteId
+        });
     }
 
     cancelVote(voteId: string): Promise<boolean> {

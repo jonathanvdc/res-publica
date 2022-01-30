@@ -145,6 +145,34 @@ export function isActive(vote: Vote): boolean {
 }
 
 /**
+ * A description of a device that may cast a ballot.
+ */
+ export type DeviceDescription = {
+    visitorId: string;
+    confidence: {
+        score: number
+    }
+};
+
+export type SessionDescription = {
+    id: string;
+    user: string;
+    expiry: number;
+    info: {
+        deviceId: string;
+        persistentId: string;
+        description: DeviceDescription
+    }
+};
+
+export type SuspiciousBallot = {
+    firstBallot: FinishedBallot;
+    secondBallot: FinishedBallot;
+    firstDevice: SessionDescription;
+    secondDevice: SessionDescription;
+};
+
+/**
  * Finds a list of all vote options that should be on the ballot but aren't.
  * @param ballot A ballot to check.
  * @param vote The vote to which the ballot belongs.

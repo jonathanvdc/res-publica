@@ -14,6 +14,16 @@ def create_election_management_blueprint(device_index: DeviceIndex, vote_index: 
     """Creates a blueprint for the election management API."""
     bp = Blueprint('election-management', __name__)
 
+    @bp.route('/suspicious-ballots', methods=['POST'])
+    def suspicious_ballots():
+        """Gets a report of all suspicious ballots cast in an election."""
+        device = authenticate(request, device_index, True)
+        if not device:
+            abort(403)
+
+        vote_id = get_json_arg(request, 'voteId')
+        return jsonify(vote_index.get_suspicious_ballots_report(vote_id))
+
     @bp.route('/create-vote', methods=['POST'])
     def create_vote():
         """Creates a new vote."""

@@ -15,7 +15,7 @@ BallotId = str
 Vote = Any
 VoteAndBallots = Any
 Ballot = Any
-SuspiciousBallotReport = Any
+SuspiciousBallot = Any
 
 
 def is_vote_active(vote: VoteAndBallots) -> bool:
@@ -44,7 +44,7 @@ class VoteIndex(object):
                  devices: DeviceIndex,
                  votes: Dict[VoteId, VoteAndBallots],
                  vote_secrets: Dict[VoteId, str],
-                 suspicious_ballots: Dict[VoteId, List[SuspiciousBallotReport]]):
+                 suspicious_ballots: Dict[VoteId, List[SuspiciousBallot]]):
 
         self.index_path = index_path
         self.devices = devices
@@ -102,6 +102,11 @@ class VoteIndex(object):
         except KeyError:
             send_to_log(f'Attempted to get nonexistent vote {vote_id}', name='votes')
             raise
+
+    def get_suspicious_ballots_report(self, vote_id: VoteId) -> List[SuspiciousBallot]:
+        """Gets the suspicious ballot report for `vote_id`."""
+        self.heartbeat()
+        return self.suspicious_ballots.get(vote_id, [])
 
     def cast_ballot(self, vote_id: VoteId, ballot: Ballot, device: RegisteredDevice) -> Ballot:
         """Casts a ballot."""

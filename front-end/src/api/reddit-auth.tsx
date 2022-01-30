@@ -2,6 +2,7 @@ import React from 'react';
 import RedditAuthPage from "../components/pages/reddit-auth-page";
 import { Authenticator, getDeviceId, AuthenticationLevel, refreshDeviceId, getPersistentDeviceId } from "./auth";
 import { postJSON } from './api-client';
+import { DeviceDescription } from '../model/voting/types';
 
 /**
  * A type that handles Reddit authentication.
@@ -31,7 +32,7 @@ export class RedditAuthenticator implements Authenticator {
     /**
      * Creates an authentication page.
      */
-    async createAuthenticationPage(deviceDescription: any): Promise<JSX.Element> {
+    async createAuthenticationPage(deviceDescription: DeviceDescription): Promise<JSX.Element> {
         let response = await fetch('/api/core/client-id');
         let clientId: string = await response.json();
         let deviceInfo = {
