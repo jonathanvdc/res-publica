@@ -178,8 +178,7 @@ class VoteIndex(object):
             return memoized_result
 
         for user_id in self.devices.users_to_devices.keys():
-            ballot_id = self.get_ballot_id(vote_id, user_id)
-            if ballot_id == ballot_id:
+            if ballot_id == self.get_ballot_id(vote_id, user_id):
                 self.ballot_to_voter_cache[vote_id][ballot_id] = user_id
                 return user_id
 
