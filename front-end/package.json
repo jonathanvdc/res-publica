@@ -21,7 +21,7 @@
     "@types/react-router-dom": "^5.1.5",
     "@uiw/react-md-editor": "^1.14.4",
     "file-saver": "^2.0.2",
-    "moment": "^2.27.0",
+    "moment": "^2.29.2",
     "react": "^16.13.1",
     "react-countdown": "^2.2.1",
     "react-device-detect": "^1.13.1",
