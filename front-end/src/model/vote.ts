@@ -1,6 +1,7 @@
 import { tallyFPTP } from "./voting/fptp";
 import { tallySTAR } from "./voting/star";
 import { tallySPSV } from "./voting/spsv";
+import { tallySTV } from "./voting/stv";
 import { VoteAndBallots, TallyVisualizer } from "./voting/types";
 import { visuallyTallySPSV } from "./voting/visualize-spsv";
 
@@ -32,6 +33,10 @@ export function tally(voteAndBallots: VoteAndBallots, seats?: number): string[] 
         case "first-past-the-post":
         {
             return tallyFPTP(voteAndBallots, seats);
+        }
+        case "stv":
+        {
+            return tallySTV(voteAndBallots, seats);
         }
         case "star":
         {

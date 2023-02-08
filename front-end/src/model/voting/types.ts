@@ -42,9 +42,26 @@ export type ChooseOneBallotType = {
     tally: "first-past-the-post";
 };
 
+/// A type of vote where voters rank their options in descending order of preference.
+export type RankedChoiceBallotType = {
+    /**
+     * The tallying option.
+     */
+    tally: "stv";
+
+    /**
+     * The number of available seats.
+     */
+    positions: number;
+};
+
 /// A type of vote where every voter gets to rate every option.
 export type RateOptionsBallotType = {
     tally: "spsv" | "star";
+
+    /**
+     * The number of available seats.
+     */
     positions: number;
     min: number;
     max: number;
@@ -55,14 +72,17 @@ export type RateOptionsBallotType = {
  */
 export type TallyingAlgorithm =
     "first-past-the-post"
+    | "stv"
     | "spsv" | "star";
 
-export type BallotType = ChooseOneBallotType | RateOptionsBallotType;
+export type BallotType = ChooseOneBallotType | RateOptionsBallotType | RankedChoiceBallotType;
 
-export function getBallotKind(ballotType: BallotType): "choose-one" | "rate-options" {
+export function getBallotKind(ballotType: BallotType): "choose-one" | "rate-options" | "ranked-choice" {
     switch (ballotType.tally) {
         case "first-past-the-post":
             return "choose-one";
+        case "stv":
+            return "ranked-choice";
         case "spsv":
         case "star":
             return "rate-options";
@@ -110,6 +130,18 @@ export type ChooseOneBallot = {
     selectedOptionId: string;
 };
 
+/// A ballot for a vote where a user gets to rank options.
+export type RankedChoiceBallot = {
+    id?: string;
+    timestamp?: number;
+
+    /**
+     * An ordered list of option IDs that represent the voter's preference for candidates,
+     * in descending order.
+     */
+    optionRanking: string[];
+};
+
 /// A ballot for a vote where a user gets to rate options.
 export type RateOptionsBallot = {
     id?: string;
@@ -118,7 +150,7 @@ export type RateOptionsBallot = {
 };
 
 /// A ballot.
-export type Ballot = ChooseOneBallot | RateOptionsBallot;
+export type Ballot = ChooseOneBallot | RateOptionsBallot | RankedChoiceBallot;
 
 export type FinishedBallot = Ballot & {
     id: string;
@@ -184,6 +216,7 @@ export function findIncompleteOptions(ballot: Ballot | undefined, vote: Vote): V
 
     switch (getBallotKind(vote.type)) {
         case "choose-one":
+        case "ranked-choice":
         {
             return [];
         }
@@ -210,6 +243,12 @@ export function isCompleteBallot(ballot: Ballot | undefined, vote: Vote): boolea
         {
             let optionId = (ballot as ChooseOneBallot).selectedOptionId;
             return vote.options.findIndex(x => x.id === optionId) !== -1;
+        }
+        case "ranked-choice":
+        {
+            let ranking = (ballot as RankedChoiceBallot).optionRanking;
+            let optionIds = vote.options.map(x => x.id);
+            return ranking.every(x => optionIds.includes(x));
         }
         case "rate-options":
         {
@@ -241,6 +280,7 @@ export function isCompletableBallot(ballot: Ballot | undefined, vote: Vote): boo
 
     switch (getBallotKind(vote.type)) {
         case "choose-one":
+        case "ranked-choice":
             return isCompleteBallot(ballot, vote);
         case "rate-options":
             return (ballot as RateOptionsBallot).ratingPerOption.length > 0;
@@ -255,6 +295,7 @@ export function isCompletableBallot(ballot: Ballot | undefined, vote: Vote): boo
 export function completeBallot(ballot: Ballot, vote: Vote): Ballot {
     switch (getBallotKind(vote.type)) {
         case "choose-one":
+        case "ranked-choice":
         {
             return ballot;
         }
