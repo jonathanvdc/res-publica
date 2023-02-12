@@ -3,6 +3,7 @@
 import json
 from datetime import datetime
 
+log_name = f"{datetime.now().strftime('%d %m %Y - %H %M %S')}"
 
 def read_json(path):
     with open(path, 'r') as f:
@@ -15,6 +16,7 @@ def write_json(data, path):
 
 
 def send_to_log(string, name, level='ERROR'):
-    now = datetime.now()
-    asctime = now.strftime('%d.%m.%Y %H:%M:%S %Z')
-    print(f"{name} | {level} | {asctime}\t\t{string}")
+    with open(log_name, "a+") as f:
+        now = datetime.now()
+        asctime = now.strftime('%d.%m.%Y %H:%M:%S %Z')
+        f.write(f"{name} | {level} | {asctime}\t\t{string}")
