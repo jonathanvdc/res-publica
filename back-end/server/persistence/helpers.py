@@ -3,7 +3,7 @@
 import json
 from datetime import datetime
 
-log_name = f"{datetime.now().strftime('%d %m %Y - %H %M %S')}"
+log_name = f"actions-{datetime.now().strftime('%d %m %Y - %H %M %S')}.log"
 
 def read_json(path):
     with open(path, 'r') as f:
