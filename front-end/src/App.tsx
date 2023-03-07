@@ -48,7 +48,7 @@ const theme = createTheme({
 const fpPromise = FingerprintJS.load({ monitoring: false });
 const apiClient = new ServerAPIClient();
 const authenticator = apiClient.authenticator;
-const enableFingerprinting = false;
+const enableFingerprinting = true;
 
 type AppState = {
   authLevel: AuthenticationLevel;
