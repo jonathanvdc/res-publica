@@ -6,6 +6,8 @@ import { Table, TableHead, TableCell, Paper, TableRow } from "@material-ui/core"
 function getOptionScores(ballot: Ballot, vote: Vote): { optionId: string, rating: number }[] {
     if ('ratingPerOption' in ballot) {
         return ballot.ratingPerOption;
+    } else if ('optionRanking' in ballot) {
+        return vote.options.map(opt => ({ optionId: opt.id, rating: ballot.optionRanking.indexOf(opt.id) }));
     } else {
         return vote.options.map(opt => ({ optionId: opt.id, rating: ballot.selectedOptionId === opt.id ? 1 : 0 }));
     }
