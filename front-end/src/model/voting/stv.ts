@@ -1,4 +1,4 @@
-import { Ballot, ChooseOneBallot, RankedChoiceBallot, RankedChoiceBallotType, VoteAndBallots } from "./types";
+import { RankedChoiceBallot, RankedChoiceBallotType, VoteAndBallots } from "./types";
 
 function getFirstRemainingChoice(ballot: RankedChoiceBallot, ineligible: string[]): string | undefined {
     for (let id of ballot.optionRanking) {
@@ -56,6 +56,7 @@ export function tallySTV(voteAndBallots: VoteAndBallots, seats?: number): string
         while (results.length < adjustedSeats && ineligible.length < voteAndBallots.vote.options.length) {
             if (ineligible.length === voteAndBallots.vote.options.length - 1) {
                 // If we're down to the last eligible candidate, just choose that candidate indiscriminately.
+                // eslint-disable-next-line
                 let winner = voteAndBallots.vote.options.find(x => !ineligible.includes(x.id))!.id;
                 results.push(winner);
                 ineligible.push(winner);
