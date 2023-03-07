@@ -131,6 +131,9 @@ class MakeVotePage extends PureComponent<Props> {
             case "first-past-the-post":
                 type = { tally: "first-past-the-post" };
                 break;
+            case "stv":
+                type = { tally: "stv", positions: 1 };
+                break;
             case "star":
                 type = { tally: "star", positions: 1, min: 0, max: 5 };
                 break;
@@ -180,6 +183,8 @@ class MakeVotePage extends PureComponent<Props> {
                     onChange={this.onChangeTallyType.bind(this)}>
                     {this.isAllowedAlgorithm("first-past-the-post") &&
                         <TallyButton disabled={this.props.hasSubmittedVote} value="first-past-the-post">FPTP</TallyButton>}
+                    {/* {this.isAllowedAlgorithm("stv") &&
+                        <TallyButton disabled={this.props.hasSubmittedVote} value="stv">STV</TallyButton>} */}
                     {this.isAllowedAlgorithm("star") &&
                         <TallyButton disabled={this.props.hasSubmittedVote} value="star">STAR</TallyButton>}
                     {this.isAllowedAlgorithm("spsv") &&
