@@ -1,5 +1,5 @@
 import React, { ReactNode } from "react";
-import { Typography } from "@material-ui/core";
+import { Typography } from "@mui/material";
 import { getBallotWeight, getCandidateScore, getCandidateScores, KotzePereiraBallot, SPSVCandidate, SPSVRound, tallySPSVWithRounds } from "./spsv";
 import { RateOptionsBallot, VoteAndBallots } from "./types";
 import CandidatePanel from "../../components/election/candidate-panel";

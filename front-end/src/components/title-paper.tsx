@@ -1,5 +1,5 @@
 import React, { PureComponent } from "react";
-import { Typography, Paper } from "@material-ui/core";
+import { Typography, Paper } from "@mui/material";
 
 type Props = {
     title: React.ReactNode;

@@ -1,16 +1,17 @@
 import React, { Component } from "react";
-import { AppBar, Toolbar, Menu, MenuItem, Chip, Avatar, SwipeableDrawer, List, ListItem, ListItemText, IconButton, ListItemIcon, Divider, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions, Button } from "@material-ui/core";
-import AccountCircle from '@material-ui/icons/AccountCircle';
-import MenuIcon from '@material-ui/icons/Menu';
-import CreateIcon from '@material-ui/icons/Create';
-import BuildIcon from '@material-ui/icons/Build';
-import ListWithCheckIcon from '@material-ui/icons/PlaylistAddCheck';
-import ExitIcon from '@material-ui/icons/ExitToApp';
+import { AppBar, Toolbar, Menu, MenuItem, Chip, Avatar, SwipeableDrawer, List, ListItem, ListItemText, IconButton, ListItemIcon, Divider, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions, Button } from "@mui/material";
+import AccountCircle from '@mui/icons-material/AccountCircle';
+import MenuIcon from '@mui/icons-material/Menu';
+import CreateIcon from '@mui/icons-material/Create';
+import BuildIcon from '@mui/icons-material/Build';
+import ListWithCheckIcon from '@mui/icons-material/PlaylistAddCheck';
+import ExitIcon from '@mui/icons-material/ExitToApp';
 import { Link } from "react-router-dom";
 import { isMobile } from "react-device-detect";
 import { OptionalAPI } from "../api/api-client";
 import Logo from "../logo.svg";
 import "./site-app-bar.css";
+import { enablePreferences } from "../model/preferences";
 
 type SiteAppBarProps = {
     onLogOut?: () => void;
@@ -234,9 +235,9 @@ class SiteAppBar extends Component<SiteAppBarProps, SiteAppBarState> {
                         }}
                         open={!!this.state.anchorElement}
                         onClose={this.closeMenu.bind(this)}>
-                        <Link to="/prefs" className="ImplicitLink">
+                        {enablePreferences ? <Link to="/prefs" className="ImplicitLink">
                             <MenuItem onClick={this.closeMenu.bind(this)}>Preferences</MenuItem>
-                        </Link>
+                        </Link> : []}
                         <MenuItem onClick={this.handleLogout.bind(this)}>Log Out</MenuItem>
                     </Menu>
                 </div>

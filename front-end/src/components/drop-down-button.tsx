@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { Menu, MenuItem, ListItemText } from "@material-ui/core";
+import { Menu, MenuItem, ListItemText } from "@mui/material";
 
 type ButtonProps = {
     onClick: (event: React.MouseEvent<HTMLElement>) => void;

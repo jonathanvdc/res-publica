@@ -1,4 +1,4 @@
-import { Tooltip } from "@material-ui/core";
+import { Tooltip } from "@mui/material";
 import React, { Component, ReactNode } from "react";
 
 type Props = {

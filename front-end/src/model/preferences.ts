@@ -16,11 +16,16 @@ const defaultPreferences: UserPreferences = {
 };
 
 const userPrefsKey = "userPreferences";
+export const enablePreferences = false;
 
 /**
  * Gets the user preferences for this device.
  */
 export function getPreferences(): UserPreferences {
+    if (!enablePreferences) {
+        return defaultPreferences;
+    }
+
     let val = window.localStorage.getItem(userPrefsKey);
     if (val) {
         return { ...defaultPreferences, ...JSON.parse(val) };

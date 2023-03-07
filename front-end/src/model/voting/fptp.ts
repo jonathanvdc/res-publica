@@ -3,6 +3,11 @@ import { ChooseOneBallot, Vote, VoteAndBallots } from "./types";
 
 export function countVotes(ballots: ChooseOneBallot[], vote: Vote): Map<string, number> {
     let counts = new Map<string, number>();
+
+    for (let option of vote.options) {
+        counts.set(option.id, 0);
+    }
+
     for (let ballot of ballots) {
         if (vote.resigned
             && vote.resigned.includes(ballot.selectedOptionId)) {
@@ -10,7 +15,7 @@ export function countVotes(ballots: ChooseOneBallot[], vote: Vote): Map<string, 
             continue;
         }
 
-        let prevScore = counts.get(ballot.selectedOptionId) || 0;
+        let prevScore = counts.get(ballot.selectedOptionId)!;
         counts.set(ballot.selectedOptionId, prevScore + 1);
     }
     return counts;

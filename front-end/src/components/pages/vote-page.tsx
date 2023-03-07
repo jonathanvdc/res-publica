@@ -1,16 +1,17 @@
 import React, { Component, PureComponent } from "react";
-import { Button, CircularProgress, Paper, Typography, DialogTitle, Dialog, DialogContent, DialogContentText, DialogActions } from "@material-ui/core";
+import { Button, CircularProgress, Paper, Typography, DialogTitle, Dialog, DialogContent, DialogContentText, DialogActions } from "@mui/material";
 import { Link } from "react-router-dom";
 import { VoteAndBallots, Ballot, Vote, isActive, isCompletableBallot, completeBallot, isCompleteBallot, findIncompleteOptions, tryGetTallyVisualizer, VoteOption, tallyIndividual } from "../../model/vote";
 import DropDownButton from "../drop-down-button";
 import "./vote-page.css";
 import { DangerButton } from "../danger-button";
 import { CheckFab } from "../check-fab";
-import WarningIcon from "@material-ui/icons/Warning";
+import WarningIcon from "@mui/icons-material/Warning";
 import AddCandidateButton from "../add-candidate-button";
 import ActiveElectionCard from "../election/cards/active-election-card";
 import HistoricalElectionCard from "../election/cards/historical-election-card";
 import { electsIndividuals, SuspiciousBallot } from "../../model/voting/types";
+import saveAs from "file-saver";
 
 type Props = {
     voteAndBallots: VoteAndBallots;
@@ -84,7 +85,7 @@ class AdminZone extends Component<AdminZoneProps, AdminZoneState> {
         let canAddOption = isActive(data.vote) && onResign;
 
         if (!canCancelVote && !canResign) {
-            return undefined;
+            return <div/>;
         }
 
         let winners = canResign ? tallyIndividual(data) : [];

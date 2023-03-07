@@ -1,9 +1,9 @@
 import React, { PureComponent } from "react";
-import BallotIcon from '@material-ui/icons/HowToVote';
+import BallotIcon from '@mui/icons-material/HowToVote';
 import { Link } from "react-router-dom";
 import { VoteAndBallots, isActive } from "../model/vote";
 import './vote-list.css';
-import { Button } from "@material-ui/core";
+import { Button } from "@mui/material";
 import { sortBy } from "../model/util";
 
 type Props = {

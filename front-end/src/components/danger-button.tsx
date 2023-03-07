@@ -1,19 +1,22 @@
 import React, { Component, PureComponent, ReactNode } from "react";
-import { Button, ButtonProps, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Theme, withStyles } from "@material-ui/core";
-import { red } from "@material-ui/core/colors";
+import { Button, ButtonProps, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Theme } from "@mui/material";
+import { withStyles } from "tss-react/mui";
+import { red } from "@mui/material/colors";
 
 /**
  * A button that hints danger.
  */
-export const DangerButton = withStyles((theme: Theme) => ({
-    root: {
-        color: theme.palette.getContrastText(red[600]),
-        backgroundColor: red[600],
-        '&:hover': {
-            backgroundColor: red[700],
+export const DangerButton = withStyles(
+    Button,
+    (theme: Theme) => ({
+        root: {
+            color: theme.palette.getContrastText(red[600]),
+            backgroundColor: red[600],
+            '&:hover': {
+                backgroundColor: red[700],
+            },
         },
-    },
-}))(Button);
+    }));
 
 type DangerButtonWithDialogProps<TDialogState> = ButtonProps & {
     initialState: TDialogState;

@@ -1,8 +1,7 @@
 import React, { PureComponent } from "react";
-import { Typography, List, ListItem, ListItemIcon, ListItemText } from "@material-ui/core";
-import CheckIcon from '@material-ui/icons/Check';
-import CrossIcon from '@material-ui/icons/Close';
-import { isNumber } from "util";
+import { Typography, List, ListItem, ListItemIcon, ListItemText } from "@mui/material";
+import CheckIcon from '@mui/icons-material/Check';
+import CrossIcon from '@mui/icons-material/Close';
 
 type SymbolicOperand = "redditor.age" | "redditor.total_karma";
 
@@ -24,7 +23,7 @@ function renderSymbolicOperand(operand: SymbolicOperand) {
 }
 
 function renderOperand(operand: SymbolicOperand | number) {
-    if (isNumber(operand)) {
+    if (typeof operand === "number") {
         return operand.toString();
     } else {
         return renderSymbolicOperand(operand);

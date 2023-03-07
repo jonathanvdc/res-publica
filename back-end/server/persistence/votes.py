@@ -24,10 +24,12 @@ def is_vote_active(vote: VoteAndBallots) -> bool:
 
 def get_ballot_kind(ballot_type: Any) -> str:
     tally = ballot_type['tally']
-    if tally == 'first-past-the-post':
+    if tally == 'first-past-the-post' or tally == 'sainte-lague':
         return 'choose-one'
     elif tally == 'spsv' or tally == 'star':
         return 'rate-options'
+    elif tally == 'stv':
+        return 'rank-options'
     else:
         raise Exception(f'Unknown tallying algorithm {tally}.')
 

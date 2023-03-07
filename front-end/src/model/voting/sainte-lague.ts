@@ -21,5 +21,5 @@ export function tallySainteLague(voteAndBallots: VoteAndBallots, seats?: number)
     for (let [optionId, seats] of won.entries()) {
         results.push({ optionId, seats });
     }
-    return sortBy(results, ({ seats }) => seats);
+    return sortBy(results, ({ seats }) => seats, true);
 }

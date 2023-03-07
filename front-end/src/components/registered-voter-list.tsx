@@ -1,7 +1,7 @@
 import React, { Component } from "react";
-import { List, ListItem, ListItemText, ListItemSecondaryAction, IconButton, ListItemIcon, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions, Button, TextField } from "@material-ui/core";
-import PlusIcon from '@material-ui/icons/PlusOne';
-import DeleteIcon from '@material-ui/icons/Delete';
+import { List, ListItem, ListItemText, ListItemSecondaryAction, IconButton, ListItemIcon, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions, Button, TextField } from "@mui/material";
+import PlusIcon from '@mui/icons-material/PlusOne';
+import DeleteIcon from '@mui/icons-material/Delete';
 import { sortBy } from "../model/util";
 
 type Props = {

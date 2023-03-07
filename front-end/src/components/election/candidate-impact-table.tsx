@@ -1,9 +1,9 @@
-import { Table, TableBody, TableCell, TableHead, TableRow } from "@material-ui/core";
+import { Table, TableBody, TableCell, TableHead, TableRow } from "@mui/material";
 import React, { PureComponent } from "react";
 import { VoteOption } from "../../model/vote";
 import { renderCandidateName } from "./candidate-name";
-import UpIcon from '@material-ui/icons/ExpandLess';
-import DownIcon from '@material-ui/icons/ExpandMore';
+import UpIcon from '@mui/icons-material/ExpandLess';
+import DownIcon from '@mui/icons-material/ExpandMore';
 
 /**
  * The impact of a candidate's election on another candidate.

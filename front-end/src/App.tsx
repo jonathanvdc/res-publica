@@ -2,13 +2,13 @@ import React, { Suspense, Component } from 'react';
 import './App.css';
 import FingerprintJS from '@fingerprintjs/fingerprintjs';
 import { VoteAndBallots, Vote, Ballot, isActive, tryGetTallyVisualizer, VoteOption, getBallotKind } from './model/vote';
+import { LocalizationProvider } from '@mui/x-date-pickers';
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { Route, BrowserRouter, Prompt } from 'react-router-dom';
-import { createMuiTheme, MuiThemeProvider } from '@material-ui/core/styles';
-import { green } from '@material-ui/core/colors';
+import { createTheme, ThemeProvider } from '@mui/material/styles';
+import { green } from '@mui/material/colors';
 import VoteList from './components/vote-list';
-import { Typography, Button } from '@material-ui/core';
-import { MuiPickersUtilsProvider } from '@material-ui/pickers';
-import MomentUtils from '@date-io/moment';
+import { Typography, Button } from '@mui/material';
 import { saveAs } from 'file-saver';
 import VotePage from './components/pages/vote-page';
 import { FetchedStateComponent } from './components/fetched-state-component';
@@ -20,7 +20,7 @@ import ScrapeCFCPage from './components/pages/scrape-cfc-page';
 import BallotTable, { ballotsToCsv } from './components/ballot-table';
 import { AuthenticationLevel, isAdmin } from './api/auth';
 import SiteAppBar from './components/site-app-bar';
-import { UserPreferences, getPreferences, setPreferences } from './model/preferences';
+import { UserPreferences, getPreferences, setPreferences, enablePreferences } from './model/preferences';
 import PreferencesPage from './components/pages/preferences-page';
 import AuthFailedPage from './components/pages/auth-failed-page';
 import { OptionalAPI } from './api/api-client';
@@ -29,9 +29,9 @@ import TitlePaper from './components/title-paper';
 import { currentSeasons, getSeasonalPropertyValue } from './model/season';
 import ServerManagementPage from './components/pages/server-management-page';
 import VisualizeTallyPage from './components/pages/visualize-tally-page';
-import { SuspiciousBallot } from './model/voting/types';
+import { DeviceDescription, SuspiciousBallot } from './model/voting/types';
 
-const theme = createMuiTheme({
+const theme = createTheme({
   palette: {
     primary: {
       main: getSeasonalPropertyValue({
@@ -48,6 +48,7 @@ const theme = createMuiTheme({
 const fpPromise = FingerprintJS.load({ monitoring: false });
 const apiClient = new ServerAPIClient();
 const authenticator = apiClient.authenticator;
+const enableFingerprinting = false;
 
 type AppState = {
   authLevel: AuthenticationLevel;
@@ -64,9 +65,19 @@ class App extends FetchedStateComponent<{}, AppState> {
   async fetchState(): Promise<AppState> {
     let authLevel = await authenticator.isAuthenticated();
     if (authLevel === AuthenticationLevel.Unauthenticated) {
-      const fp = await fpPromise;
-      const result = await fp.get();
-      let authPage = await authenticator.createAuthenticationPage(result);
+      let fingerprint: DeviceDescription;
+      if (enableFingerprinting) {
+        const fp = await fpPromise;
+        fingerprint = await fp.get();
+      } else {
+        fingerprint = {
+          visitorId: "unknown",
+          confidence: {
+            score: 0
+          }
+        };
+      }
+      let authPage = await authenticator.createAuthenticationPage(fingerprint);
       return { authLevel, authPage };
     } else {
       let userId = await authenticator.getUserId();
@@ -115,31 +126,31 @@ class App extends FetchedStateComponent<{}, AppState> {
 
     return <BrowserRouter>
       <div className={this.getMainClass()}>
-        <MuiPickersUtilsProvider utils={MomentUtils}>
-          <MuiThemeProvider theme={theme}>
-            <SiteAppBar
-              onLogOut={this.onLogOut.bind(this)}
-              onUnregisterUser={this.onUnregisterUser.bind(this)}
-              userId={state.userId}
-              isAdmin={isAdmin(state.authLevel)}
-              optionalAPIs={state.optionalAPIs} />
-            <div className="App-body">
-              <Suspense fallback={<div>Loading...</div>}>
-                <Route exact path="/" component={VoteListRoute} />
-                <Route exact path="/prefs" component={PreferencesRoute} />
-                <Route exact path="/vote/:voteId" component={(props: any) => <VoteRoute isAdmin={isAdmin(state.authLevel)} {...props} />} />
-                <Route exact path="/vote/:voteId/ballots" component={VoteBallotsRoute} />
-                <Route exact path="/vote/:voteId/visualize" component={VoteVisualizationRoute} />
-                {isAdmin(state.authLevel) && <Route exact path="/vote/:voteId/edit" component={EditVoteRoute} />}
-                {isAdmin(state.authLevel) && <Route exact path="/admin/make-vote" component={MakeVoteRoute} />}
-                {state.optionalAPIs && state.optionalAPIs.includes(OptionalAPI.registeredVoters) &&
-                  <Route exact path="/registered-voters" component={RegisteredVotersRoute} />}
-                {state.optionalAPIs && state.optionalAPIs.includes(OptionalAPI.upgradeServer) &&
-                  <Route exact path="/server-management" component={ServerManagementRoute} />}
-              </Suspense>
-            </div>
-          </MuiThemeProvider>
-        </MuiPickersUtilsProvider>
+      <LocalizationProvider dateAdapter={AdapterDayjs}>
+        <ThemeProvider theme={theme}>
+          <SiteAppBar
+            onLogOut={this.onLogOut.bind(this)}
+            onUnregisterUser={this.onUnregisterUser.bind(this)}
+            userId={state.userId}
+            isAdmin={isAdmin(state.authLevel)}
+            optionalAPIs={state.optionalAPIs} />
+          <div className="App-body">
+            <Suspense fallback={<div>Loading...</div>}>
+              <Route exact path="/" component={VoteListRoute} />
+              {enablePreferences ? <Route exact path="/prefs" component={PreferencesRoute} /> : []}
+              <Route exact path="/vote/:voteId" component={(props: any) => <VoteRoute isAdmin={isAdmin(state.authLevel)} {...props} />} />
+              <Route exact path="/vote/:voteId/ballots" component={VoteBallotsRoute} />
+              <Route exact path="/vote/:voteId/visualize" component={VoteVisualizationRoute} />
+              {isAdmin(state.authLevel) && <Route exact path="/vote/:voteId/edit" component={EditVoteRoute} />}
+              {isAdmin(state.authLevel) && <Route exact path="/admin/make-vote" component={MakeVoteRoute} />}
+              {state.optionalAPIs && state.optionalAPIs.includes(OptionalAPI.registeredVoters) &&
+                <Route exact path="/registered-voters" component={RegisteredVotersRoute} />}
+              {state.optionalAPIs && state.optionalAPIs.includes(OptionalAPI.upgradeServer) &&
+                <Route exact path="/server-management" component={ServerManagementRoute} />}
+            </Suspense>
+          </div>
+        </ThemeProvider>
+      </LocalizationProvider>
       </div>
     </BrowserRouter>;
   }
@@ -327,7 +338,7 @@ class EditVoteRoute extends FetchedStateComponent<{ match: any, history: any }, 
         allowRemoveOptions={isActive(data.draftVote)}
         allowChangeEnd={isActive(data.draftVote)}
         allowedTallyingAlgorithms={
-          getBallotKind(data.draftVote.type) === "choose-one" ? ["first-past-the-post"] : ["star", "spsv"]}
+          getBallotKind(data.draftVote.type) === "choose-one" ? ["first-past-the-post", "sainte-lague"] : ["star", "spsv"]}
         onMakeVote={this.onSubmitEdits.bind(this)}
         onUpdateDraft={this.onUpdateDraft.bind(this)} />
     }

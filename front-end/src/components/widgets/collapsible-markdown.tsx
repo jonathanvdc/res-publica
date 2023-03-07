@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { Button, Collapse, Link } from "@material-ui/core";
+import { Button, Collapse, Link } from "@mui/material";
 import ReactMarkdown from "react-markdown";
 
 type Props = {
@@ -24,7 +24,7 @@ class CollapsibleMarkdown extends Component<Props, State> {
         let content: JSX.Element;
         let buttonText: string;
         if (this.state.isCollapsed) {
-            content = <Collapse collapsedHeight="5em">
+            content = <Collapse collapsedSize="5em">
                 <ReactMarkdown {...this.props} />
             </Collapse>;
             buttonText = "Read more";

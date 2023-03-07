@@ -1,6 +1,6 @@
 import React, { PureComponent } from "react";
-import CheckIcon from '@material-ui/icons/Check';
-import { Typography, Button } from "@material-ui/core";
+import CheckIcon from '@mui/icons-material/Check';
+import { Typography, Button } from "@mui/material";
 import { Link } from "react-router-dom";
 import "./vote-confirmation-page.css";
 

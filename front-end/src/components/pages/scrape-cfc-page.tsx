@@ -1,6 +1,6 @@
 import React, { Component } from "react";
-import CheckIcon from '@material-ui/icons/Check';
-import { Button, TextField, Paper, Typography, Checkbox, FormControlLabel } from "@material-ui/core";
+import CheckIcon from '@mui/icons-material/Check';
+import { Button, TextField, Paper, Typography, Checkbox, FormControlLabel } from "@mui/material";
 import { Vote } from "../../model/vote";
 
 type Props = {

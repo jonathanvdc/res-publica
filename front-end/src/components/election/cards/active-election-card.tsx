@@ -1,6 +1,6 @@
 import React from "react";
-import { ButtonBase, Typography, withStyles } from "@material-ui/core";
-import { ToggleButton, ToggleButtonGroup } from "@material-ui/lab";
+import { ButtonBase, Typography, ToggleButton, ToggleButtonGroup } from "@mui/material";
+import { withStyles } from 'tss-react/mui';
 import CountdownTimer from 'react-countdown';
 import { getPreferences } from "../../../model/preferences";
 import { Ballot, ChooseOneBallot, getBallotKind, RateOptionsBallot, RateOptionsBallotType, VoteAndBallots, VoteOption } from "../../../model/vote";
@@ -88,18 +88,20 @@ function renderTimeLeft(timeLeft: TimeLeft): JSX.Element {
     return <Typography variant="button">{renderTimeLeftMessage(timeLeft)}</Typography>;
 }
 
-const StyledToggleButtonGroup = withStyles((theme) => ({
-    grouped: {
-      margin: theme.spacing(1),
-      border: 'none',
-      '&:not(:first-child)': {
-        borderRadius: 100
-      },
-      '&:first-child': {
-        borderRadius: 100
-      }
-    }
-  }))(ToggleButtonGroup);
+const StyledToggleButtonGroup = withStyles(
+    ToggleButtonGroup,
+    (theme) => ({
+        grouped: {
+        margin: theme.spacing(1),
+        border: 'none',
+        '&:not(:first-child)': {
+            borderRadius: 100
+        },
+        '&:first-child': {
+            borderRadius: 100
+        }
+        }
+    }));
 
 /**
  * A widget that allows users to inspect and interact with an active election.

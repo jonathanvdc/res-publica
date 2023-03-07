@@ -1,7 +1,9 @@
 import React from "react";
-import { Button, Paper, TextField, Typography, withStyles } from "@material-ui/core";
-import { DateTimePicker } from "@material-ui/pickers";
-import DeleteIcon from '@material-ui/icons/Delete';
+import dayjs from "dayjs";
+import { Button, Paper, TextField, Typography } from "@mui/material";
+import { DateTimePicker } from "@mui/x-date-pickers";
+import { withStyles } from "tss-react/mui";
+import DeleteIcon from '@mui/icons-material/Delete';
 import { Vote, VoteAndBallots, VoteOption } from "../../../model/vote";
 import CandidatePanel from "../candidate-panel";
 import ElectionCard from "./election-card";
@@ -37,25 +39,29 @@ type State = {
     ranking: string[];
 };
 
-const TitleTextField = withStyles({
-    root: {
-        "& .MuiInputBase-root": {
-            // color: "white",
-            fontSize: "xxx-large"
-        },
-        // "& .MuiFormLabel-root": {
-        //     color: "gray"
-        // }
-    }
-})(TextField);
-
-const OptionTitleTextField = withStyles({
-    root: {
-        "& .MuiInputBase-root": {
-            fontSize: "xx-large"
+const TitleTextField = withStyles(
+    TextField,
+    {
+        root: {
+            "& .MuiInputBase-root": {
+                // color: "white",
+                fontSize: "xxx-large"
+            },
+            // "& .MuiFormLabel-root": {
+            //     color: "gray"
+            // }
         }
-    }
-})(TextField);
+    });
+
+const OptionTitleTextField = withStyles(
+    TextField,
+    {
+        root: {
+            "& .MuiInputBase-root": {
+                fontSize: "xx-large"
+            }
+        }
+    });
 
 /**
  * A widget that allows users to create or edit an election.
@@ -74,13 +80,13 @@ class DraftElectionCard extends ElectionCard<Props, State> {
                 this.props.onElectionChanged({ ...vote, name: val.target.value })} />
             {(this.props.allowChangeEnd ?? true) &&
                 <DateTimePicker
-                    value={new Date(vote.deadline * 1000).toISOString()}
+                    value={dayjs(new Date(vote.deadline * 1000).toISOString())}
                     label="Ballot boxes close:" onChange={date => {
                         if (date) {
-                            this.props.onElectionChanged({ ...vote, deadline: date.unix() });
+                            this.props.onElectionChanged({ ...vote, deadline: dayjs(date).unix() });
                         }
                     }}
-                    style={{margin: "1em"}} />}
+                    sx={{margin: "1em"}} />}
             <MDEditor
                 className="VoteDescription"
                 value={vote.description}

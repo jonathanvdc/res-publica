@@ -1,7 +1,7 @@
 import React, { PureComponent } from "react"
-import { Paper, Typography } from "@material-ui/core";
-import DoneOutlineIcon from '@material-ui/icons/DoneOutline';
-import ExitIcon from '@material-ui/icons/ExitToApp';
+import { Paper, Typography } from "@mui/material";
+import DoneOutlineIcon from '@mui/icons-material/DoneOutline';
+import ExitIcon from '@mui/icons-material/ExitToApp';
 import "./candidate-panel.css";
 
 type Props = {

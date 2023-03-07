@@ -1,8 +1,8 @@
 import React, { PureComponent } from "react";
-import { Typography, Button } from "@material-ui/core";
+import { Typography, Button } from "@mui/material";
 import { isMobile } from 'react-device-detect';
 import { DeviceDescription } from "../../model/voting/types";
-import Anchor from '@material-ui/core/Link';
+import Anchor from '@mui/material/Link';
 import './reddit-auth-page.css';
 
 type DeviceInfo = {

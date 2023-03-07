@@ -1,5 +1,5 @@
 import React from "react";
-import { Typography } from "@material-ui/core";
+import { Typography } from "@mui/material";
 import { getPreferences } from "../../../model/preferences";
 import { ChooseOneBallot, tally, tallyOrder, VoteAndBallots, VoteOption } from "../../../model/vote";
 import { renderCollapsibleMarkdown } from "../../widgets/collapsible-markdown";

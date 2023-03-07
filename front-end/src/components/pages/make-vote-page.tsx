@@ -1,11 +1,10 @@
 import React, { PureComponent } from "react";
-import CheckIcon from '@material-ui/icons/Check';
-import PlusIcon from '@material-ui/icons/Add';
-import { Button, Theme, withStyles, TextField, CircularProgress } from "@material-ui/core";
-import { green } from "@material-ui/core/colors";
-import { Vote, BallotType, TallyingAlgorithm } from "../../model/vote";
-import ToggleButtonGroup from "@material-ui/lab/ToggleButtonGroup";
-import ToggleButton from "@material-ui/lab/ToggleButton";
+import CheckIcon from '@mui/icons-material/Check';
+import PlusIcon from '@mui/icons-material/Add';
+import { Button, Theme, TextField, CircularProgress, ToggleButton, ToggleButtonGroup } from "@mui/material";
+import { green } from "@mui/material/colors";
+import { withStyles } from "tss-react/mui";
+import { Vote, BallotType, TallyingAlgorithm, getBallotKind, ChooseOneBallotType } from "../../model/vote";
 import { changeLuminance } from "../../model/util";
 import ActiveElectionCard from "../election/cards/active-election-card";
 import DraftElectionCard from "../election/cards/draft-election-card";
@@ -40,45 +39,52 @@ type Props = {
     onMakeVote?: (vote: Vote) => void;
 };
 
-const CheckButton = withStyles((theme: Theme) => ({
-    root: {
-        borderRadius: "100%",
-        padding: "1em",
-        margin: "0 0.5em",
-        color: theme.palette.getContrastText(green[600]),
-        backgroundColor: green[600],
-        '&:hover': {
-            backgroundColor: green[700],
-        },
-    },
-}))(Button);
-
-const PlusButton = withStyles(() => ({
-    root: {
-        borderRadius: "100%",
-        padding: "1em",
-        margin: "0 0.5em"
-    },
-}))(Button);
-
-const TallyButton = withStyles((theme: Theme) => ({
-    root: {
-        color: "white",
-        backgroundColor: theme.palette.primary.main,
-        '&:hover': {
-            backgroundColor: theme.palette.primary.dark,
-        },
-        '&.MuiToggleButton-root.Mui-selected': {
-            color: "white",
-            backgroundColor: changeLuminance(theme.palette.primary.dark, -0.1),
+const CheckButton = withStyles(
+    Button,
+    (theme: Theme) => ({
+        root: {
+            borderRadius: "100%",
+            padding: "1em",
+            margin: "0 0.5em",
+            color: theme.palette.getContrastText(green[600]),
+            backgroundColor: green[600],
             '&:hover': {
-                backgroundColor: changeLuminance(theme.palette.primary.dark, -0.1),
-            }
+                backgroundColor: green[700],
+            },
         },
-    },
-}))(ToggleButton);
+    }));
 
-const PositionsTextField = withStyles({
+const PlusButton = withStyles(
+    Button,
+    () => ({
+        root: {
+            borderRadius: "100%",
+            padding: "1em",
+            margin: "0 0.5em"
+        },
+    }));
+
+const TallyButton = withStyles(
+    ToggleButton,
+    (theme: Theme) => ({
+        root: {
+            color: "white",
+            backgroundColor: theme.palette.primary.main,
+            '&:hover': {
+                backgroundColor: theme.palette.primary.dark,
+            },
+            '&.MuiToggleButton-root.Mui-selected': {
+                color: "white",
+                backgroundColor: changeLuminance(theme.palette.primary.dark, -0.1),
+                '&:hover': {
+                    backgroundColor: changeLuminance(theme.palette.primary.dark, -0.1),
+                }
+            },
+        },
+    }));
+
+const PositionsTextField = withStyles(
+    TextField, {
     root: {
         marginLeft: "1em",
         "& .MuiInputBase-root": {
@@ -88,7 +94,7 @@ const PositionsTextField = withStyles({
             color: "white"
         }
     }
-})(TextField);
+});
 
 /**
  * A page that allows an admin to create a vote.
@@ -131,6 +137,9 @@ class MakeVotePage extends PureComponent<Props> {
             case "first-past-the-post":
                 type = { tally: "first-past-the-post" };
                 break;
+            case "sainte-lague":
+                type = { tally: "sainte-lague", positions: 1 };
+                break;
             case "stv":
                 type = { tally: "stv", positions: 1 };
                 break;
@@ -153,10 +162,18 @@ class MakeVotePage extends PureComponent<Props> {
         if (newValue < 1 || !Number.isInteger(newValue)) {
             return;
         }
-        this.updateDraft({
-            ...this.props.draft,
-            type: { tally: this.props.draft.type.tally, positions: newValue, min: 0, max: 5 }
-        });
+
+        if (getBallotKind(this.props.draft.type) === "rate-options") {
+            this.updateDraft({
+                ...this.props.draft,
+                type: { tally: this.props.draft.type.tally, positions: newValue, min: 0, max: 5 }
+            });
+        } else {
+            this.updateDraft({
+                ...this.props.draft,
+                type: { tally: this.props.draft.type.tally, positions: newValue } as ChooseOneBallotType
+            });
+        }
     }
 
     onMakeVote() {
@@ -173,6 +190,19 @@ class MakeVotePage extends PureComponent<Props> {
         }
     }
 
+    allowSeatCountTweaking(algorithm: TallyingAlgorithm): boolean {
+        switch (algorithm) {
+            case "first-past-the-post":
+            case "star":
+                return false;
+
+            case "sainte-lague":
+            case "spsv":
+            case "stv":
+                return true;
+        }
+    }
+
     render() {
         let ballotType = this.props.draft.type;
         return <div>
@@ -185,12 +215,14 @@ class MakeVotePage extends PureComponent<Props> {
                         <TallyButton disabled={this.props.hasSubmittedVote} value="first-past-the-post">FPTP</TallyButton>}
                     {/* {this.isAllowedAlgorithm("stv") &&
                         <TallyButton disabled={this.props.hasSubmittedVote} value="stv">STV</TallyButton>} */}
+                    {this.isAllowedAlgorithm("sainte-lague") &&
+                        <TallyButton disabled={this.props.hasSubmittedVote} value="sainte-lague">Sainte-Lague</TallyButton>}
                     {this.isAllowedAlgorithm("star") &&
                         <TallyButton disabled={this.props.hasSubmittedVote} value="star">STAR</TallyButton>}
                     {this.isAllowedAlgorithm("spsv") &&
                         <TallyButton disabled={this.props.hasSubmittedVote} value="spsv">SPSV</TallyButton>}
                 </ToggleButtonGroup>
-                {ballotType.tally === "spsv"
+                {this.allowSeatCountTweaking(ballotType.tally)
                     ? <PositionsTextField disabled={this.props.hasSubmittedVote} label="Number of Seats" value={ballotType.positions} type="number" onChange={this.onChangePositions.bind(this)} />
                     : []}
             </div>

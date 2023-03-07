@@ -1,6 +1,6 @@
 import React, { PureComponent } from "react";
 import { UserPreferences } from "../../model/preferences";
-import { FormControl, FormLabel, FormGroup, FormControlLabel, Switch, FormHelperText } from "@material-ui/core";
+import { FormControl, FormLabel, FormGroup, FormControlLabel, Switch, FormHelperText } from "@mui/material";
 import TitlePaper from "../title-paper";
 
 type Props = {

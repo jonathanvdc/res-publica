@@ -1,9 +1,9 @@
-import { Typography } from "@material-ui/core";
+import { Typography } from "@mui/material";
 import React, { PureComponent, ReactNode } from "react";
 import { sortBy } from "../../model/util";
 import { RateOptionsBallot, RateOptionsBallotType, Vote } from "../../model/vote";
 import BallotDots from "./ballot-dots";
-import DoneOutlineIcon from '@material-ui/icons/DoneOutline';
+import DoneOutlineIcon from '@mui/icons-material/DoneOutline';
 
 type Props = {
     /**

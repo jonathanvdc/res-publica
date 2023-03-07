@@ -1,4 +1,4 @@
-import { Button, DialogActions, DialogContent, DialogContentText, DialogTitle, TextField } from '@material-ui/core';
+import { Button, DialogActions, DialogContent, DialogContentText, DialogTitle, TextField } from '@mui/material';
 import React, { PureComponent } from 'react';
 import { DangerButtonWithForm } from './danger-button';
 
