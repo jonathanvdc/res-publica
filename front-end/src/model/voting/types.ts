@@ -39,7 +39,12 @@ export type VoteOption = {
 
 /// A type of vote where every voter gets to choose exactly one option.
 export type ChooseOneBallotType = {
-    tally: "first-past-the-post";
+    tally: "first-past-the-post" | "sainte-lague";
+
+    /**
+     * The number of available seats.
+     */
+    positions?: number;
 };
 
 /// A type of vote where voters rank their options in descending order of preference.
@@ -71,15 +76,18 @@ export type RateOptionsBallotType = {
  * Enumerates vote tallying algorithms.
  */
 export type TallyingAlgorithm =
-    "first-past-the-post"
+    "first-past-the-post" | "sainte-lague"
     | "stv"
     | "spsv" | "star";
 
 export type BallotType = ChooseOneBallotType | RateOptionsBallotType | RankedChoiceBallotType;
 
-export function getBallotKind(ballotType: BallotType): "choose-one" | "rate-options" | "ranked-choice" {
+export type BallotKind = "choose-one" | "rate-options" | "ranked-choice";
+
+export function getBallotKind(ballotType: BallotType): BallotKind {
     switch (ballotType.tally) {
         case "first-past-the-post":
+        case "sainte-lague":
             return "choose-one";
         case "stv":
             return "ranked-choice";
@@ -312,6 +320,31 @@ export function completeBallot(ballot: Ballot, vote: Vote): Ballot {
         }
     }
 }
+
+export function electsIndividuals(algo: TallyingAlgorithm): boolean {
+    switch (algo) {
+        case "sainte-lague":
+            return false;
+
+        case "first-past-the-post":
+        case "spsv":
+        case "star":
+        case "stv":
+            return true;
+    }
+}
+
+/**
+ * A vote outcome that is suitable for describing the results of an election in which either parties
+ * or individuals participate. Each option's number of won seats is represented by a pair in an array.
+ */
+export type VoteOutcome = { optionId: string, seats: number }[];
+
+/**
+ * A type of vote outcome that is suitable for describing the results of an election in which individuals
+ * are elected directly. Each elected individual is represented as an option ID in an array.
+ */
+export type IndividualVoteOutcome = string[];
 
 /**
  * Visualizes a tally.

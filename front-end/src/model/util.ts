@@ -92,3 +92,7 @@ export function changeLuminance(hex: string, lum: number = 0): string {
 }
 
 export type Without<T, K> = Pick<T, Exclude<keyof T, K>>;
+
+export function assertUnreachable(x: never): never {
+    throw new Error("Didn't expect to get here");
+}

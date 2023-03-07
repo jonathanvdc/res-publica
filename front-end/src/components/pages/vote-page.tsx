@@ -1,7 +1,7 @@
 import React, { Component, PureComponent } from "react";
 import { Button, CircularProgress, Paper, Typography, DialogTitle, Dialog, DialogContent, DialogContentText, DialogActions } from "@material-ui/core";
 import { Link } from "react-router-dom";
-import { VoteAndBallots, Ballot, Vote, isActive, isCompletableBallot, completeBallot, isCompleteBallot, findIncompleteOptions, tally, tryGetTallyVisualizer, VoteOption } from "../../model/vote";
+import { VoteAndBallots, Ballot, Vote, isActive, isCompletableBallot, completeBallot, isCompleteBallot, findIncompleteOptions, tryGetTallyVisualizer, VoteOption, tallyIndividual } from "../../model/vote";
 import DropDownButton from "../drop-down-button";
 import "./vote-page.css";
 import { DangerButton } from "../danger-button";
@@ -10,7 +10,7 @@ import WarningIcon from "@material-ui/icons/Warning";
 import AddCandidateButton from "../add-candidate-button";
 import ActiveElectionCard from "../election/cards/active-election-card";
 import HistoricalElectionCard from "../election/cards/historical-election-card";
-import { SuspiciousBallot } from "../../model/voting/types";
+import { electsIndividuals, SuspiciousBallot } from "../../model/voting/types";
 
 type Props = {
     voteAndBallots: VoteAndBallots;
@@ -79,7 +79,7 @@ class AdminZone extends Component<AdminZoneProps, AdminZoneState> {
         let onCancelVote = this.props.onCancelVote;
         let canCancelVote = isActive(data.vote) && this.props.onCancelVote;
         let onResign = this.props.onResign;
-        let canResign = !isActive(data.vote) && onResign &&
+        let canResign = !isActive(data.vote) && electsIndividuals(data.vote.type.tally) && onResign &&
             data.vote.options.length - (data.vote.resigned?.length || 0) > 0;
         let canAddOption = isActive(data.vote) && onResign;
 
@@ -87,7 +87,7 @@ class AdminZone extends Component<AdminZoneProps, AdminZoneState> {
             return undefined;
         }
 
-        let winners = canResign ? tally(data) : [];
+        let winners = canResign ? tallyIndividual(data) : [];
 
         return <Paper className="VoteDangerZone" style={{ marginTop: "5em", padding: "1em 0" }}>
             <Typography variant="h5" style={{ marginBottom: "1em" }}>Danger Zone</Typography>

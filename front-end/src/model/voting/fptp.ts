@@ -1,20 +1,24 @@
 import { max } from "../util";
-import { ChooseOneBallot, VoteAndBallots } from "./types";
+import { ChooseOneBallot, Vote, VoteAndBallots } from "./types";
 
-export function tallyFPTP(voteAndBallots: VoteAndBallots, seats?: number): string[] {
-    seats = seats || 1;
+export function countVotes(ballots: ChooseOneBallot[], vote: Vote): Map<string, number> {
     let counts = new Map<string, number>();
-    for (let ballot of voteAndBallots.ballots) {
-        let fptpBallot = ballot as ChooseOneBallot;
-        if (voteAndBallots.vote.resigned
-            && voteAndBallots.vote.resigned.includes(fptpBallot.selectedOptionId)) {
+    for (let ballot of ballots) {
+        if (vote.resigned
+            && vote.resigned.includes(ballot.selectedOptionId)) {
             // Don't count ballots for candidates who have resigned.
             continue;
         }
 
-        let prevScore = counts.get(fptpBallot.selectedOptionId) || 0;
-        counts.set(fptpBallot.selectedOptionId, prevScore + 1);
+        let prevScore = counts.get(ballot.selectedOptionId) || 0;
+        counts.set(ballot.selectedOptionId, prevScore + 1);
     }
+    return counts;
+}
+
+export function tallyFPTP(voteAndBallots: VoteAndBallots, seats?: number): string[] {
+    seats = seats || voteAndBallots.vote.type.positions || 1;
+    let counts = countVotes(voteAndBallots.ballots as ChooseOneBallot[], voteAndBallots.vote);
     let sortedOptions = voteAndBallots.vote.options.map(x => x.id).sort();
     let results: string[] = [];
     while (results.length < seats) {

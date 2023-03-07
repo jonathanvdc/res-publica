@@ -2,8 +2,10 @@ import { tallyFPTP } from "./voting/fptp";
 import { tallySTAR } from "./voting/star";
 import { tallySPSV } from "./voting/spsv";
 import { tallySTV } from "./voting/stv";
-import { VoteAndBallots, TallyVisualizer } from "./voting/types";
+import { VoteAndBallots, TallyVisualizer, VoteOutcome, IndividualVoteOutcome, electsIndividuals } from "./voting/types";
 import { visuallyTallySPSV } from "./voting/visualize-spsv";
+import { tallySainteLague } from "./voting/sainte-lague";
+import { sortBy } from "./util";
 
 export type {
     Candidate, VoteOption, ChooseOneBallotType, RateOptionsBallotType,
@@ -28,24 +30,36 @@ export function tryGetTallyVisualizer(voteAndBallots: VoteAndBallots): TallyVisu
     }
 }
 
-export function tally(voteAndBallots: VoteAndBallots, seats?: number): string[] {
+export function individualToParty(outcome: IndividualVoteOutcome): VoteOutcome {
+    return outcome.map(optionId => ({ optionId, seats: 1 }));
+}
+
+export function partyToIndividual(outcome: VoteOutcome): IndividualVoteOutcome {
+    let results: IndividualVoteOutcome = [];
+    for (let { optionId, seats } of outcome) {
+        for (let i = 0; i < seats; i++) {
+            results.push(optionId);
+        }
+    }
+    return results;
+}
+
+export function tallyIndividual(voteAndBallots: VoteAndBallots, seats?: number): IndividualVoteOutcome {
+    return partyToIndividual(tally(voteAndBallots, seats));
+}
+
+export function tally(voteAndBallots: VoteAndBallots, seats?: number): VoteOutcome {
     switch (voteAndBallots.vote.type.tally) {
         case "first-past-the-post":
-        {
-            return tallyFPTP(voteAndBallots, seats);
-        }
+            return individualToParty(tallyFPTP(voteAndBallots, seats));
+        case "sainte-lague":
+            return tallySainteLague(voteAndBallots, seats);
         case "stv":
-        {
-            return tallySTV(voteAndBallots, seats);
-        }
+            return individualToParty(tallySTV(voteAndBallots, seats));
         case "star":
-        {
-            return tallySTAR(voteAndBallots, seats);
-        }
+            return individualToParty(tallySTAR(voteAndBallots, seats));
         case "spsv":
-        {
-            return tallySPSV(voteAndBallots, seats);
-        }
+            return individualToParty(tallySPSV(voteAndBallots, seats));
     }
 }
 
@@ -55,8 +69,12 @@ export function tally(voteAndBallots: VoteAndBallots, seats?: number): string[] 
  * and no one resigns.
  * @param voteAndBallots A vote and its ballots.
  */
-export function tallyOrder(voteAndBallots: VoteAndBallots): string[] {
-    return tally(
-        { ...voteAndBallots, vote: { ...voteAndBallots.vote, resigned: [] } },
-        voteAndBallots.vote.options.length);
+export function tallyOrder(voteAndBallots: VoteAndBallots): IndividualVoteOutcome {
+    if (electsIndividuals(voteAndBallots.vote.type.tally)) {
+        return Array.from(new Set(tallyIndividual(
+            { ...voteAndBallots, vote: { ...voteAndBallots.vote, resigned: [] } },
+            voteAndBallots.vote.options.length)));
+    } else {
+        return sortBy(tally(voteAndBallots), ({ seats }) => seats, true).map(({ optionId }) => optionId);
+    }
 }
