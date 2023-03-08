@@ -78,6 +78,7 @@ class HistoricalElectionCard extends ElectionCard<Props, State> {
                 return `${Math.round(100 * votePercentage)}%`;
 
             case "sainte-lague":
+            case "simdem-sainte-lague":
                 return `${this.seatCount(option)} seats`;
 
             case "stv":

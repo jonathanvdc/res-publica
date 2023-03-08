@@ -338,7 +338,7 @@ class EditVoteRoute extends FetchedStateComponent<{ match: any, history: any }, 
         allowRemoveOptions={isActive(data.draftVote)}
         allowChangeEnd={isActive(data.draftVote)}
         allowedTallyingAlgorithms={
-          getBallotKind(data.draftVote.type) === "choose-one" ? ["first-past-the-post", "sainte-lague"] : ["star", "spsv"]}
+          getBallotKind(data.draftVote.type) === "choose-one" ? ["first-past-the-post", "sainte-lague", "simdem-sainte-lague"] : ["star", "spsv"]}
         onMakeVote={this.onSubmitEdits.bind(this)}
         onUpdateDraft={this.onUpdateDraft.bind(this)} />
     }

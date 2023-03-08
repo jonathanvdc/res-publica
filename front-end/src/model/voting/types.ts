@@ -39,7 +39,7 @@ export type VoteOption = {
 
 /// A type of vote where every voter gets to choose exactly one option.
 export type ChooseOneBallotType = {
-    tally: "first-past-the-post" | "sainte-lague";
+    tally: "first-past-the-post" | "sainte-lague" | "simdem-sainte-lague";
 
     /**
      * The number of available seats.
@@ -76,7 +76,7 @@ export type RateOptionsBallotType = {
  * Enumerates vote tallying algorithms.
  */
 export type TallyingAlgorithm =
-    "first-past-the-post" | "sainte-lague"
+    "first-past-the-post" | "sainte-lague" | "simdem-sainte-lague"
     | "stv"
     | "spsv" | "star";
 
@@ -88,6 +88,7 @@ export function getBallotKind(ballotType: BallotType): BallotKind {
     switch (ballotType.tally) {
         case "first-past-the-post":
         case "sainte-lague":
+        case "simdem-sainte-lague":
             return "choose-one";
         case "stv":
             return "ranked-choice";
@@ -324,6 +325,7 @@ export function completeBallot(ballot: Ballot, vote: Vote): Ballot {
 export function electsIndividuals(algo: TallyingAlgorithm): boolean {
     switch (algo) {
         case "sainte-lague":
+        case "simdem-sainte-lague":
             return false;
 
         case "first-past-the-post":
@@ -345,6 +347,35 @@ export type VoteOutcome = { optionId: string, seats: number }[];
  * are elected directly. Each elected individual is represented as an option ID in an array.
  */
 export type IndividualVoteOutcome = string[];
+
+/**
+ * Gets the number of seats assigned to a candidate under a vote outcome.
+ * @param outcome A vote outcome.
+ * @param candidateId A candidate that ran in the election.
+ * @returns The number of seats assigned to `candidateId` by `outcome`.
+ */
+export function numberOfSeats(outcome: VoteOutcome, candidateId: string): number {
+    return outcome.find(({ optionId }) => optionId === candidateId)?.seats || 0;
+}
+
+/**
+ * Gets the total number of seats under a vote outcome.
+ * @param outcome A vote outcome.
+ * @returns The total number of seats assigned to candidates in `outcome`.
+ */
+export function totalNumberOfSeats(outcome: VoteOutcome): number {
+    return outcome.map(({ seats }) => seats).reduce((acc, value) => acc + value, 0);
+}
+
+/**
+ * Tests if a candidate obtained a majority of the seats in a vote outcome.
+ * @param outcome A vote outcome.
+ * @param candidateId A candidate that ran in the election.
+ * @returns `true` if `candidateId` has a majority of the seats in `outcome`.
+ */
+export function hasMajority(outcome: VoteOutcome, candidateId: string): boolean {
+    return numberOfSeats(outcome, candidateId) > totalNumberOfSeats(outcome) / 2;
+}
 
 /**
  * Visualizes a tally.

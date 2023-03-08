@@ -24,7 +24,7 @@ def is_vote_active(vote: VoteAndBallots) -> bool:
 
 def get_ballot_kind(ballot_type: Any) -> str:
     tally = ballot_type['tally']
-    if tally == 'first-past-the-post' or tally == 'sainte-lague':
+    if tally == 'first-past-the-post' or tally == 'sainte-lague' or tally == 'simdem-sainte-lague':
         return 'choose-one'
     elif tally == 'spsv' or tally == 'star':
         return 'rate-options'

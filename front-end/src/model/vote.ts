@@ -6,6 +6,7 @@ import { VoteAndBallots, TallyVisualizer, VoteOutcome, IndividualVoteOutcome, el
 import { visuallyTallySPSV } from "./voting/visualize-spsv";
 import { tallySainteLague } from "./voting/sainte-lague";
 import { sortBy } from "./util";
+import { tallySimDemSainteLague } from "./voting/simdem-sainte-lague";
 
 export type {
     Candidate, VoteOption, ChooseOneBallotType, RateOptionsBallotType,
@@ -54,6 +55,8 @@ export function tally(voteAndBallots: VoteAndBallots, seats?: number): VoteOutco
             return individualToParty(tallyFPTP(voteAndBallots, seats));
         case "sainte-lague":
             return tallySainteLague(voteAndBallots, seats);
+        case "simdem-sainte-lague":
+            return tallySimDemSainteLague(voteAndBallots, seats);
         case "stv":
             return individualToParty(tallySTV(voteAndBallots, seats));
         case "star":
