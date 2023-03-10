@@ -3,6 +3,7 @@ import { Button, Collapse, Link } from "@mui/material";
 import ReactMarkdown from "react-markdown";
 
 type Props = {
+    children: string
     collapsedByDefault: boolean
 };
 
@@ -78,7 +79,7 @@ export function renderCollapsibleMarkdown(
     };
     let props = {
         className,
-        source,
+        children: source,
         renderers,
         escapeHtml: false,
         unwrapDisallowed: true
