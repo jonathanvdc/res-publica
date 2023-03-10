@@ -7,7 +7,7 @@ import { renderCandidateName } from "../candidate-name";
 import CandidatePanel from "../candidate-panel";
 import ElectionCard from "./election-card";
 import { assertUnreachable } from "../../../model/util";
-import { VoteOutcome } from "../../../model/voting/types";
+import { electsIndividuals, VoteOutcome } from "../../../model/voting/types";
 
 type Props = {
     voteAndBallots: VoteAndBallots;
@@ -79,7 +79,12 @@ class HistoricalElectionCard extends ElectionCard<Props, State> {
 
             case "sainte-lague":
             case "simdem-sainte-lague":
-                return `${this.seatCount(option)} seats`;
+                let seatCount = this.seatCount(option);
+                if (seatCount === 1) {
+                    return "1 seat";
+                } else {
+                    return `${seatCount} seats`;
+                }
 
             case "stv":
             case "spsv":
@@ -93,7 +98,7 @@ class HistoricalElectionCard extends ElectionCard<Props, State> {
     }
 
     renderOption(option: VoteOption): React.ReactNode {
-        let isWinner = this.seatCount(option) > 0;
+        let isWinner = electsIndividuals(this.props.voteAndBallots.vote.type.tally) && this.seatCount(option) > 0;
         let hasResigned = !!this.props.voteAndBallots.vote.resigned?.includes(option.id);
 
         return <CandidatePanel isWinner={isWinner} hasResigned={hasResigned} score={this.renderScore(option)}>
