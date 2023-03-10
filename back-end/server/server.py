@@ -127,14 +127,8 @@ def create_app(config, bottle_path, data_path='data', static_folder=DEFAULT_STAT
             abort(403)
 
         # Ask the manager to upgrade and restart us after we shut down.
-
-        func = request.environ.get('werkzeug.server.shutdown')
-        if func is None:
-            raise RuntimeError('Not running with the Werkzeug Server')
-
         write_json({'action': 'restart'}, bottle_path)
-
-        func()
+        os._exit(0)
         return jsonify({})
 
     @app.route('/reddit-auth')
