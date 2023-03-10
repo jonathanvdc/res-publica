@@ -90,7 +90,7 @@ class DraftElectionCard extends ElectionCard<Props, State> {
             <MDEditor
                 className="VoteDescription"
                 value={vote.description}
-                previewOptions={{escapeHtml: false, unwrapDisallowed: true}}
+                previewOptions={{unwrapDisallowed: true}}
                 onChange={val => this.props.onElectionChanged({ ...vote, description: val || "" })} />
         </Paper>;
     }
@@ -144,7 +144,7 @@ class DraftElectionCard extends ElectionCard<Props, State> {
             <MDEditor
                 className="VoteOptionDescription"
                 value={option.description}
-                previewOptions={{escapeHtml: false, unwrapDisallowed: true}}
+                previewOptions={{unwrapDisallowed: true}}
                 onChange={val => this.onOptionChanged(option, { ...option, description: val || "" })} />
         </CandidatePanel>;
     }
