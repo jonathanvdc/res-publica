@@ -1,0 +1,1 @@
+python ./server-manager.py config.json

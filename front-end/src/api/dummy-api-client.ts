@@ -1,6 +1,6 @@
 import { Authenticator, makeid } from "./auth";
 import { DummyAuthenticator } from "./dummy-auth";
-import { APIClient, ElectionManagementClient, OptionalAPIClient, OptionalAPI } from "./api-client";
+import { APIClient, ElectionManagementClient, OptionalAPIClient } from "./api-client";
 import { Vote, VoteAndBallots, Ballot, isActive, FinishedBallot, VoteOption } from "../model/vote";
 import { SuspiciousBallot } from "../model/voting/types";
 
@@ -76,10 +76,8 @@ export class DummyAPIClient implements APIClient, OptionalAPIClient {
         return newBallot;
     }
 
-    async getAvailable(): Promise<OptionalAPI[]> {
-        return [
-            OptionalAPI.registeredVoters
-        ];
+    async getPermissions(): Promise<string[]> {
+        return [];
     }
 
     async getRegisteredVoters(): Promise<string[]> {

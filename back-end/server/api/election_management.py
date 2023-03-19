@@ -5,7 +5,7 @@
 from flask import Blueprint, abort, jsonify, request
 
 from .core import get_json_arg, authenticate
-from ..persistence.authentication import DeviceIndex
+from ..persistence.authentication import DeviceIndex, Permission
 from ..persistence.votes import VoteIndex
 from ..persistence.helpers import send_to_log
 
@@ -17,7 +17,7 @@ def create_election_management_blueprint(device_index: DeviceIndex, vote_index: 
     @bp.route('/suspicious-ballots', methods=['POST'])
     def suspicious_ballots():
         """Gets a report of all suspicious ballots cast in an election."""
-        device = authenticate(request, device_index, True)
+        device = authenticate(request, device_index, permission=Permission.ELECTION_VIEW_SUSPICIOUS_BALLOTS)
         if not device:
             abort(403)
 
@@ -27,7 +27,7 @@ def create_election_management_blueprint(device_index: DeviceIndex, vote_index: 
     @bp.route('/create-vote', methods=['POST'])
     def create_vote():
         """Creates a new vote."""
-        device = authenticate(request, device_index, True)
+        device = authenticate(request, device_index, permission=Permission.ELECTION_CREATE)
         if not device:
             abort(403)
 
@@ -43,7 +43,7 @@ def create_election_management_blueprint(device_index: DeviceIndex, vote_index: 
     @bp.route('/cancel-vote', methods=['POST'])
     def cancel_vote():
         """Cancels a vote."""
-        device = authenticate(request, device_index, True)
+        device = authenticate(request, device_index, permission=Permission.ELECTION_CANCEL)
         if not device:
             abort(403)
 
@@ -60,7 +60,7 @@ def create_election_management_blueprint(device_index: DeviceIndex, vote_index: 
     @bp.route('/edit-vote', methods=['POST'])
     def edit_vote():
         """Edits a vote. The type of ballot must not change."""
-        device = authenticate(request, device_index, True)
+        device = authenticate(request, device_index, permission=Permission.ELECTION_EDIT)
         if not device:
             abort(403)
 
@@ -76,7 +76,7 @@ def create_election_management_blueprint(device_index: DeviceIndex, vote_index: 
     @bp.route('/add-vote-option', methods=['POST'])
     def add_vote_option():
         """Adds a candidate to the ballot for an election."""
-        device = authenticate(request, device_index, True)
+        device = authenticate(request, device_index, permission=Permission.ELECTION_EDIT)
         if not device:
             abort(403)
 
@@ -93,7 +93,7 @@ def create_election_management_blueprint(device_index: DeviceIndex, vote_index: 
     @bp.route('/resign', methods=['POST'])
     def process_resignation():
         """Marks a candidate as having resigned from their seat."""
-        device = authenticate(request, device_index, True)
+        device = authenticate(request, device_index, permission=Permission.ELECTION_EDIT)
         if not device:
             abort(403)
 

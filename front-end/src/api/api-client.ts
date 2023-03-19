@@ -47,29 +47,64 @@ export interface APIClient {
 }
 
 /**
- * An enumeration of APIs that the server might support or allow us to
- * access.
+ * An enumeration of permissions that can be granted to a user.
  */
-export enum OptionalAPI {
+export enum Permission {
     /**
-     * An API that queries the set of registered voters.
+     * The user can view the list of all votes.
      */
-    registeredVoters = "registered-voters",
+    ViewVotes = "vote.view",
+    
+    /**
+     * The user can cast a ballot in a vote.
+     */
+    CastBallot = "vote.cast",
 
     /**
-     * An API that registers a voter.
+     * The user can create a new vote.
      */
-    addRegisteredVoter = "add-registered-voter",
+    CreateVote = "election.create",
 
     /**
-     * An API that unregisters a voter.
+     * The user can edit an existing vote.
      */
-    removeRegisteredVoter = "remove-registered-voter",
+    EditVote = "election.edit",
 
     /**
-     * An API that upgrades and restarts the server.
+     * The user can cancel an existing vote.
      */
-    upgradeServer = "upgrade-server"
+    CancelVote = "election.cancel",
+
+    /**
+     * The user can view ballots marked as suspicious in a vote.
+     */
+    ViewSuspiciousVotes = "election.view-suspicious-ballots",
+
+    /**
+     * The user can view the list of all registered users.
+     */
+    ViewRegisteredUsers = "usermanagement.view",
+
+    /**
+     * The user can add a new registered user manually.
+     */
+    AddRegisteredUser = "usermanagement.add",
+
+    /**
+     * The user can remove an existing registered user manually.
+     */
+    RemoveRegisteredUser = "usermanagement.remove",
+
+    /**
+     * The user can edit the permissions of other users.
+     * TODO: This permission and functionality are not implemented yet, in both client and server.
+     */
+    EditPermissions = "administration.edit-permissions",
+
+    /**
+     * The user can restart and upgrade the server.
+     */
+    UpgradeServer = "administration.upgrade-server"
 }
 
 /**
@@ -77,9 +112,9 @@ export enum OptionalAPI {
  */
 export interface OptionalAPIClient {
     /**
-     * Gets a list of all currently available optional APIs.
+     * Gets a list of all permissions of this user.
      */
-    getAvailable(): Promise<OptionalAPI[]>;
+    getPermissions(): Promise<string[]>;
 
     /**
      * Gets the set of all currently registered users.

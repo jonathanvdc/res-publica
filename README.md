@@ -49,10 +49,22 @@ Navigate to the `back-end` directory. Create a file called `config.json` that co
             "rhs": 25
         }
     ],
-    "optional-apis": {
-        "authenticated": ["registered-voters"],
-        "authenticated-admin": ["registered-voters", "add-registered-voter", "remove-registered-voter"],
-        "authenticated-developer": ["registered-voters", "add-registered-voter", "remove-registered-voter", "upgrade-server"]
+    "default-permissions": {
+        "authenticated": {
+            "vote": ["view", "cast"],
+            "usermanagement": ["view"]
+        },
+        "authenticated-admin": {
+            "vote": ["view", "cast"],
+            "election": ["create", "edit", "cancel"],
+            "usermanagement": ["view", "add", "remove"]
+        },
+        "authenticated-developer": {
+            "vote": ["view", "cast"],
+            "election": ["create", "edit", "cancel", "view-suspicious-ballots"],
+            "usermanagement": ["view", "add", "remove"],
+            "administration": ["edit-permissions", "upgrade-server"]
+        }
     },
     "login_expiry": 2592000,
     "flask-logs": false
@@ -64,6 +76,11 @@ With the server configured, the only thing left for us to do is to appoint an ad
 ```json
 {
     "devices": {},
+    "permissions": {
+        "vote": {
+            "view": ["another-users-account"]
+            }
+    },
     "admins": [
         "your-reddit-account"
     ],

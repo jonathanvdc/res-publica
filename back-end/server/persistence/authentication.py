@@ -30,6 +30,27 @@ OPERANDS = {
     'redditor.total_karma': lambda redditor: redditor.link_karma + redditor.comment_karma
 }
 
+PERMISSIONS = {
+    'vote': [
+        'view',
+        'cast',
+    ],
+    'election': [
+        'create',
+        'edit',
+        'cancel',
+        'view-suspicious-ballots',
+    ],
+    'usermanagement': [
+        'view',
+        'add',
+        'remove',
+    ],
+    'administration': [
+        'edit-permissions',
+        'upgrade-server',
+    ]
+}
 
 class RegisteredDevice(object):
     """A class that represents a device ID registered with a particular user."""
@@ -76,6 +97,7 @@ class DeviceIndex(object):
     def __init__(
             self,
             devices: Dict[DeviceId, RegisteredDevice],
+            permissions: Dict[any, Set[UserId]],
             admins: Set[UserId],
             developers: Set[UserId],
             registered_voters: Set[UserId],
@@ -84,6 +106,7 @@ class DeviceIndex(object):
 
         self.persistence_path = persistence_path
         self.devices = devices
+        self.permissions = permissions
         self.admins = admins
         self.developers = developers
         self.registered_voters = registered_voters
@@ -160,6 +183,86 @@ class DeviceIndex(object):
             return True
         else:
             return False
+        
+    def add_permission(self, permission, user_id: UserId, persist_changes: bool = True):
+        """Adds a permission to a user."""
+        self.permissions[permission].add(user_id)
+
+        if persist_changes:
+            write_device_index(self, self.persistence_path)
+
+    def remove_permission(self, permission, user_id: UserId, persist_changes: bool = True) -> bool:
+        """Removes a permission from a user."""
+        if permission(user_id):
+            self.permissions[permission].remove(user_id)
+
+            if persist_changes:
+                write_device_index(self, self.persistence_path)
+        
+            return True
+        else:
+            return False
+        
+
+class Permission(object):
+    """A permission that can be granted to a user. Valid permissions are pre-defined in the PERMISSIONS constant."""
+    
+    # Related to voting
+    VOTE_VIEW = None
+    VOTE_CAST = None
+
+    # Related to election management
+    ELECTION_CREATE = None
+    ELECTION_EDIT = None
+    ELECTION_CANCEL = None
+    ELECTION_VIEW_SUSPICIOUS_BALLOTS = None
+
+    # Related to users themselves
+    USERMANAGEMENT_VIEW = None
+    USERMANAGEMENT_ADD = None
+    USERMANAGEMENT_REMOVE = None
+
+    # Related to the server and highly sensitive actions
+    ADMINISTRATION_EDIT_PERMISSIONS = None
+    ADMINISTRATION_UPGRADE_SERVER = None
+
+    def check_permission_validity(scope: str, permission: str):
+        return permission in PERMISSIONS.get(scope, {})
+    
+    def __init__(self, scope: str, permission: str):
+        if not Permission.check_permission_validity(scope, permission):
+            raise ValueError(f'Invalid permission: {scope}.{permission}')
+        
+        self.scope = scope
+        self.permission = permission
+
+    def __eq__(self, other):
+        return self.scope == other.scope and self.permission == other.permission
+
+    def __hash__(self):
+        return hash((self.scope, self.permission))
+
+    def __str__(self):
+        return f'{self.scope}.{self.permission}'
+    
+    def __repr__(self):
+        return f'Permission({self.scope}.{self.permission})'
+    
+    def __call__(self, user_id: UserId, device_index: DeviceIndex) -> bool:
+        """Checks if a user has this permission."""
+        return user_id in device_index.permissions.get(self, set())
+
+Permission.VOTE_VIEW = Permission('vote', 'view')
+Permission.VOTE_CAST = Permission('vote', 'cast')
+Permission.ELECTION_CREATE = Permission('election', 'create')
+Permission.ELECTION_EDIT = Permission('election', 'edit')
+Permission.ELECTION_CANCEL = Permission('election', 'cancel')
+Permission.ELECTION_VIEW_SUSPICIOUS_BALLOTS = Permission('election', 'view-suspicious-ballots')
+Permission.USERMANAGEMENT_VIEW = Permission('usermanagement', 'view')
+Permission.USERMANAGEMENT_ADD = Permission('usermanagement', 'add')
+Permission.USERMANAGEMENT_REMOVE = Permission('usermanagement', 'remove')
+Permission.ADMINISTRATION_EDIT_PERMISSIONS = Permission('administration', 'edit-permissions')
+Permission.ADMINISTRATION_UPGRADE_SERVER = Permission('administration', 'upgrade-server')
 
 
 def read_device_index(path: str, voter_requirements: List[VoterRequirement]) -> DeviceIndex:
@@ -175,12 +278,25 @@ def read_device_index(path: str, voter_requirements: List[VoterRequirement]) -> 
     # Discard devices that are no longer valid.
     devices = { device_id: device for device_id, device in devices.items() if device.is_alive() }
 
+    # Read permissions from JSON.
+    permissions = {}
+    scopes = data.get('permissions', {})
+    for scope in scopes:
+        for permission in scopes[scope]:
+            if Permission.check_permission_validity(scope, permission):
+                permissions[Permission(scope, permission)] = set(scopes[scope][permission])
+
+    voters = set(data.get('registered-voters', [])).union(info.user_id for info in devices.values())
+    admins = set(data.get('admins', []))
+    developers = set(data.get('developers', []))
+                    
     # Assemble the device index.
     return DeviceIndex(
         devices,
-        set(data.get('admins', [])),
-        set(data.get('developers', [])),
-        set(data.get('registered-voters', [])).union(info.user_id for info in devices.values()),
+        permissions,
+        admins,
+        developers,
+        voters,
         voter_requirements,
         path)
 
@@ -191,7 +307,7 @@ def read_or_create_device_index(path: str, voter_requirements: List[VoterRequire
         return read_device_index(path, voter_requirements)
     except FileNotFoundError:
         Path(path).parent.mkdir(parents=True, exist_ok=True)
-        return DeviceIndex({}, set(), set(), set(), voter_requirements, path)
+        return DeviceIndex({}, {}, set(), set(), set(), voter_requirements, path)
 
 
 def write_device_index(index: DeviceIndex, path: str):

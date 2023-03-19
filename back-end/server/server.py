@@ -13,9 +13,9 @@ from flask import Flask, request, redirect, send_from_directory, jsonify, abort
 from werkzeug.exceptions import NotFound
 from werkzeug.urls import url_encode
 
-from .api.core import create_core_blueprint, get_auth_level
+from .api.core import create_core_blueprint, get_auth_level, authenticate
 from .api.election_management import create_election_management_blueprint
-from .persistence.authentication import read_or_create_device_index, RegisteredDevice
+from .persistence.authentication import read_or_create_device_index, RegisteredDevice, Permission
 from .persistence.helpers import write_json, send_to_log
 from .persistence.votes import read_or_create_vote_index
 from .scrape import scrape_cfc
@@ -38,20 +38,9 @@ def create_app(config, bottle_path, data_path='data', static_folder=DEFAULT_STAT
     Path(data_path).mkdir(parents=True, exist_ok=True)
     device_index = read_or_create_device_index(
         os.path.join(data_path, 'device-index.json'),
-        config.get('voter-requirements', []))
+        config.get('voter-requirements', [])
+    )
     vote_index = read_or_create_vote_index(os.path.join(data_path, 'vote-index.json'), device_index)
-
-    def authenticate(req, require_admin=False) -> RegisteredDevice:
-        device_id = req.args.get('deviceId')
-        if device_id is None:
-            json_data = req.json
-            device_id = json_data.get('deviceId')
-
-        device = device_index.devices.get(device_id)
-        if require_admin and device is not None and device.user_id not in device_index.admins:
-            return None
-        else:
-            return device
 
     def get_json_arg(req, key: str):
         try:
@@ -59,15 +48,9 @@ def create_app(config, bottle_path, data_path='data', static_folder=DEFAULT_STAT
         except KeyError:
             abort(400)
 
-    def get_available_optional_apis(req) -> List[str]:
-        return config.get('optional-apis', {}).get(get_auth_level(req, device_index), [])
-
-    def can_access_optional_api(req, api_name) -> bool:
-        return api_name in get_available_optional_apis(req)
-
     # Register the core APIs.
     app.register_blueprint(
-        create_core_blueprint(device_index, vote_index),
+        create_core_blueprint(device_index, vote_index, config.get('default-permissions', {})),
         url_prefix='/api/core')
 
     # Add `/api/core/client-id` as a special case since it needs to peer deeply into the config.
@@ -84,7 +67,7 @@ def create_app(config, bottle_path, data_path='data', static_folder=DEFAULT_STAT
     @app.route('/api/election-management/scrape-cfc', methods=['POST'])
     def process_scrape_cfc():
         """Scrapes a Reddit CFC."""
-        device = authenticate(request, True)
+        device = authenticate(request, device_index, permission=Permission.ELECTION_CREATE)
         if not device:
             abort(403)
 
@@ -94,20 +77,16 @@ def create_app(config, bottle_path, data_path='data', static_folder=DEFAULT_STAT
                 get_json_arg(request, 'url'),
                 get_json_arg(request, 'discernCandidates')))
 
-    @app.route('/api/optional/available', methods=['POST'])
-    def process_available_optional_apis():
-        return jsonify(get_available_optional_apis(request))
-
     @app.route('/api/optional/registered-voters', methods=['POST'])
     def process_get_registered_voters():
-        if not can_access_optional_api(request, 'registered-voters'):
+        if not authenticate(request, device_index, permission=Permission.USERMANAGEMENT_VIEW):
             abort(403)
 
         return jsonify(list(sorted(device_index.registered_voters)))
 
     @app.route('/api/optional/add-registered-voter', methods=['POST'])
     def process_add_registered_voter():
-        if not can_access_optional_api(request, 'add-registered-voter'):
+        if not authenticate(request, device_index, Permission.USERMANAGEMENT_ADD):
             abort(403)
 
         device_index.register_user(get_json_arg(request, 'userId'))
@@ -115,7 +94,7 @@ def create_app(config, bottle_path, data_path='data', static_folder=DEFAULT_STAT
 
     @app.route('/api/optional/remove-registered-voter', methods=['POST'])
     def process_remove_registered_voter():
-        if not can_access_optional_api(request, 'remove-registered-voter'):
+        if not authenticate(request, device_index, permission=Permission.USERMANAGEMENT_REMOVE):
             abort(403)
 
         device_index.unregister_user(get_json_arg(request, 'userId'))
@@ -123,7 +102,7 @@ def create_app(config, bottle_path, data_path='data', static_folder=DEFAULT_STAT
 
     @app.route('/api/optional/upgrade-server', methods=['POST'])
     def process_upgrade_server():
-        if not can_access_optional_api(request, 'upgrade-server'):
+        if not authenticate(request, device_index, permission=Permission.ADMINISTRATION_UPGRADE_SERVER):
             abort(403)
 
         # Ask the manager to upgrade and restart us after we shut down.

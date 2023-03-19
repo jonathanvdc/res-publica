@@ -12,13 +12,14 @@ import ActiveElectionCard from "../election/cards/active-election-card";
 import HistoricalElectionCard from "../election/cards/historical-election-card";
 import { electsIndividuals, SuspiciousBallot } from "../../model/voting/types";
 import saveAs from "file-saver";
+import { Permission } from "../../api/api-client";
 
 type Props = {
     voteAndBallots: VoteAndBallots;
+    permissions: Permission[];
     suspiciousBallots?: SuspiciousBallot[];
     ballotCast?: boolean;
     onCastBallot?: (vote: Vote, ballot: Ballot) => void;
-    isAdmin?: boolean;
     onCancelVote?: () => void;
 
     /**
@@ -35,6 +36,7 @@ type State = {
 
 type AdminZoneProps = {
     data: VoteAndBallots;
+    permissions: Permission[];
     onCancelVote?: () => void;
     onResign?: (optionId: string) => void;
     onAddOption?: (option: VoteOption) => void;
@@ -244,8 +246,8 @@ class VotePage extends Component<Props, State> {
         </Dialog>;
     }
 
-    renderAdminZone(data: VoteAndBallots) {
-        return <AdminZone data={data} onCancelVote={this.props.onCancelVote} onResign={this.props.onResign} onAddOption={this.props.onAddOption} />;
+    renderAdminZone(data: VoteAndBallots, permissions: Permission[]) {
+        return <AdminZone data={data} permissions={permissions} onCancelVote={this.props.onCancelVote} onResign={this.props.onResign} onAddOption={this.props.onAddOption} />;
     }
 
     render() {
@@ -281,7 +283,7 @@ class VotePage extends Component<Props, State> {
                 : <Button component={Link} to={`/vote/${data.vote.id}/ballots`} style={{ margin: "0 1em 1em 1em" }} variant="contained">View Ballots</Button>}
             {!isActive(data.vote) && tryGetTallyVisualizer(data) &&
                 <Button component={Link} to={`/vote/${data.vote.id}/visualize`} style={{ margin: "0 1em 1em 1em" }} variant="contained">Visualize</Button>}
-            {this.props.isAdmin && this.renderAdminZone(data)}
+            {this.renderAdminZone(data, this.props.permissions)}
             {isActive(data.vote) && this.renderPartialBallotDialog(data)}
         </div>;
     }
