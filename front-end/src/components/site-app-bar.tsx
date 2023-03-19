@@ -8,7 +8,7 @@ import ListWithCheckIcon from '@mui/icons-material/PlaylistAddCheck';
 import ExitIcon from '@mui/icons-material/ExitToApp';
 import { Link } from "react-router-dom";
 import { isMobile } from "react-device-detect";
-import { OptionalAPI } from "../api/api-client";
+import { Permission } from "../api/api-client";
 import Logo from "../logo.svg";
 import "./site-app-bar.css";
 import { enablePreferences } from "../model/preferences";
@@ -17,8 +17,7 @@ type SiteAppBarProps = {
     onLogOut?: () => void;
     onUnregisterUser?: () => void;
     userId?: string;
-    isAdmin?: boolean;
-    optionalAPIs?: OptionalAPI[];
+    permissions?: Permission[];
 };
 
 type SiteAppBarState = {
@@ -52,19 +51,19 @@ type DrawerItem = LinkDrawerItem | DividerDrawerItem | DangerousActionDrawerItem
 
 const drawerItems: DrawerItem[] = [
     {
-        showItem: props => !!props.isAdmin,
+        showItem: props => !!props.permissions?.includes(Permission.CreateVote),
         link: "/admin/make-vote",
         text: "Create New Vote",
         icon: <CreateIcon />
     },
     {
-        showItem: props => !!props.optionalAPIs?.includes(OptionalAPI.registeredVoters),
+        showItem: props => !!props.permissions?.includes(Permission.ViewRegisteredUsers),
         link: "/registered-voters",
         text: "Registered Voters",
         icon: <ListWithCheckIcon />
     },
     {
-        showItem: props => !!props.optionalAPIs?.includes(OptionalAPI.upgradeServer),
+        showItem: props => !!props.permissions?.includes(Permission.UpgradeServer),
         link: "/server-management",
         text: "Server Management",
         icon: <BuildIcon />

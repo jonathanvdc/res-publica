@@ -29,8 +29,12 @@ def main():
     # Build the front-end.
     subprocess.check_call(['npm', 'run-script', 'build'], cwd=front_end_path, shell=IS_WINDOWS)
 
+    print(parent_path)
     # Install Python packages.
     subprocess.check_call(['pip3', 'install', '-r', 'requirements.txt'], cwd=parent_path, shell=IS_WINDOWS)
+
+    print("Upgrade complete.")
+
 
 
 if __name__ == "__main__":

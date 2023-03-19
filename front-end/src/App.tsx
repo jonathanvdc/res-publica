@@ -18,12 +18,12 @@ import MakeVotePage from './components/pages/make-vote-page';
 import MakeVoteConfirmationPage from './components/pages/make-vote-confirmation-page';
 import ScrapeCFCPage from './components/pages/scrape-cfc-page';
 import BallotTable, { ballotsToCsv } from './components/ballot-table';
-import { AuthenticationLevel, isAdmin } from './api/auth';
+import { AuthenticationLevel } from './api/auth';
 import SiteAppBar from './components/site-app-bar';
 import { UserPreferences, getPreferences, setPreferences, enablePreferences } from './model/preferences';
 import PreferencesPage from './components/pages/preferences-page';
 import AuthFailedPage from './components/pages/auth-failed-page';
-import { OptionalAPI } from './api/api-client';
+import { Permission } from './api/api-client';
 import RegisteredVotersList from './components/registered-voter-list';
 import TitlePaper from './components/title-paper';
 import { currentSeasons, getSeasonalPropertyValue } from './model/season';
@@ -54,10 +54,13 @@ type AppState = {
   authLevel: AuthenticationLevel;
   authPage?: JSX.Element;
   userId?: string;
-  optionalAPIs?: OptionalAPI[];
+  permissions?: Permission[];
 };
 
 class App extends FetchedStateComponent<{}, AppState> {
+  fetchPermissions(): Promise<Permission[]> {
+    return apiClient.optional.getPermissions();
+  }
   getMainClass(): string {
     return ["App", ...currentSeasons].join(" ");
   }
@@ -81,8 +84,8 @@ class App extends FetchedStateComponent<{}, AppState> {
       return { authLevel, authPage };
     } else {
       let userId = await authenticator.getUserId();
-      let optionalAPIs = await apiClient.optional.getAvailable();
-      return { authLevel, userId, optionalAPIs };
+      let permissions = await apiClient.optional.getPermissions();
+      return { authLevel, userId, permissions };
     }
   }
 
@@ -132,20 +135,19 @@ class App extends FetchedStateComponent<{}, AppState> {
             onLogOut={this.onLogOut.bind(this)}
             onUnregisterUser={this.onUnregisterUser.bind(this)}
             userId={state.userId}
-            isAdmin={isAdmin(state.authLevel)}
-            optionalAPIs={state.optionalAPIs} />
+            permissions={state.permissions} />
           <div className="App-body">
             <Suspense fallback={<div>Loading...</div>}>
               <Route exact path="/" component={VoteListRoute} />
               {enablePreferences ? <Route exact path="/prefs" component={PreferencesRoute} /> : []}
-              <Route exact path="/vote/:voteId" component={(props: any) => <VoteRoute isAdmin={isAdmin(state.authLevel)} {...props} />} />
+              <Route exact path="/vote/:voteId" component={(props: any) => <VoteRoute {...props} />} />
               <Route exact path="/vote/:voteId/ballots" component={VoteBallotsRoute} />
               <Route exact path="/vote/:voteId/visualize" component={VoteVisualizationRoute} />
-              {isAdmin(state.authLevel) && <Route exact path="/vote/:voteId/edit" component={EditVoteRoute} />}
-              {isAdmin(state.authLevel) && <Route exact path="/admin/make-vote" component={MakeVoteRoute} />}
-              {state.optionalAPIs && state.optionalAPIs.includes(OptionalAPI.registeredVoters) &&
+              {this.permissions.includes(Permission.EditVote) && <Route exact path="/vote/:voteId/edit" component={EditVoteRoute} />}
+              {this.permissions.includes(Permission.CreateVote) && <Route exact path="/admin/make-vote" component={MakeVoteRoute} />}
+              {state.permissions && state.permissions.includes(Permission.ViewRegisteredUsers) &&
                 <Route exact path="/registered-voters" component={RegisteredVotersRoute} />}
-              {state.optionalAPIs && state.optionalAPIs.includes(OptionalAPI.upgradeServer) &&
+              {state.permissions && state.permissions.includes(Permission.UpgradeServer) &&
                 <Route exact path="/server-management" component={ServerManagementRoute} />}
             </Suspense>
           </div>
@@ -178,6 +180,9 @@ type VoteListRouteState = {
 };
 
 class VoteListRoute extends FetchedStateComponent<{ match: any }, VoteListRouteState> {
+  fetchPermissions(): Promise<Permission[]> {
+    return apiClient.optional.getPermissions();
+  }
   async fetchState(): Promise<VoteListRouteState> {
     let activePromise = apiClient.getActiveVotes();
     let allPromise = apiClient.getAllVotes();
@@ -212,16 +217,20 @@ class VoteListRoute extends FetchedStateComponent<{ match: any }, VoteListRouteS
 
 type VoteRouteState = {
   vote?: VoteAndBallots;
+  permissions?: Permission[];
   ballotCast?: boolean;
   ballotId?: string;
   suspiciousBallots?: SuspiciousBallot[];
 };
 
-class VoteRoute extends FetchedStateComponent<{ match: any, history: any, isAdmin: boolean }, VoteRouteState> {
+class VoteRoute extends FetchedStateComponent<{ match: any, history: any, permissions: Permission[] }, VoteRouteState> {
+  fetchPermissions(): Promise<Permission[]> {
+    return apiClient.optional.getPermissions();
+  }
   async fetchState(): Promise<VoteRouteState> {
     let voteId = this.props.match.params.voteId;
     let data = await apiClient.getVote(voteId);
-    let suspiciousBallots = this.props.isAdmin ? await apiClient.electionManagement.getSuspiciousBallots(voteId) : [];
+    let suspiciousBallots = this.props.permissions?.includes(Permission.ViewSuspiciousVotes) ? await apiClient.electionManagement.getSuspiciousBallots(voteId) : [];
     return { vote: data, ballotCast: false, suspiciousBallots };
   }
 
@@ -278,9 +287,9 @@ class VoteRoute extends FetchedStateComponent<{ match: any, history: any, isAdmi
           message="You haven't cast your ballot yet. Are you sure you want to leave?" />
         <VotePage
           voteAndBallots={data.vote}
+          permissions={data.permissions ?? []}
           suspiciousBallots={data.suspiciousBallots}
           ballotCast={data.ballotCast}
-          isAdmin={this.props.isAdmin}
           onCastBallot={this.onCastBallot.bind(this)}
           onCancelVote={() => this.onCancelVote(data.vote!.vote.id)}
           onResign={optionId => this.onResign(data.vote!.vote.id, optionId)}
@@ -293,6 +302,9 @@ class VoteRoute extends FetchedStateComponent<{ match: any, history: any, isAdmi
 }
 
 class EditVoteRoute extends FetchedStateComponent<{ match: any, history: any }, MakeVoteRouteState> {
+  fetchPermissions(): Promise<Permission[]> {
+    return apiClient.optional.getPermissions();
+  }
   async fetchState(): Promise<MakeVoteRouteState> {
     let data = await apiClient.getVote(this.props.match.params.voteId);
     return { phase: "editing", draftVote: data?.vote };
@@ -346,6 +358,9 @@ class EditVoteRoute extends FetchedStateComponent<{ match: any, history: any }, 
 }
 
 class VoteBallotsRoute extends FetchedStateComponent<{ match: any, history: any }, VoteAndBallots | undefined> {
+  fetchPermissions(): Promise<Permission[]> {
+    return apiClient.optional.getPermissions();
+  }
   fetchState(): Promise<VoteAndBallots | undefined> {
     return apiClient.getVote(this.props.match.params.voteId);
   }
@@ -373,6 +388,9 @@ class VoteBallotsRoute extends FetchedStateComponent<{ match: any, history: any 
 }
 
 class VoteVisualizationRoute extends FetchedStateComponent<{ match: any, history: any }, VoteAndBallots | undefined> {
+  fetchPermissions(): Promise<Permission[]> {
+    return apiClient.optional.getPermissions();
+  }
   fetchState(): Promise<VoteAndBallots | undefined> {
     return apiClient.getVote(this.props.match.params.voteId);
   }
@@ -396,6 +414,9 @@ type MakeVoteRouteState = {
 };
 
 class MakeVoteRoute extends FetchedStateComponent<{ history: any }, MakeVoteRouteState> {
+  fetchPermissions(): Promise<Permission[]> {
+    return apiClient.optional.getPermissions();
+  }
   async fetchState(): Promise<MakeVoteRouteState> {
     return this.skipInitialStateFetch();
   }
@@ -459,16 +480,19 @@ class MakeVoteRoute extends FetchedStateComponent<{ history: any }, MakeVoteRout
 
 type RegisteredVotersState = {
   voters: string[];
-  optionalAPIs: OptionalAPI[];
+  permissions: string[];
 };
 
 class RegisteredVotersRoute extends FetchedStateComponent<{ match: any, history: any }, RegisteredVotersState> {
+  fetchPermissions(): Promise<Permission[]> {
+    return apiClient.optional.getPermissions();
+  }
   async fetchState(): Promise<RegisteredVotersState> {
-    let apis = apiClient.optional.getAvailable();
+    let permissions = apiClient.optional.getPermissions();
     let voters = apiClient.optional.getRegisteredVoters();
     return {
       voters: await voters,
-      optionalAPIs: await apis
+      permissions: await permissions
     };
   }
 
@@ -485,8 +509,8 @@ class RegisteredVotersRoute extends FetchedStateComponent<{ match: any, history:
   }
 
   renderState(data: RegisteredVotersState): JSX.Element {
-    let onAdd = data.optionalAPIs.includes(OptionalAPI.addRegisteredVoter) ? this.onAddVoter.bind(this) : undefined;
-    let onRemove = data.optionalAPIs.includes(OptionalAPI.removeRegisteredVoter) ? this.onRemoveVoter.bind(this) : undefined;
+    let onAdd = data.permissions.includes(Permission.AddRegisteredUser) ? this.onAddVoter.bind(this) : undefined;
+    let onRemove = data.permissions.includes(Permission.RemoveRegisteredUser) ? this.onRemoveVoter.bind(this) : undefined;
     return <TitlePaper title="Registered Voters">
       <Typography>There are currently {data.voters.length} registered voters.</Typography>
       <RegisteredVotersList registeredVoters={data.voters} addRegisteredVoter={onAdd} removeRegisteredVoter={onRemove} />
@@ -495,6 +519,9 @@ class RegisteredVotersRoute extends FetchedStateComponent<{ match: any, history:
 }
 
 class ServerManagementRoute extends FetchedStateComponent<{ match: any, history: any }, {}> {
+  fetchPermissions(): Promise<Permission[]> {
+    return apiClient.optional.getPermissions();
+  }
   async fetchState(): Promise<{}> {
     return {};
   }

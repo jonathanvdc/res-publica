@@ -1,5 +1,6 @@
 import React, { Component } from "react";
 import ErrorPage from "./pages/error-page";
+import { Permission } from "../api/api-client";
 
 export type FetchedState<T> = {
     hasConnected: boolean;
@@ -11,8 +12,10 @@ export type FetchedState<T> = {
  * A component that fetches its state and renders it once fetched.
  */
 export abstract class FetchedStateComponent<TProps, TData> extends Component<TProps, FetchedState<TData>> {
+    permissions: Permission[];
     constructor(props: TProps) {
         super(props);
+        this.permissions = this.skipInitialPermissionsFetch();
         let initState = this.skipInitialStateFetch();
         if (initState) {
             this.state = {
@@ -27,10 +30,15 @@ export abstract class FetchedStateComponent<TProps, TData> extends Component<TPr
     }
 
     abstract fetchState(): Promise<TData>;
+    abstract fetchPermissions(): Promise<Permission[]>;
     abstract renderState(data: TData): JSX.Element;
 
     skipInitialStateFetch(): TData | undefined {
         return undefined;
+    }
+
+    skipInitialPermissionsFetch(): Permission[] {
+        return [];
     }
 
     refetchInitialState() {
@@ -39,6 +47,11 @@ export abstract class FetchedStateComponent<TProps, TData> extends Component<TPr
         .then(
             val => this.setState({ hasConnected: true, data: val }),
             reason => this.setState({ hasConnected: false, error: reason }));
+
+        this.fetchPermissions()
+        .then(
+            perm => this.permissions = perm
+            )
     }
 
     async waitAndContinue<T>(promise: Promise<T>, continuation: (data: T) => void) {

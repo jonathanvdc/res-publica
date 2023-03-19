@@ -64,6 +64,11 @@ With the server configured, the only thing left for us to do is to appoint an ad
 ```json
 {
     "devices": {},
+    "permissions": {
+        "vote": {
+            "view": ["another-users-account"]
+            }
+    },
     "admins": [
         "your-reddit-account"
     ],

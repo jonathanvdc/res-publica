@@ -8,21 +8,6 @@ export enum AuthenticationLevel {
 }
 
 /**
- * Tests if a particular authentication level implies admin privileges.
- * @param auth An authentication level.
- */
-export function isAdmin(auth: AuthenticationLevel): boolean {
-    switch (auth) {
-        case AuthenticationLevel.AuthenticatedAdmin:
-        case AuthenticationLevel.AuthenticatedDeveloper:
-            return true;
-        case AuthenticationLevel.Unauthenticated:
-        case AuthenticationLevel.Authenticated:
-            return false;
-    }
-}
-
-/**
  * An interface for objects that handle user authentication.
  */
 export interface Authenticator {

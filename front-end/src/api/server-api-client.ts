@@ -1,6 +1,6 @@
 import { Authenticator } from "./auth";
 import { VoteAndBallots, Ballot, Vote, FinishedBallot, VoteOption } from "../model/vote";
-import { APIClient, ElectionManagementClient, OptionalAPIClient, OptionalAPI, postJSON } from "./api-client";
+import { APIClient, ElectionManagementClient, OptionalAPIClient, Permission, postJSON } from "./api-client";
 import { RedditAuthenticator } from "./reddit-auth";
 import { SuspiciousBallot } from "../model/voting/types";
 
@@ -23,6 +23,10 @@ export class ServerAPIClient implements APIClient {
 
     readonly electionManagement: ServerElectionManagementClient;
     readonly optional: ServerOptionalAPIClient;
+
+    getPermissions(): Promise<Permission[]> {
+        return this.auth.getPermissions();
+    }
 
     /**
      * Gets all currently active votes.
@@ -72,6 +76,10 @@ export class ServerAPIClient implements APIClient {
 class ServerElectionManagementClient implements ElectionManagementClient {
     constructor(private readonly auth: RedditAuthenticator) {
 
+    }
+
+    getPermissions(): Promise<Permission[]> {
+        return this.auth.getPermissions();
     }
 
     getSuspiciousBallots(voteId: string): Promise<SuspiciousBallot[]> {
@@ -132,10 +140,8 @@ class ServerOptionalAPIClient implements OptionalAPIClient {
 
     }
 
-    getAvailable(): Promise<OptionalAPI[]> {
-        return postJSON('/api/optional/available', {
-            deviceId: this.auth.deviceId
-        });
+    getPermissions(): Promise<Permission[]> {
+        return this.auth.getPermissions();
     }
 
     getRegisteredVoters(): Promise<string[]> {
