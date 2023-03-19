@@ -286,13 +286,17 @@ def read_device_index(path: str, voter_requirements: List[VoterRequirement]) -> 
             if Permission.check_permission_validity(scope, permission):
                 permissions[Permission(scope, permission)] = set(scopes[scope][permission])
 
+    voters = set(data.get('registered-voters', [])).union(info.user_id for info in devices.values())
+    admins = set(data.get('admins', []))
+    developers = set(data.get('developers', []))
+                    
     # Assemble the device index.
     return DeviceIndex(
         devices,
         permissions,
-        set(data.get('admins', [])),
-        set(data.get('developers', [])),
-        set(data.get('registered-voters', [])).union(info.user_id for info in devices.values()),
+        admins,
+        developers,
+        voters,
         voter_requirements,
         path)
 

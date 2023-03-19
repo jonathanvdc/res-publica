@@ -21,7 +21,7 @@ def main():
     subprocess.check_call(['git', 'checkout', '--', 'package-lock.json'], cwd=front_end_path, shell=IS_WINDOWS)
 
     # Run a git pull.
-    subprocess.check_call(['git', 'pull'], cwd=parent_path, shell=IS_WINDOWS)
+    #subprocess.check_call(['git', 'pull'], cwd=parent_path, shell=IS_WINDOWS)
 
     # Install npm packages.
     subprocess.check_call(['npm', 'install'], cwd=front_end_path, shell=IS_WINDOWS)

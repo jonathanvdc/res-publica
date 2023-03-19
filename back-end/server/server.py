@@ -38,7 +38,8 @@ def create_app(config, bottle_path, data_path='data', static_folder=DEFAULT_STAT
     Path(data_path).mkdir(parents=True, exist_ok=True)
     device_index = read_or_create_device_index(
         os.path.join(data_path, 'device-index.json'),
-        config.get('voter-requirements', []))
+        config.get('voter-requirements', [])
+    )
     vote_index = read_or_create_vote_index(os.path.join(data_path, 'vote-index.json'), device_index)
 
     def get_json_arg(req, key: str):
@@ -49,7 +50,7 @@ def create_app(config, bottle_path, data_path='data', static_folder=DEFAULT_STAT
 
     # Register the core APIs.
     app.register_blueprint(
-        create_core_blueprint(device_index, vote_index),
+        create_core_blueprint(device_index, vote_index, config.get('default-permissions', {})),
         url_prefix='/api/core')
 
     # Add `/api/core/client-id` as a special case since it needs to peer deeply into the config.
