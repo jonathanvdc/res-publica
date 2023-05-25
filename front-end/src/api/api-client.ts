@@ -78,7 +78,7 @@ export enum Permission {
     /**
      * The user can view ballots marked as suspicious in a vote.
      */
-    ViewSuspiciousVotes = "election.view-suspicious-ballots",
+    ViewSuspiciousBallots = "election.view-suspicious-ballots",
 
     /**
      * The user can view the list of all registered users.

@@ -230,7 +230,7 @@ class VoteRoute extends FetchedStateComponent<{ match: any, history: any, permis
   async fetchState(): Promise<VoteRouteState> {
     let voteId = this.props.match.params.voteId;
     let data = await apiClient.getVote(voteId);
-    let suspiciousBallots = this.props.permissions?.includes(Permission.ViewSuspiciousVotes) ? await apiClient.electionManagement.getSuspiciousBallots(voteId) : [];
+    let suspiciousBallots = this.permissions?.includes(Permission.ViewSuspiciousBallots) ? await apiClient.electionManagement.getSuspiciousBallots(voteId) : [];
     return { vote: data, ballotCast: false, suspiciousBallots };
   }
 
