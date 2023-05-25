@@ -86,7 +86,7 @@ class AdminZone extends Component<AdminZoneProps, AdminZoneState> {
             data.vote.options.length - (data.vote.resigned?.length || 0) > 0;
         let canAddOption = this.props.permissions.includes(Permission.EditVote) && isActive(data.vote) && onResign;
 
-        if (!canCancelVote && !canResign) {
+        if (!canCancelVote && !canResign && !canAddOption) {
             return <div/>;
         }
 
