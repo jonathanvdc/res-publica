@@ -78,15 +78,15 @@ class AdminZone extends Component<AdminZoneProps, AdminZoneState> {
     }
 
     render() {
-        let data = this.props.data;
         let onCancelVote = this.props.onCancelVote;
-        let canCancelVote = isActive(data.vote) && this.props.onCancelVote;
         let onResign = this.props.onResign;
-        let canResign = !isActive(data.vote) && electsIndividuals(data.vote.type.tally) && onResign &&
+        let data = this.props.data;
+        let canCancelVote = this.props.permissions.includes(Permission.CancelVote) && isActive(data.vote) && this.props.onCancelVote;
+        let canResign = this.props.permissions.includes(Permission.EditVote) && !isActive(data.vote) && electsIndividuals(data.vote.type.tally) && onResign &&
             data.vote.options.length - (data.vote.resigned?.length || 0) > 0;
-        let canAddOption = isActive(data.vote) && onResign;
+        let canAddOption = this.props.permissions.includes(Permission.EditVote) && isActive(data.vote) && onResign;
 
-        if (!canCancelVote && !canResign) {
+        if (!canCancelVote && !canResign && !canAddOption) {
             return <div/>;
         }
 
