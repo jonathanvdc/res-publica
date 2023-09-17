@@ -1,20 +1,12 @@
 import { RankedChoiceBallot, RankedChoiceBallotType, VoteAndBallots } from "./types";
-
-export function getFirstRemainingChoice(ballot: RankedChoiceBallot, ineligible: string[]): string | undefined {
-    for (let id of ballot.optionRanking) {
-        if (!ineligible.includes(id)) {
-            return id;
-        }
-    }
-    return undefined;
-}
+import { getFirstRemainingChoice } from "./stv";
 
 function electCandidate(ballots: RankedChoiceBallot[], quota: number, ineligible: string[]): { elected: string, usedBallots: RankedChoiceBallot[], remainingBallots: RankedChoiceBallot[] } | { eliminated: string } {
     const candidateScores = new Map<string, number>();
     for (let ballot of ballots) {
         const firstChoice = getFirstRemainingChoice(ballot, ineligible);
         if (firstChoice) {
-            candidateScores.set(firstChoice, 1 + (candidateScores.get(firstChoice) || 0));
+            candidateScores.set(firstChoice, (ballot.weight || 1) + (candidateScores.get(firstChoice) || 0));
         }
     }
 
@@ -25,9 +17,16 @@ function electCandidate(ballots: RankedChoiceBallot[], quota: number, ineligible
         let elected = sortedCandidates[0][0];
         const usedBallots: RankedChoiceBallot[] = [];
         const remainingBallots: RankedChoiceBallot[] = [];
+        let reweight = (sortedCandidates[0][1] - quota) / sortedCandidates[0][1];
         for (let ballot of ballots) {
-            if (usedBallots.length < quota && getFirstRemainingChoice(ballot, ineligible) === elected) {
+            if (getFirstRemainingChoice(ballot, ineligible) === elected) {
+                /// Push the old ballot as a used ballot and push a 
+                ///     new, reweighted ballot to the remaining ballots
                 usedBallots.push(ballot);
+                let newBallot = Object.assign({}, ballot);
+                newBallot.weight = (newBallot.weight || 1) * reweight;
+                //console.log("Reweight " + newBallot.id + ": " + newBallot.weight);
+                remainingBallots.push(newBallot);
             } else {
                 remainingBallots.push(ballot);
             }
@@ -39,7 +38,7 @@ function electCandidate(ballots: RankedChoiceBallot[], quota: number, ineligible
     }
 }
 
-export function tallySTV(voteAndBallots: VoteAndBallots, seats?: number): string[] {
+export function tallySTVG(voteAndBallots: VoteAndBallots, seats?: number): string[] {
     let ballotType = voteAndBallots.vote.type as RankedChoiceBallotType;
     let adjustedSeats = Math.min(seats || ballotType.positions, voteAndBallots.vote.options.length);
 
@@ -48,21 +47,25 @@ export function tallySTV(voteAndBallots: VoteAndBallots, seats?: number): string
 
     // Now run as many rounds as we have seats. We elect one candidate per round.
     let ballots = voteAndBallots.ballots as RankedChoiceBallot[];
+
     let ineligible: string[] = [];
     let results: string[] = [];
     const used = new Map<string, RankedChoiceBallot[]>();
 
     function fillSeats() {
         while (results.length < adjustedSeats && ineligible.length < voteAndBallots.vote.options.length) {
-            if (ineligible.length === voteAndBallots.vote.options.length - 1) {
-                // If we're down to the last eligible candidate, just choose that candidate indiscriminately.
-                // eslint-disable-next-line
-                let winner = voteAndBallots.vote.options.find(x => !ineligible.includes(x.id))!.id;
-                results.push(winner);
-                ineligible.push(winner);
-                used.set(winner, ballots);
+            if (ineligible.length === voteAndBallots.vote.options.length - (adjustedSeats - results.length)) {
+                // If we're down to the last eligible candidates, just choose those candidates indiscriminately.
+                let winners = voteAndBallots.vote.options.filter(x => !ineligible.includes(x.id)).map(y => y.id);
+                winners.forEach(winner => 
+                { 
+                    results.push(winner)
+                    used.set(winner, ballots.filter(ballot => getFirstRemainingChoice(ballot, ineligible)))
+                });
+                winners.forEach(winner => ineligible.push(winner));
                 ballots = [];
-            } else {
+            }
+            else {
                 // Otherwise, either make a candidate win or eliminate a candidate.
                 let roundResult = electCandidate(ballots, quota, ineligible);
                 if ('eliminated' in roundResult) {
@@ -81,11 +84,13 @@ export function tallySTV(voteAndBallots: VoteAndBallots, seats?: number): string
 
     // For each candidate that resigns, we appoint a replacement by adding their ballots back to
     // the pot and re-running the algorithm with the remaining candidates.
+    // (I have no idea if this new version works or not)
     const alreadyResigned: string[] = [];
     for (let resignation of voteAndBallots.vote.resigned || []) {
         alreadyResigned.push(resignation);
         results = results.filter(x => x !== resignation);
         ineligible = [...results, ...alreadyResigned];
+        ballots.filter(x => !(used.get(resignation) || []).includes(x));
         ballots.push(...used.get(resignation) || []);
         fillSeats();
     }

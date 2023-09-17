@@ -149,6 +149,9 @@ export type RankedChoiceBallot = {
      * in descending order.
      */
     optionRanking: string[];
+
+    /// Weight if using STV with Gregory method
+    weight?: number;
 };
 
 /// A ballot for a vote where a user gets to rate options.
