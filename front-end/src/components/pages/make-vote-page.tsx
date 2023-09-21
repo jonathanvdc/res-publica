@@ -146,6 +146,9 @@ class MakeVotePage extends PureComponent<Props> {
             case "stv":
                 type = { tally: "stv", positions: 1 };
                 break;
+            case "stv-g":
+                type = { tally: "stv-g", positions: 1 };
+                break;
             case "star":
                 type = { tally: "star", positions: 1, min: 0, max: 5 };
                 break;
@@ -203,8 +206,10 @@ class MakeVotePage extends PureComponent<Props> {
             case "sainte-lague":
             case "spsv":
             case "stv":
+            case "stv-g":
                 return true;
         }
+        return false;
     }
 
     render() {
@@ -217,8 +222,10 @@ class MakeVotePage extends PureComponent<Props> {
                     onChange={this.onChangeTallyType.bind(this)}>
                     {this.isAllowedAlgorithm("first-past-the-post") &&
                         <TallyButton disabled={this.props.hasSubmittedVote} value="first-past-the-post">FPTP</TallyButton>}
-                    {/* {this.isAllowedAlgorithm("stv") &&
-                        <TallyButton disabled={this.props.hasSubmittedVote} value="stv">STV</TallyButton>} */}
+                    {this.isAllowedAlgorithm("stv") &&
+                        <TallyButton disabled={this.props.hasSubmittedVote} value="stv">STV</TallyButton>}
+                    {this.isAllowedAlgorithm("stv-g") &&
+                        <TallyButton disabled={this.props.hasSubmittedVote} value="stv-g">STV-G</TallyButton>}
                     {this.isAllowedAlgorithm("sainte-lague") &&
                         <TallyButton disabled={this.props.hasSubmittedVote} value="sainte-lague">Sainte-Lague</TallyButton>}
                     {this.isAllowedAlgorithm("simdem-sainte-lague") &&

@@ -2,6 +2,7 @@ import { tallyFPTP } from "./voting/fptp";
 import { tallySTAR } from "./voting/star";
 import { tallySPSV } from "./voting/spsv";
 import { tallySTV } from "./voting/stv";
+import { tallySTVG } from "./voting/stv-g";
 import { VoteAndBallots, TallyVisualizer, VoteOutcome, IndividualVoteOutcome, electsIndividuals } from "./voting/types";
 import { visuallyTallySPSV } from "./voting/visualize-spsv";
 import { tallySainteLague } from "./voting/sainte-lague";
@@ -59,6 +60,8 @@ export function tally(voteAndBallots: VoteAndBallots, seats?: number): VoteOutco
             return tallySimDemSainteLague(voteAndBallots, seats);
         case "stv":
             return individualToParty(tallySTV(voteAndBallots, seats));
+        case "stv-g":
+            return individualToParty(tallySTVG(voteAndBallots, seats));
         case "star":
             return individualToParty(tallySTAR(voteAndBallots, seats));
         case "spsv":
@@ -74,6 +77,9 @@ export function tally(voteAndBallots: VoteAndBallots, seats?: number): VoteOutco
  */
 export function tallyOrder(voteAndBallots: VoteAndBallots): IndividualVoteOutcome {
     if (electsIndividuals(voteAndBallots.vote.type.tally)) {
+        if (voteAndBallots.vote.type.tally === "stv-g")
+            /// This is a band-aid solution, but it works
+            return Array.from(new Set(tallyIndividual(voteAndBallots)));
         return Array.from(new Set(tallyIndividual(
             { ...voteAndBallots, vote: { ...voteAndBallots.vote, resigned: [] } },
             voteAndBallots.vote.options.length)));

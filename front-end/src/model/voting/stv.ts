@@ -1,4 +1,4 @@
-import { RankedChoiceBallot, RankedChoiceBallotType, VoteAndBallots } from "./types";
+import { RankedChoiceBallot, RankedChoiceBallotType, VoteAndBallots, VoteOption } from "./types";
 
 export function getFirstRemainingChoice(ballot: RankedChoiceBallot, ineligible: string[]): string | undefined {
     for (let id of ballot.optionRanking) {
@@ -9,7 +9,7 @@ export function getFirstRemainingChoice(ballot: RankedChoiceBallot, ineligible: 
     return undefined;
 }
 
-function electCandidate(ballots: RankedChoiceBallot[], quota: number, ineligible: string[]): { elected: string, usedBallots: RankedChoiceBallot[], remainingBallots: RankedChoiceBallot[] } | { eliminated: string } {
+function electCandidate(ballots: RankedChoiceBallot[], quota: number, ineligible: string[], options: VoteOption[]): { elected: string, usedBallots: RankedChoiceBallot[], remainingBallots: RankedChoiceBallot[] } | { eliminated: string } {
     const candidateScores = new Map<string, number>();
     for (let ballot of ballots) {
         const firstChoice = getFirstRemainingChoice(ballot, ineligible);
@@ -18,10 +18,20 @@ function electCandidate(ballots: RankedChoiceBallot[], quota: number, ineligible
         }
     }
 
+    /// Add candidates with no first remaining choice
+    ///     to avoid emininating first pick
+    ///     (Hopefully won't be needed)
+    options.forEach(x => {
+        if ( !ineligible.includes(x.id) && !candidateScores.has(x.id) )
+            candidateScores.set(x.id, 0);
+    });
+
     const sortedCandidates = Array.from(candidateScores.entries())
         .sort((a, b) => b[1] - a[1]);
-    
-    if (sortedCandidates[0][1] > quota) {
+
+    if (quota === ballots.length /// Deal with edge case when ballots and quota are equal
+        ? sortedCandidates[0][1] >= quota 
+        : sortedCandidates[0][1] > quota) {
         let elected = sortedCandidates[0][0];
         const usedBallots: RankedChoiceBallot[] = [];
         const remainingBallots: RankedChoiceBallot[] = [];
@@ -64,7 +74,7 @@ export function tallySTV(voteAndBallots: VoteAndBallots, seats?: number): string
                 ballots = [];
             } else {
                 // Otherwise, either make a candidate win or eliminate a candidate.
-                let roundResult = electCandidate(ballots, quota, ineligible);
+                let roundResult = electCandidate(ballots, quota, ineligible, voteAndBallots.vote.options);
                 if ('eliminated' in roundResult) {
                     ineligible.push(roundResult.eliminated);
                 } else {
