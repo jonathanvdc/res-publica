@@ -7,7 +7,7 @@ function getOptionScores(ballot: Ballot, vote: Vote): { optionId: string, rating
     if ('ratingPerOption' in ballot) {
         return ballot.ratingPerOption;
     } else if ('optionRanking' in ballot) {
-        return vote.options.map(opt => ({ optionId: opt.id, rating: ballot.optionRanking.indexOf(opt.id) }));
+        return vote.options.map(opt => ({ optionId: opt.id, rating: ballot.optionRanking.indexOf(opt.id) + 1}));
     } else {
         return vote.options.map(opt => ({ optionId: opt.id, rating: ballot.selectedOptionId === opt.id ? 1 : 0 }));
     }

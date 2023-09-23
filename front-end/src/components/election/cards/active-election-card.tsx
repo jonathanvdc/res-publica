@@ -1,5 +1,5 @@
 import React from "react";
-import { ButtonBase, Typography, ToggleButton, ToggleButtonGroup } from "@mui/material";
+import { ButtonBase, Typography, ToggleButton, ToggleButtonGroup, TextField } from "@mui/material";
 import { withStyles } from 'tss-react/mui';
 import CountdownTimer from 'react-countdown';
 import { getPreferences } from "../../../model/preferences";
@@ -8,6 +8,7 @@ import { renderCollapsibleMarkdown } from "../../widgets/collapsible-markdown";
 import { renderCandidateName } from "../candidate-name";
 import CandidatePanel from "../candidate-panel";
 import ElectionCard from "./election-card";
+import { RankedChoiceBallot } from "../../../model/voting/types";
 
 type Props = {
     voteAndBallots: VoteAndBallots;
@@ -103,10 +104,32 @@ const StyledToggleButtonGroup = withStyles(
         }
     }));
 
+const StyledInput = withStyles(
+    TextField,
+    {
+        root: {
+            "& .MuiInputBase-root": {
+                // color: "white",
+                fontSize: "xx-large",
+                width: 100,
+                height: 60,
+                justifyContent: "left"
+            },
+            // "& .MuiFormLabel-root": {
+            //     color: "gray"
+            // }
+        }
+    });
+
 /**
  * A widget that allows users to inspect and interact with an active election.
  */
 class ActiveElectionCard extends ElectionCard<Props, State> {
+
+    /**
+     * A map of rankings for a ballot (ranked choice)
+     */
+    rankingMap?: Map<string, number>;
 
     constructor(props: Props) {
         super(props);
@@ -193,7 +216,7 @@ class ActiveElectionCard extends ElectionCard<Props, State> {
                         value={ratingOrNull ? ratingOrNull.rating : null}
                         exclusive
                         onChange={(_event: React.MouseEvent<HTMLElement>, newValue: number | null) => {
-                            let oldVals = optionBallot.ratingPerOption.filter(val => val.optionId !== option.id);
+                            let oldVals = optionBallot.ratingPerOption.filter(val => val);
                             let newRatings = newValue === null
                                 ? optionBallot.ratingPerOption
                                 : [...oldVals, { optionId: option.id, rating: newValue }];
@@ -202,6 +225,42 @@ class ActiveElectionCard extends ElectionCard<Props, State> {
                         {buttons}
                     </StyledToggleButtonGroup>
                 </React.Fragment>;
+            }
+            case 'ranked-choice':
+            {
+                if ( this.rankingMap === undefined)
+                {
+                    let optionBallot = (this.props.voteAndBallots.ownBallot || { optionRanking: [] }) as RankedChoiceBallot;
+                    this.rankingMap = new Map<string, number>();
+                    let currentRank = [...optionBallot.optionRanking];
+                    // The rank is reversed to conserve accurate ranking values on 
+                    //  both display and processing 
+                    currentRank.forEach( x => this.rankingMap!.set(x, optionBallot.optionRanking.indexOf(x) + 1));
+                }
+                return <React.Fragment>
+                    <div style={{display: "flex"}}>
+                        <div style={{width: '80%'}}>
+                        {body}
+                        </div>
+                        <div style={{flexGrow: 1, alignSelf: "center"}}>
+                        <StyledInput
+                            type="number"
+                            placeholder=""
+                            value={this.rankingMap!.get(option.id)} 
+                            onChange={e => {
+                                let val = Number(e.currentTarget.value);
+                                if ( val > 0 )
+                                    this.rankingMap!.set(option.id, val);
+                                else
+                                    this.rankingMap!.delete(option.id);
+                                let newRanking = Array.from(this.rankingMap!.entries()).sort((a, b) => a[1] - b[1])
+                                    .flat().filter(x => typeof x === 'string') as string[];
+                                changeBallot({ optionRanking: newRanking });
+                            }}>
+                        </StyledInput>
+                        </div>
+                    </div>
+                </React.Fragment>
             }
         }
     }

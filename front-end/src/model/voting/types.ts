@@ -52,7 +52,7 @@ export type RankedChoiceBallotType = {
     /**
      * The tallying option.
      */
-    tally: "stv";
+    tally: "stv" | "stv-g";
 
     /**
      * The number of available seats.
@@ -76,9 +76,9 @@ export type RateOptionsBallotType = {
  * Enumerates vote tallying algorithms.
  */
 export type TallyingAlgorithm =
-    "first-past-the-post" | "sainte-lague" | "simdem-sainte-lague"
-    | "stv"
-    | "spsv" | "star";
+    "first-past-the-post" | "sainte-lague" | "simdem-sainte-lague" | 
+    "stv" | "stv-g" |
+    "spsv" | "star";
 
 export type BallotType = ChooseOneBallotType | RateOptionsBallotType | RankedChoiceBallotType;
 
@@ -91,6 +91,7 @@ export function getBallotKind(ballotType: BallotType): BallotKind {
         case "simdem-sainte-lague":
             return "choose-one";
         case "stv":
+        case "stv-g":
             return "ranked-choice";
         case "spsv":
         case "star":
@@ -149,6 +150,9 @@ export type RankedChoiceBallot = {
      * in descending order.
      */
     optionRanking: string[];
+
+    /// Weight if using STV with Gregory method
+    weight?: number;
 };
 
 /// A ballot for a vote where a user gets to rate options.
@@ -332,6 +336,7 @@ export function electsIndividuals(algo: TallyingAlgorithm): boolean {
         case "spsv":
         case "star":
         case "stv":
+        case "stv-g":
             return true;
     }
 }

@@ -87,6 +87,7 @@ class HistoricalElectionCard extends ElectionCard<Props, State> {
                 }
 
             case "stv":
+            case "stv-g":
             case "spsv":
             case "star":
                 let rankingIndex = this.state.ranking.indexOf(option.id);
